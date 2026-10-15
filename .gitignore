@@ -1,0 +1,33 @@
+# --- Configuración local de herramientas (no se versiona) ---
+CLAUDE.local.md
+.claude/settings.local.json
+
+# --- Secretos y entorno local ---
+.env
+.env.*
+!.env.example
+
+# --- Java / Maven ---
+backend/target/
+*.class
+hs_err_pid*
+replay_pid*
+
+# --- Node / Vite ---
+node_modules/
+frontend/dist/
+frontend/.vite/
+npm-debug.log*
+
+# --- Respaldos: solo se versiona el respaldo de demostración ---
+datos/respaldos/*.dump
+!datos/respaldos/respaldo_demo.dump
+datos/respaldos/tmp/
+
+# --- Logs, IDE y sistema operativo ---
+*.log
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
