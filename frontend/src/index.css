@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cacao: #3E2723;
+  --color-mazorca: #D97706;
+  --color-origen: #15803D;
+  --color-crema: #FDFBF7;
+}
+
+body {
+  @apply bg-crema text-cacao;
+}
