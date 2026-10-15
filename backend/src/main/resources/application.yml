@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: cacao-trazabilidad
+  config:
+    # Lee el .env de la raíz tanto si se ejecuta desde backend/ como desde la raíz del repositorio
+    import: "optional:file:.env[.properties],optional:file:../.env[.properties]"
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5433}/${POSTGRES_DB:cacao}
+    username: ${POSTGRES_USER:cacao}
+    password: ${POSTGRES_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: America/Bogota
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  jackson:
+    time-zone: America/Bogota
+
+server:
+  port: 8080
+  error:
+    include-stacktrace: never
+
+app:
+  jwt:
+    secreto: ${JWT_SECRET}
+    expiracion-minutos: ${JWT_EXPIRACION_MINUTOS:480}
+  reglas:
+    umbral-merma: ${APP_UMBRAL_MERMA:15.0}
+    rendimiento-plausible-kg-ha-anio: 600
+  cors:
+    origenes: ${APP_CORS_ORIGENES:http://localhost:5173}

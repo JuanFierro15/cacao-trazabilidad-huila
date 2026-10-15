@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: cacao-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cacao}
+      POSTGRES_USER: ${POSTGRES_USER:-cacao}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD en el archivo .env}
+      TZ: America/Bogota
+      PGTZ: America/Bogota
+    ports:
+      - "${DB_PORT:-5433}:5432"
+    volumes:
+      - cacao_pgdata:/var/lib/postgresql/data
+      # Scripts de respaldo, restauración y rendimiento visibles dentro del contenedor en /datos
+      - ./datos:/datos
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  cacao_pgdata:
