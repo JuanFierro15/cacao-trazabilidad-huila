@@ -177,7 +177,8 @@ if (Test-Path $ArchivoIntegridad) {
     Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
     Write-Host "  COMPARACION CON REPORTE DE INTEGRIDAD ORIGINAL            " -ForegroundColor Cyan
     Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
-    $lineasOriginal = (Get-Content $ArchivoIntegridad) | ForEach-Object { $_.TrimEnd() } | Where-Object { $_ -ne "" }
+    # Se lee como UTF-8 con o sin BOM: el reporte puede venir de respaldar.ps1 (con BOM) o de respaldar.sh (sin BOM).
+    $lineasOriginal = (Get-Content $ArchivoIntegridad -Encoding UTF8) | ForEach-Object { $_.TrimEnd() } | Where-Object { $_ -ne "" }
     $lineasDespues = $salidaDespues | ForEach-Object { $_.TrimEnd() } | Where-Object { $_ -ne "" }
 
     $textoOriginal = $lineasOriginal -join "`n"
