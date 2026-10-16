@@ -9,6 +9,7 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
 | B1 — Dominio y persistencia (Unitaria) | 2026-10-15 19:23 | `.\mvnw.cmd test -Dtest=DominioEsquemaContratoTest` | `co.edu.usco.cacao.dominio.DominioEsquemaContratoTest` | 6 tests | 6 | 0 | 0 | 0.282 s | `BUILD SUCCESS` |
 | B1 — Dominio y persistencia (PostgreSQL Local) | 2026-10-15 20:28 | `.\mvnw.cmd -DskipTests spring-boot:run` | Flyway (`V1` + `V2`) + Hibernate `ddl-auto=validate` sobre PostgreSQL 17.4 | 2 migraciones + 7 entidades JPA | 2 / 7 | 0 | 0 | 8.27 s | `Started CacaoTrazabilidadApplication` |
 | B2 — Seguridad JWT y errores | 2026-10-15 20:46 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) sobre PostgreSQL 17.4 | 12 tests | 12 | 0 | 0 | 18.280 s | `BUILD SUCCESS` |
+| B3 — Recepción, catálogos y filtros | 2026-10-15 21:07 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `RecepcionCatalogosFiltrosTest` (7) sobre PostgreSQL 17.4 | 19 tests | 19 | 0 | 0 | 25.523 s | `BUILD SUCCESS` |
 
 ---
 
@@ -30,35 +31,25 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
 2026-10-15T20:28:39.529-05:00  INFO 28600 --- [cacao-trazabilidad] [           main] c.e.u.c.CacaoTrazabilidadApplication     : Started CacaoTrazabilidadApplication in 8.27 seconds (process running for 8.707)
 ```
 
-- **Integridad de configuración y migraciones:** `git diff origin/main -- backend/pom.xml backend/src/main/resources/` → vacío (sin modificaciones).
-
 ### 2. Pruebas Unitarias de Mapeo (`DominioEsquemaContratoTest`)
 
 - **Fecha y hora:** `2026-10-15T19:23:57-05:00`
 - **Comando:** `.\mvnw.cmd test -Dtest=DominioEsquemaContratoTest`
-- **Salida real de Surefire:**
-
-```text
-[INFO] -------------------------------------------------------
-[INFO]  T E S T S
-[INFO] -------------------------------------------------------
-[INFO] Running co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
-[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.282 s -- in co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
-[INFO] 
-[INFO] Results:
-[INFO] 
-[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
-[INFO] 
-[INFO] ------------------------------------------------------------------------
-[INFO] BUILD SUCCESS
-[INFO] ------------------------------------------------------------------------
-```
+- **Resultado:** `Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.282 s — BUILD SUCCESS`
 
 ---
 
 ## Detalle del Bloque B2 — Seguridad JWT y errores
 
 - **Fecha y hora:** `2026-10-15T20:46:45-05:00`
+- **Comando:** `.\mvnw.cmd test`
+- **Resultado:** `Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Total time: 18.280 s — BUILD SUCCESS`
+
+---
+
+## Detalle del Bloque B3 — Recepción, catálogos y filtros
+
+- **Fecha y hora:** `2026-10-15T21:07:48-05:00`
 - **Comando:** `.\mvnw.cmd test`
 - **Salida real de Surefire:**
 
@@ -69,24 +60,27 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
 [INFO] Running co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
 [INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.192 s -- in co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
 [INFO] Running co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
-[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.78 s -- in co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.10 s -- in co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Running co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.088 s -- in co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
 [INFO] 
 [INFO] Results:
 [INFO] 
-[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0
 [INFO] 
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  18.280 s
-[INFO] Finished at: 2026-10-15T20:46:45-05:00
+[INFO] Total time:  25.523 s
+[INFO] Finished at: 2026-10-15T21:07:48-05:00
 [INFO] ------------------------------------------------------------------------
 ```
 
-- **Casos verificados en `SeguridadJwtErroresTest` (contra PostgreSQL 17.4 local):**
-  1. `dataInitializerNoDuplicaUsuariosAlReiniciar`: Verifica que `usuarioRepository.count()` es `2` (`operador1` y `admin1`) y sigue siendo `2` tras múltiples ejecuciones de `DataInitializer`.
-  2. `loginAdminExitoso`: `POST /api/auth/login` con `admin1` / `admin123` devuelve `200 OK`, token JWT HS256, `nombreCompleto = "Administrador Demo"`, `rol = "ADMINISTRADOR"` y `expiraEn` con desfase `-05:00`.
-  3. `loginCredencialesInvalidasDevuelve401Json`: `POST /api/auth/login` con contraseña errónea devuelve `401` con `codigo = "CREDENCIALES_INVALIDAS"`.
-  4. `loginCamposVaciosDevuelve400Validacion`: `POST /api/auth/login` con campos vacíos devuelve `400` con `codigo = "VALIDACION"` y arreglo `errores` por campo.
-  5. `getLotesSinTokenDevuelve401Json`: `GET /api/lotes` sin encabezado `Authorization` devuelve `401` con `codigo = "NO_AUTENTICADO"` en formato único JSON.
-  6. `patchEstadoComoOperadorDevuelve403Json`: `PATCH /api/lotes/CAC001/estado` con token de `operador1` devuelve `403` con `codigo = "ACCESO_DENEGADO"` y mensaje `"Solo el Administrador puede liberar o bloquear lotes."`.
+- **Casos verificados en `RecepcionCatalogosFiltrosTest` (contra PostgreSQL 17.4 local):**
+  1. `obtenerReglasConfiguracion`: `GET /api/config/reglas` devuelve `umbralMermaPorcentaje = 15.0`, `rendimientoPlausibleKgHaAnio = 600` y las 6 etapas.
+  2. `listarProductoresConEntregadoAnio`: `GET /api/productores` devuelve `PRD-A`, `PRD-B` y `PRD-C` con `entregadoAnioKg` calculado desde la BD (`100.0`, `150.0`, `80.0`).
+  3. `crearLoteValidoAsignaCodigoYRegistraAuditoria`: `POST /api/lotes` válido asigna código `CAC004`, devuelve `201`, persiste (`GET /api/lotes/CAC004`) y registra fila `CREAR` en `auditoria_cambios`.
+  4. `crearLoteCantidadNegativaOCampoVacioDevuelve400`: `POST /api/lotes` con `cantidadRecibida = -5` y `productorId = null` devuelve `400 VALIDACION` con `errores` por campo y no guarda nada.
+  5. `crearLoteCodigoRepetidoDevuelve409`: `POST /api/lotes` con `codigoLote = "CAC001"` devuelve `409 LOTE_DUPLICADO`.
+  6. `crearLoteSuperandoCuotaGeneraAlertaCuotaExcedida`: `POST /api/lotes` que supera la cuota anual de `PRD-C` (`330 kg > 300 kg`) devuelve `201` con alerta `CUOTA_EXCEDIDA` activa sin bloquear la recepción.
+  7. `filtrarLotesYConsultarPorCodigo`: `GET /api/lotes?origen=Rivera&estado=PENDIENTE&tipo=RECEPCION` devuelve `CAC001`, y `GET /api/lotes/CAC999` devuelve `404 NO_ENCONTRADO`.
