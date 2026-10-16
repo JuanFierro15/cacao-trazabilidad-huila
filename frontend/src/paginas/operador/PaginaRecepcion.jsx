@@ -469,7 +469,7 @@ export function PaginaRecepcion() {
             }}
             aria-invalid={Boolean(erroresPorCampo.porcentajeHumedad)}
             aria-describedby={erroresPorCampo.porcentajeHumedad ? 'error-humedad' : undefined}
-            className={`w-full min-h-[44px] rounded-md border bg-white px-3 py-2 text-base text-cacao placeholder:text-cacao/40 ${FOCO} ${
+            className={`w-full min-h-[44px] rounded-md border bg-white px-3 py-2 text-base text-cacao placeholder:text-cacao/70 ${FOCO} ${
               erroresPorCampo.porcentajeHumedad ? 'border-red-700 bg-red-50/20' : 'border-cacao/30'
             }`}
           />
@@ -505,7 +505,7 @@ export function PaginaRecepcion() {
                 .filter(Boolean)
                 .join(' ') || undefined
             }
-            className={`w-full min-h-[44px] rounded-md border bg-white px-3 py-2 text-base text-cacao placeholder:text-cacao/40 ${FOCO} ${
+            className={`w-full min-h-[44px] rounded-md border bg-white px-3 py-2 text-base text-cacao placeholder:text-cacao/70 ${FOCO} ${
               erroresPorCampo.cantidadRecibida ? 'border-red-700 bg-red-50/20' : 'border-cacao/30'
             }`}
           />
@@ -580,7 +580,7 @@ export function PaginaRecepcion() {
                     .filter(Boolean)
                     .join(' ')
                 }
-                className={`w-full min-h-[44px] rounded-md border bg-white px-3 py-2 text-base uppercase text-cacao placeholder:text-cacao/40 ${FOCO} ${
+                className={`w-full min-h-[44px] rounded-md border bg-white px-3 py-2 text-base uppercase text-cacao placeholder:text-cacao/70 ${FOCO} ${
                   erroresPorCampo.codigoLote ? 'border-red-700 bg-red-50/20' : 'border-cacao/30'
                 }`}
               />

@@ -561,7 +561,7 @@ export function PaginaTransformacion() {
               </div>
               <div>
                 <dt className="text-xs font-semibold text-cacao/70">Consumido</dt>
-                <dd className="mt-0.5 text-base font-semibold text-mazorca">
+                <dd className="mt-0.5 text-base font-semibold text-mazorca-oscuro">
                   {formatearKg(inventarioOrigen.cantidadConsumida)}
                 </dd>
               </div>
@@ -654,7 +654,7 @@ export function PaginaTransformacion() {
           {transformacion.loteSalidaCodigo && (
             <Link
               to={`/lotes/${transformacion.loteSalidaCodigo}/trazabilidad`}
-              className={`inline-flex min-h-[44px] items-center text-sm font-semibold text-mazorca underline hover:text-mazorca/80 ${FOCO}`}
+              className={`inline-flex min-h-[44px] items-center text-sm font-semibold text-mazorca-oscuro underline hover:text-cacao ${FOCO}`}
             >
               Ver trazabilidad del lote de salida
             </Link>
@@ -662,7 +662,7 @@ export function PaginaTransformacion() {
           {rol === ROLES.ADMINISTRADOR && (
             <Link
               to={`/admin/balance?transformacion=${transformacion.id}`}
-              className={`inline-flex min-h-[44px] items-center text-sm font-semibold text-mazorca underline hover:text-mazorca/80 ${FOCO}`}
+              className={`inline-flex min-h-[44px] items-center text-sm font-semibold text-mazorca-oscuro underline hover:text-cacao ${FOCO}`}
             >
               Ver balance
             </Link>
@@ -754,7 +754,7 @@ export function PaginaTransformacion() {
                   )
                   limpiarErrorCampo('cantidadEntrada')
                 }}
-                className={`text-xs font-semibold text-mazorca underline hover:text-mazorca/80 ${FOCO}`}
+                className={`text-xs font-semibold text-mazorca-oscuro underline hover:text-cacao ${FOCO}`}
               >
                 Usar todo el disponible ({formatearKg(loteSeleccionado.cantidadDisponible)})
               </button>

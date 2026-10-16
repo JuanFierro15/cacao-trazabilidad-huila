@@ -10,6 +10,7 @@ import { PaginaAuditoria } from './paginas/admin/PaginaAuditoria.jsx'
 import { PaginaBalance } from './paginas/admin/PaginaBalance.jsx'
 import { PaginaRecall } from './paginas/admin/PaginaRecall.jsx'
 import { PanelAdministrador } from './paginas/admin/PanelAdministrador.jsx'
+import { PaginaInicio } from './paginas/inicio/PaginaInicio.jsx'
 import { PaginaLogin } from './paginas/login/PaginaLogin.jsx'
 import { PaginaTrazabilidad } from './paginas/lotes/PaginaTrazabilidad.jsx'
 import { PaginaRecepcion } from './paginas/operador/PaginaRecepcion.jsx'
@@ -20,7 +21,10 @@ import { PaginaFichaPublica } from './paginas/publico/PaginaFichaPublica.jsx'
 
 function Inicio() {
   const { autenticado, rol } = useAuth()
-  return <Navigate to={autenticado ? rutaInicioPorRol(rol) : '/login'} replace />
+  if (autenticado) {
+    return <Navigate to={rutaInicioPorRol(rol)} replace />
+  }
+  return <PaginaInicio />
 }
 
 function App() {

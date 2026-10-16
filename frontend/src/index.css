@@ -1,12 +1,172 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cacao: #3E2723;
+  --color-cacao: #3A1F0D;
+  --color-crema: #FFFDF9;
+  --color-arena: #F3E5D0;
   --color-mazorca: #D97706;
+  --color-mazorca-oscuro: #B4520F;
   --color-origen: #15803D;
-  --color-crema: #FDFBF7;
+  --color-selva: #27AE60;
+  --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Barlow Condensed", "Barlow", ui-sans-serif, sans-serif;
 }
 
 body {
   @apply bg-crema text-cacao;
 }
+
+/* Texto de ejemplo de los campos: 70 % del cacao para no bajar de 4,5:1 sobre blanco. */
+@layer base {
+  ::placeholder {
+    color: color-mix(in oklab, var(--color-cacao) 70%, transparent);
+  }
+}
+
+@keyframes trazar {
+  from {
+    transform: scale(var(--traza-x, 1), var(--traza-y, 0));
+  }
+  to {
+    transform: scale(1, 1);
+  }
+}
+
+@keyframes nodo {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+ol.traza {
+  position: relative;
+  list-style: none;
+  padding-left: 2rem;
+}
+
+ol.traza::before {
+  content: "";
+  position: absolute;
+  top: 0.375rem;
+  bottom: 0.375rem;
+  left: 5px;
+  width: 2px;
+  background-color: var(--color-mazorca);
+  --traza-x: 1;
+  --traza-y: 0;
+  transform-origin: top;
+  transform: scaleY(0);
+}
+
+ol.traza.visible::before {
+  animation: trazar 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.traza > li {
+  position: relative;
+}
+
+.traza > li::before {
+  content: "";
+  position: absolute;
+  top: 0.25rem;
+  left: -2rem;
+  z-index: 1;
+  width: 12px;
+  height: 12px;
+  box-sizing: border-box;
+  border-radius: 9999px;
+  border: 2px solid var(--color-cacao);
+  background-color: var(--color-crema);
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+.traza > li:last-child::before {
+  background-color: var(--color-mazorca);
+}
+
+.traza.visible > li::before {
+  animation: nodo 280ms cubic-bezier(0.2, 0.7, 0.2, 1) calc(var(--i, 0) * 110ms + 150ms) both;
+}
+
+@media (min-width: 64rem) {
+  ol.traza.traza-horizontal {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1.5rem;
+    padding-left: 0;
+  }
+
+  ol.traza.traza-horizontal::before {
+    top: 5px;
+    bottom: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: 2px;
+    --traza-x: 0;
+    --traza-y: 1;
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+
+  .traza.traza-horizontal > li {
+    padding-top: 2rem;
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .traza.traza-horizontal > li::before {
+    top: 0;
+    left: 0;
+  }
+}
+
+/* Arranca en 1,06 y no en 1,12: a 360 px una tarjeta de 328 px escalada a 1,12 se sale de la pantalla y deja scroll horizontal. */
+@keyframes sello {
+  0% {
+    opacity: 0;
+    transform: scale(1.06) rotate(-2deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.98) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.sello {
+  animation: sello 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ol.traza::before,
+  ol.traza.visible::before,
+  ol.traza.traza-horizontal::before {
+    animation: none;
+    transform: none;
+  }
+
+  .traza > li::before,
+  .traza.visible > li::before {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .sello {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+

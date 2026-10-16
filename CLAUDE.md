@@ -171,9 +171,15 @@ Paleta: Café Cacao `#3E2723`, Ámbar Mazorca `#D97706`, Verde Origen `#15803D`,
 - Commit: `feat: agregar control de estado, reporte de recall y visor de auditoría`
 - **→ Checkpoint 3: PR a `main`.**
 
-**F7. Accesibilidad y mejora por usabilidad (E06)**
+**F7. Accesibilidad y mejora por usabilidad (E06)** — *contraste terminado (commit `3891452`); falta la mejora que salga de la prueba con la persona externa*
 - Objetivo: `label` en cada campo, foco visible y navegación con teclado, contraste legible (revisar la insignia "Pendiente"), vista móvil a 360 px, y la mejora concreta que salga de la prueba con la persona externa (capturas antes/después).
+- Hecho: textos naranjas a `mazorca-oscuro`, secundarios a `cacao/70` y placeholders al 70 % (de 2,41–4,18:1 a 4,79–5,78:1, medidos en el navegador). Tabla y capturas en `prompts/frontend/F7.md` y `evidencias_para_juan_manuel/E06/`.
 - Commit: `fix: aplicar mejoras de la prueba de usabilidad`
+
+**F8A–F8C. Identidad visual** — *terminados (commits `c7fa4e7` preparación, `000e8f1` F8A, `50588ef` F8B y `ecaa41e` F8C)*
+- Guía en `frontend/DISENO.md`; prompts y revisión en `prompts/frontend/F8A.md`, `F8B.md` y `F8C.md`. Recursos optimizados en `frontend/public/assets/` (los originales pesados quedaron fuera del repositorio).
+- F8A: tokens, Barlow y Barlow Condensed, logo en el marco y login con video (botón de pausa y movimiento reducido). F8B: página de inicio pública en `/` sin sesión, con la consulta de lotes. F8C: la traza animada en la trazabilidad y la ficha, y el sello del estado.
+- Sin `viewTransition`: `BrowserRouter` no la aplica y cambiar a `createBrowserRouter` tocaría las rutas.
 
 ### 4.4 Juan Manuel Villalba Rincón — documentación, verificación y pitch (sin agente de código)
 
@@ -260,6 +266,7 @@ Commit sugerido: <mensaje>
     - I1: p95 de 22,27 ms (PowerShell) y 21,64 ms (bash) con 400 lotes.
     - I2: `respaldo_demo.dump` verificado, y `restaurar.*` acepta el reporte con o sin BOM (`a11efcb`).
     - I3: README, `ENTREGA.md`, `pitch/E09_presentacion.pdf` y `pitch/E09_guion.md`.
+- **16/10, 07:37–08:20, en `feat/frontend-ui` (pendiente de push y PR):** F8A, F7 (contraste), F8B y F8C, con build, lint, los tres grep, revisión en el navegador a 1280 y 360 px, movimiento reducido emulado y el recorrido de la demo del pitch por la interfaz; después se restauró `respaldo_demo.dump` con "INTEGRIDAD CONFIRMADA".
 - **Ramas:** `feat/backend-api` `98f7201` (todo en `main`); `feat/frontend-ui` `48a8b78` (sus registros de `CLAUDE.md` entran a `main` con el PR de este cierre); `feat/integracion` es la rama de trabajo actual.
 - **Tablero:**
   - Done: Bloque 0, B1–B9, F1–F6, I1, I2 y la hora 12 (#38).
@@ -267,7 +274,8 @@ Commit sugerido: <mensaje>
   - Todo: F7 (#20), JM1–JM4 (#24–#27), E01–E03, E05, E06 y E08.
   - Regla: al integrar cada PR, sus issues pasan a Done con un comentario de evidencia.
 - **Pendiente antes de la congelación de las 11:00:**
-  - F7 (depende de la prueba de usabilidad de Juan Manuel, #26).
+  - F7: el contraste ya está; falta la mejora que salga de la prueba de usabilidad de Juan Manuel (#26).
+  - Push de `feat/frontend-ui` y PR a `main` con F8A–F8C y F7 (Juan David), antes de las 10:30.
   - Instalación limpia de Juan Manuel siguiendo el README (#27), corrigiendo el README con lo que falle.
   - Ensayos del pitch: presenta Juan Manuel y opera la aplicación Juan David. La demo usa el Productor C (250 kg) y **nunca CAC001**.
   - Los PDF de `documentos/` (E01–E03, E05–E08 y `E09_piloto.pdf`), que redacta el equipo (máximo 15 páginas en total).
@@ -280,8 +288,8 @@ Commit sugerido: <mensaje>
 - **Hora 12 (issue #38, cerrado):** a las 02:00 la organización pidió a Juan Manuel un entregable de documentación para Classroom, sin cambios en el software. Se subió la carpeta `Evidencia2am` (en `Hackaton_II/`, fuera del repositorio; sus archivos son exactamente los subidos). RF09 no cambió.
 - **Evidencia fuera del repositorio:** `Hackaton_II/evidencias_para_juan_manuel/` guarda el historial y la validación de los checkpoints 1–3, la validación del backend del CP3 y los insumos de E02, E03 y E05. El estado para redactar la documentación está en `prompts/integracion/estado-para-documentacion.md`.
 - **Pitch:** la presentación original está en claude.ai, es privada y hay que compartirla con Juan Manuel (tiene las notas del orador). Los costos son supuestos con fuente: servidor de 2 vCPU y 4 GB a ≈ 24 USD al mes, TRM ≈ 3.200 COP.
-- **Material visual en `frontend/public/assets/`** (logo y video del login): solo para la mejora visual que Juan David pida al final. Hasta entonces nadie lo usa, lo modifica ni lo versiona.
-- **Cuota de agy:** los modelos Claude de agy agotaron su cuota el 15/10 hacia las 20:33. Las delegaciones siguen con `gemini-3.8-flash-high`, y su resultado se revisa con más cuidado.
+- **Material visual en `frontend/public/assets/`:** desde F8 se versionan los 18 recursos optimizados (con `binary` en su `.gitattributes`). Los originales pesados (logo, videos y fotos de 3–5 MB) están fuera del repositorio, en `Hackaton_II/F8/originales/`. Para E08: Miguel usó agy con Gemini 4 Argon, Claude Opus 5.5 y Gemini 3.8 Flash, con esfuerzo máximo (informado por Juan David el 16/10; detalle en `prompts/integracion/estado-para-documentacion.md`, sección 10); imágenes y videos generados con IA (falta anotar la herramienta y el modelo); skills `frontend-design` (Anthropic) y `web-design-guidelines` (Vercel) en `.claude/skills/` y `.agents/skills/`, y fuentes Barlow y Barlow Condensed (SIL OFL 1.1).
+- **Cuota de agy:** los modelos Claude de agy agotaron su cuota el 15/10 hacia las 20:33, y el 16/10 a las 07:41 `claude-opus-5-5-high` seguía sin cuota (se restablece en unas 124 horas). Desde F8 las delegaciones usan `gemini-4-argon-high`, el modelo de más capacidad disponible, y su resultado se revisa con más cuidado.
 
 **Aprendizajes del frontend (aplican de F4 en adelante)**
 - Nunca reemplazar una página por "Cargando…" o por un error si ya hay datos: el estado de carga se muestra solo con `cargando && !datos`, para que una recarga en segundo plano no oculte la confirmación ni le quite el foco.
@@ -307,4 +315,6 @@ Commit sugerido: <mensaje>
 - **Binarios en git:** los `.dump` llevan `binary` en `datos/respaldos/.gitattributes`. Después del commit se comprueba que el archivo en git sea idéntico al generado (`git show HEAD:<ruta> | sha256sum`).
 - **Excel:** el CSV se verifica abriéndolo por COM con la configuración regional (`Workbooks.Open`, con `Local` en el parámetro 14).
 - **Navegador:** la extensión de Chrome no abre archivos `file://`; un PDF local se revisa con node (encabezado y conteo de páginas). Las descargas de la aplicación se prueban interceptando el enlace en la página, sin guardar archivos.
+- **Navegador sin ventana por CDP:** el 16/10 la extensión de Chrome dejó de entregar clics y teclas a la página. La alternativa es Edge con `--headless=new --remote-debugging-port` y un perfil temporal, manejado desde node (WebSocket nativo, sin dependencias): clics y teclas reales (`Input.dispatchMouseEvent`, `Input.dispatchKeyEvent`, `Input.insertText`), anchos exactos (`Emulation.setDeviceMetricsOverride`), movimiento reducido (`Emulation.setEmulatedMedia` con `prefers-reduced-motion: reduce`) y capturas (`Page.captureScreenshot`). La sesión se pone en `sessionStorage` (`cacao.sesion`) o se entra por la interfaz. No toca la configuración del sistema.
+- **CSS y animación:** una regla de movimiento reducido debe tener al menos la especificidad de la regla animada (a `lg`, `ol.traza.traza-horizontal::before` le ganaba). Una animación que escala por encima de 1 una tarjeta de ancho completo deja scroll horizontal a 360 px aunque termine en 1: se comprueba `scrollWidth` después de la animación. En Tailwind v4, un placeholder sin clase hereda el 50 % del color del texto (3,14:1 sobre blanco); la regla base de `index.css` lo sube al 70 %.
 - **Registros:** las horas de los archivos de `prompts/` se toman con `date` en el momento, nunca aproximadas.

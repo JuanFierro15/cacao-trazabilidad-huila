@@ -88,7 +88,7 @@ function ContenidoFicha({ codigoLote }) {
         {/* Bloque de estado destacado */}
         <div
           role={esAlerta ? 'alert' : 'status'}
-          className={`rounded-lg p-5 shadow-xs ${estadoClase}`}
+          className={`sello rounded-lg p-5 shadow-xs ${estadoClase}`}
         >
           <p className="text-lg font-bold">{tituloEstado}</p>
           <p className="mt-1 text-sm opacity-95">{ficha.mensajeEstado}</p>
@@ -133,13 +133,9 @@ function ContenidoFicha({ codigoLote }) {
             <h2 id="titulo-recorrido-publico" className="text-lg font-semibold text-cacao">
               Recorrido
             </h2>
-            <ol className="relative ml-4 space-y-3 border-l-2 border-cacao/20 pl-6">
-              {recorrido.map((paso) => (
-                <li key={paso.orden} className="relative">
-                  <span
-                    className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full border-2 border-white bg-mazorca"
-                    aria-hidden="true"
-                  />
+            <ol className="traza visible space-y-3">
+              {recorrido.map((paso, indice) => (
+                <li key={paso.orden} className="relative" style={{ '--i': indice }}>
                   <p className="text-sm font-semibold text-cacao">{paso.nombre}</p>
                   <p className="text-xs text-cacao/70">{formatearFecha(paso.fecha)}</p>
                 </li>
@@ -148,7 +144,7 @@ function ContenidoFicha({ codigoLote }) {
           </section>
 
           {/* Fecha y hora de consulta */}
-          <p className="border-t border-cacao/10 pt-3 text-xs text-cacao/60">
+          <p className="border-t border-cacao/10 pt-3 text-xs text-cacao/70">
             Consultado el {formatearFechaHora(ficha.consultadoEn)}
           </p>
         </div>

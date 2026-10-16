@@ -38,17 +38,17 @@ export function SemaforoMerma({ merma, rendimiento, umbral, oficial = false, ent
       <div className="flex items-center gap-2.5">
         <div className="flex items-center gap-1.5" aria-hidden="true">
           <span
-            className={`inline-block h-3.5 w-3.5 rounded-full transition-opacity ${
+            className={`inline-block h-3.5 w-3.5 rounded-full transition-colors duration-200 ${
               esVerde ? 'bg-origen ring-2 ring-origen/40' : 'bg-origen/20'
             }`}
           />
           <span
-            className={`inline-block h-3.5 w-3.5 rounded-full transition-opacity ${
+            className={`inline-block h-3.5 w-3.5 rounded-full transition-colors duration-200 ${
               esAmbar ? 'bg-mazorca ring-2 ring-mazorca/40' : 'bg-mazorca/20'
             }`}
           />
           <span
-            className={`inline-block h-3.5 w-3.5 rounded-full transition-opacity ${
+            className={`inline-block h-3.5 w-3.5 rounded-full transition-colors duration-200 ${
               esRojo ? 'bg-red-700 ring-2 ring-red-700/40' : 'bg-red-700/20'
             }`}
           />
