@@ -17,8 +17,8 @@ const SOLO_ADMINISTRADOR = [ROL_ADMINISTRADOR]
 // --- Datos sembrados (V2 y sección 7 del contrato) ---
 
 const usuarios = [
-  { username: 'operador1', password: 'cacao123', rol: ROL_OPERADOR, nombreCompleto: 'Operador Demo' },
-  { username: 'admin1', password: 'admin123', rol: ROL_ADMINISTRADOR, nombreCompleto: 'Administrador Demo' },
+  { id: 1, username: 'operador1', password: 'cacao123', rol: ROL_OPERADOR, nombreCompleto: 'Operador Demo', activo: true },
+  { id: 2, username: 'admin1', password: 'admin123', rol: ROL_ADMINISTRADOR, nombreCompleto: 'Administrador Demo', activo: true },
 ]
 
 const productores = [
@@ -224,7 +224,7 @@ function manejarLogin({ cuerpo }) {
     return respuestaError(400, 'VALIDACION', 'Hay datos obligatorios sin completar. Revise los campos marcados.', errores)
   }
 
-  const usuario = usuarios.find((u) => u.username === username && u.password === password)
+  const usuario = usuarios.find((u) => u.username === username && u.password === password && u.activo !== false)
   if (!usuario) {
     return respuestaError(
       401,
@@ -1508,6 +1508,193 @@ function manejarListaAuditoria({ consulta }) {
   return respuesta(200, resultado)
 }
 
+function aUsuarioDTO(u) {
+  return {
+    id: u.id,
+    username: u.username,
+    nombreCompleto: u.nombreCompleto,
+    rol: u.rol,
+    activo: u.activo !== false,
+  }
+}
+
+function manejarListaUsuarios() {
+  const resultado = usuarios
+    .slice()
+    .sort((a, b) => a.rol.localeCompare(b.rol) || a.username.localeCompare(b.username))
+    .map(aUsuarioDTO)
+  return respuesta(200, resultado)
+}
+
+function manejarCrearUsuario({ cuerpo, usuario }) {
+  const usernameLimpio = texto(cuerpo?.username).toLowerCase()
+  const nombreLimpio = texto(cuerpo?.nombreCompleto)
+  const passwordLimpia = texto(cuerpo?.password)
+
+  if (usernameLimpio.length < 3) {
+    return respuestaError(400, 'VALIDACION', 'Los datos del operador no son válidos.', [
+      { campo: 'username', mensaje: 'El nombre de usuario debe tener al menos 3 caracteres.' },
+    ])
+  }
+  if (!nombreLimpio) {
+    return respuestaError(400, 'VALIDACION', 'Los datos del operador no son válidos.', [
+      { campo: 'nombreCompleto', mensaje: 'El nombre completo es obligatorio.' },
+    ])
+  }
+  if (passwordLimpia.length < 6) {
+    return respuestaError(400, 'VALIDACION', 'Los datos del operador no son válidos.', [
+      { campo: 'password', mensaje: 'La contraseña debe tener al menos 6 caracteres.' },
+    ])
+  }
+  if (usuarios.some((u) => u.username.toLowerCase() === usernameLimpio)) {
+    return respuestaError(409, 'USUARIO_DUPLICADO', `Ya existe un usuario con el identificador '${usernameLimpio}'.`)
+  }
+
+  const siguienteId = usuarios.length > 0 ? Math.max(...usuarios.map((u) => u.id)) + 1 : 1
+  const nuevo = {
+    id: siguienteId,
+    username: usernameLimpio,
+    password: passwordLimpia,
+    nombreCompleto: nombreLimpio,
+    rol: ROL_OPERADOR,
+    activo: true,
+  }
+  usuarios.push(nuevo)
+
+  registrarAuditoria({
+    usuarioUsername: usuario?.sub ?? 'admin1',
+    usuarioRol: usuario?.rol ?? ROL_ADMINISTRADOR,
+    accion: 'CREAR',
+    entidadAfectada: 'USUARIO',
+    registroReferencia: nuevo.username,
+    campoModificado: 'rol',
+    valorAnterior: null,
+    valorNuevo: `${nuevo.rol} (${nuevo.nombreCompleto})`,
+    motivo: 'Creación de cuenta de operador',
+  })
+
+  return respuesta(201, aUsuarioDTO(nuevo))
+}
+
+function manejarActualizarUsuario({ parametros, cuerpo, usuario }) {
+  const id = Number(parametros[0])
+  const objetivo = usuarios.find((u) => u.id === id)
+  if (!objetivo) {
+    return respuestaError(404, 'NO_ENCONTRADO', `No se encontró el usuario con identificador ${id}.`)
+  }
+
+  const nombreNuevo = texto(cuerpo?.nombreCompleto)
+  if (!nombreNuevo) {
+    return respuestaError(400, 'VALIDACION', 'Los datos enviados no son válidos.', [
+      { campo: 'nombreCompleto', mensaje: 'El nombre completo no puede estar vacío.' },
+    ])
+  }
+
+  const esPropio = objetivo.username.toLowerCase() === (usuario?.sub ?? '').toLowerCase()
+
+  if (objetivo.nombreCompleto !== nombreNuevo) {
+    const anterior = objetivo.nombreCompleto
+    objetivo.nombreCompleto = nombreNuevo
+    registrarAuditoria({
+      usuarioUsername: usuario?.sub ?? 'admin1',
+      usuarioRol: usuario?.rol ?? ROL_ADMINISTRADOR,
+      accion: 'ACTUALIZAR',
+      entidadAfectada: 'USUARIO',
+      registroReferencia: objetivo.username,
+      campoModificado: 'nombre_completo',
+      valorAnterior: anterior,
+      valorNuevo: nombreNuevo,
+      motivo: 'Actualización de nombre completo',
+    })
+  }
+
+  const passwordNueva = texto(cuerpo?.passwordNueva)
+  if (passwordNueva) {
+    if (passwordNueva.length < 6) {
+      return respuestaError(400, 'VALIDACION', 'Los datos enviados no son válidos.', [
+        { campo: 'passwordNueva', mensaje: 'La nueva contraseña debe tener al menos 6 caracteres.' },
+      ])
+    }
+    if (esPropio) {
+      const actual = typeof cuerpo?.passwordActual === 'string' ? cuerpo.passwordActual : ''
+      if (!actual) {
+        return respuestaError(400, 'VALIDACION', 'Se requiere la contraseña actual para cambiar la clave del administrador.', [
+          { campo: 'passwordActual', mensaje: 'Debe ingresar su contraseña actual para confirmar el cambio.' },
+        ])
+      }
+      if (actual !== objetivo.password) {
+        return respuestaError(400, 'VALIDACION', 'La contraseña actual no coincide.', [
+          { campo: 'passwordActual', mensaje: 'La contraseña actual ingresada es incorrecta.' },
+        ])
+      }
+    }
+    objetivo.password = passwordNueva
+    registrarAuditoria({
+      usuarioUsername: usuario?.sub ?? 'admin1',
+      usuarioRol: usuario?.rol ?? ROL_ADMINISTRADOR,
+      accion: 'ACTUALIZAR',
+      entidadAfectada: 'USUARIO',
+      registroReferencia: objetivo.username,
+      campoModificado: 'password_hash',
+      valorAnterior: '[PROTEGIDO]',
+      valorNuevo: '[ACTUALIZADO]',
+      motivo: esPropio
+        ? 'Cambio de contraseña por el propio administrador'
+        : 'Restablecimiento de contraseña por el administrador',
+    })
+  }
+
+  if (typeof cuerpo?.activo === 'boolean' && cuerpo.activo !== objetivo.activo) {
+    if (esPropio && !cuerpo.activo) {
+      return respuestaError(
+        409,
+        'OPERACION_NO_PERMITIDA',
+        'No puede desactivar su propia cuenta de administrador mientras tiene la sesión activa.',
+      )
+    }
+    const anterior = objetivo.activo
+    objetivo.activo = cuerpo.activo
+    registrarAuditoria({
+      usuarioUsername: usuario?.sub ?? 'admin1',
+      usuarioRol: usuario?.rol ?? ROL_ADMINISTRADOR,
+      accion: 'CAMBIO_ESTADO',
+      entidadAfectada: 'USUARIO',
+      registroReferencia: objetivo.username,
+      campoModificado: 'activo',
+      valorAnterior: anterior ? 'ACTIVO' : 'INACTIVO',
+      valorNuevo: cuerpo.activo ? 'ACTIVO' : 'INACTIVO',
+      motivo: cuerpo.activo ? 'Activación de cuenta de usuario' : 'Suspensión de cuenta de usuario',
+    })
+  }
+
+  return respuesta(200, aUsuarioDTO(objetivo))
+}
+
+function manejarEliminarUsuario({ parametros, usuario }) {
+  const id = Number(parametros[0])
+  const idx = usuarios.findIndex((u) => u.id === id)
+  if (idx === -1) {
+    return respuestaError(404, 'NO_ENCONTRADO', `No se encontró el usuario con identificador ${id}.`)
+  }
+  const objetivo = usuarios[idx]
+  if (objetivo.rol === ROL_ADMINISTRADOR) {
+    return respuestaError(409, 'OPERACION_NO_PERMITIDA', 'Las cuentas con rol de administrador no pueden eliminarse.')
+  }
+  usuarios.splice(idx, 1)
+  registrarAuditoria({
+    usuarioUsername: usuario?.sub ?? 'admin1',
+    usuarioRol: usuario?.rol ?? ROL_ADMINISTRADOR,
+    accion: 'ELIMINAR',
+    entidadAfectada: 'USUARIO',
+    registroReferencia: objetivo.username,
+    campoModificado: 'estado_cuenta',
+    valorAnterior: `OPERADOR (${objetivo.nombreCompleto})`,
+    valorNuevo: 'ELIMINADO',
+    motivo: 'Eliminación de cuenta de operador por el administrador',
+  })
+  return respuesta(204, null)
+}
+
 // --- Tabla de rutas: matriz completa de la sección 7 ---
 // Las rutas sin manejador existen para que los permisos (401/403) se simulen
 // igual que en el backend aunque la función aún no esté construida.
@@ -1558,6 +1745,42 @@ const RUTAS = [
     patron: /^\/reportes\/exportar-csv$/,
     roles: SOLO_ADMINISTRADOR,
     manejador: manejarExportarCsv,
+  },
+  {
+    metodo: 'GET',
+    patron: /^\/usuarios$/,
+    roles: SOLO_ADMINISTRADOR,
+    manejador: manejarListaUsuarios,
+  },
+  {
+    metodo: 'POST',
+    patron: /^\/usuarios$/,
+    roles: SOLO_ADMINISTRADOR,
+    manejador: manejarCrearUsuario,
+  },
+  {
+    metodo: 'PUT',
+    patron: /^\/usuarios\/([^/]+)$/,
+    roles: SOLO_ADMINISTRADOR,
+    manejador: manejarActualizarUsuario,
+  },
+  {
+    metodo: 'PATCH',
+    patron: /^\/usuarios\/([^/]+)$/,
+    roles: SOLO_ADMINISTRADOR,
+    manejador: manejarActualizarUsuario,
+  },
+  {
+    metodo: 'DELETE',
+    patron: /^\/usuarios\/([^/]+)$/,
+    roles: SOLO_ADMINISTRADOR,
+    manejador: manejarEliminarUsuario,
+  },
+  {
+    metodo: 'POST',
+    patron: /^\/usuarios\/([^/]+)\/eliminar$/,
+    roles: SOLO_ADMINISTRADOR,
+    manejador: manejarEliminarUsuario,
   },
 ]
 
