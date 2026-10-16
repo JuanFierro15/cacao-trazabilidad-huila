@@ -1,0 +1,181 @@
+﻿============================================================================
+REPORTE DE MEDICIÓN DE RENDIMIENTO DE TRAZABILIDAD (BLOQUE I1)
+Hackathon Cacao con Historia, Calidad y Valor (Asoprocacao)
+============================================================================
+Fecha y hora         : 2026-10-16 05:55:29 -05:00
+Commit de git        : 18d9d40
+
+1. INFORMACIÓN DEL EQUIPO
+----------------------------------------------------------------------------
+Procesador (CPU)     : AMD Ryzen 7 7445HS w/ Radeon 740M Graphics (6 núcleos, 12 hilos)
+Memoria RAM          : 15,23 GB
+Sistema operativo    : Microsoft Windows 11 Home Single Language (Versión 10.0.26200, 64 bits)
+Versión de Java      : java version "25.0.1" 2025-10-21 LTS
+Versión PostgreSQL   : PostgreSQL 16.15 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+Modo de base datos   : MODO DOCKER
+
+2. VOLUMEN DE DATOS EN LA BASE
+----------------------------------------------------------------------------
+Lotes sintéticos PERF: 400
+Transformaciones PERF: 300
+Total lotes en base  : 412
+Total transformac.   : 305
+
+3. MÉTODO DE MEDICIÓN
+----------------------------------------------------------------------------
+Endpoint evaluado    : GET /api/lotes/PERF050-T3/trazabilidad
+Usuario de prueba    : operador1 (rol OPERADOR)
+Calentamiento        : 5 llamadas (descartadas del análisis)
+Muestras oficiales   : 30 llamadas consecutivas
+Herramienta cliente  : curl.exe ejecutado en el mismo equipo del backend
+Nota metodológica    : La medición curl mide la latencia HTTP local completa
+                       (filtro de seguridad, resolución en BD y serialización);
+                       no incluye latencia de red externa ni renderizado en navegador.
+                       tiempoConsultaMs registra el tiempo interno del servidor.
+
+4. MUESTRAS INDIVIDUALES
+----------------------------------------------------------------------------
+Muestra 01: HTTP 200 | curl: 16,87 ms | servidor: 11 ms
+Muestra 02: HTTP 200 | curl: 18,40 ms | servidor: 11 ms
+Muestra 03: HTTP 200 | curl: 16,32 ms | servidor: 10 ms
+Muestra 04: HTTP 200 | curl: 18,35 ms | servidor: 11 ms
+Muestra 05: HTTP 200 | curl: 16,90 ms | servidor: 11 ms
+Muestra 06: HTTP 200 | curl: 18,08 ms | servidor: 11 ms
+Muestra 07: HTTP 200 | curl: 16,23 ms | servidor: 10 ms
+Muestra 08: HTTP 200 | curl: 17,40 ms | servidor: 11 ms
+Muestra 09: HTTP 200 | curl: 19,15 ms | servidor: 11 ms
+Muestra 10: HTTP 200 | curl: 18,42 ms | servidor: 12 ms
+Muestra 11: HTTP 200 | curl: 18,61 ms | servidor: 12 ms
+Muestra 12: HTTP 200 | curl: 19,21 ms | servidor: 12 ms
+Muestra 13: HTTP 200 | curl: 15,29 ms | servidor: 10 ms
+Muestra 14: HTTP 200 | curl: 18,58 ms | servidor: 12 ms
+Muestra 15: HTTP 200 | curl: 20,41 ms | servidor: 13 ms
+Muestra 16: HTTP 200 | curl: 17,73 ms | servidor: 12 ms
+Muestra 17: HTTP 200 | curl: 22,27 ms | servidor: 16 ms
+Muestra 18: HTTP 200 | curl: 23,94 ms | servidor: 17 ms
+Muestra 19: HTTP 200 | curl: 19,03 ms | servidor: 13 ms
+Muestra 20: HTTP 200 | curl: 16,39 ms | servidor: 11 ms
+Muestra 21: HTTP 200 | curl: 17,68 ms | servidor: 11 ms
+Muestra 22: HTTP 200 | curl: 15,46 ms | servidor: 9 ms
+Muestra 23: HTTP 200 | curl: 15,60 ms | servidor: 10 ms
+Muestra 24: HTTP 200 | curl: 15,42 ms | servidor: 10 ms
+Muestra 25: HTTP 200 | curl: 16,59 ms | servidor: 11 ms
+Muestra 26: HTTP 200 | curl: 15,69 ms | servidor: 10 ms
+Muestra 27: HTTP 200 | curl: 18,69 ms | servidor: 11 ms
+Muestra 28: HTTP 200 | curl: 17,29 ms | servidor: 11 ms
+Muestra 29: HTTP 200 | curl: 17,56 ms | servidor: 12 ms
+Muestra 30: HTTP 200 | curl: 17,00 ms | servidor: 10 ms
+
+5. RESUMEN ESTADÍSTICO Y VEREDICTO
+----------------------------------------------------------------------------
+Tiempo HTTP total (curl.exe):
+  - Mínimo           : 15,29 ms
+  - Promedio         : 17,82 ms
+  - Percentil 95     : 22,27 ms  (rango más cercano, posición 29 de 30)
+  - Máximo           : 23,94 ms
+
+Tiempo interno servidor (tiempoConsultaMs):
+  - Mínimo           : 9 ms
+  - Promedio         : 11,40 ms
+  - Máximo           : 17 ms
+
+Criterio de aceptación: Percentil 95 < 3000 ms y Máximo < 3000 ms (Prueba 10 del jurado)
+Veredicto oficial    : CUMPLE
+
+6. PLAN DE EJECUCIÓN (EXPLAIN ANALYZE BUFFERS)
+----------------------------------------------------------------------------
+=== 1. EXPLAIN (ANALYZE, BUFFERS) - ANCESTROS HACIA ATRÁS: PERF050-T3 ===
+                                                                       QUERY PLAN                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=114.78..115.03 rows=101 width=14) (actual time=0.365..0.367 rows=3 loops=1)
+   Sort Key: a.nivel DESC
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=27
+   CTE ancestros
+     ->  Recursive Union  (cost=8.30..92.46 rows=101 width=20) (actual time=0.069..0.238 rows=3 loops=1)
+           Buffers: shared hit=15
+           ->  Hash Join  (cost=8.30..15.15 rows=1 width=20) (actual time=0.068..0.081 rows=1 loops=1)
+                 Hash Cond: (lc.lote_hijo_id = h.id)
+                 Buffers: shared hit=6
+                 ->  Seq Scan on lote_composicion lc  (cost=0.00..6.04 rows=304 width=16) (actual time=0.002..0.014 rows=304 loops=1)
+                       Buffers: shared hit=3
+                 ->  Hash  (cost=8.29..8.29 rows=1 width=8) (actual time=0.033..0.033 rows=1 loops=1)
+                       Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                       Buffers: shared hit=3
+                       ->  Index Scan using lotes_codigo_lote_key on lotes h  (cost=0.27..8.29 rows=1 width=8) (actual time=0.026..0.026 rows=1 loops=1)
+                             Index Cond: ((codigo_lote)::text = 'PERF050-T3'::text)
+                             Buffers: shared hit=3
+           ->  Hash Join  (cost=0.33..7.63 rows=10 width=20) (actual time=0.036..0.044 rows=1 loops=3)
+                 Hash Cond: (lc_1.lote_hijo_id = a_1.lote_padre_id)
+                 Buffers: shared hit=9
+                 ->  Seq Scan on lote_composicion lc_1  (cost=0.00..6.04 rows=304 width=16) (actual time=0.001..0.011 rows=304 loops=3)
+                       Buffers: shared hit=9
+                 ->  Hash  (cost=0.20..0.20 rows=10 width=12) (actual time=0.006..0.006 rows=1 loops=3)
+                       Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                       ->  WorkTable Scan on ancestros a_1  (cost=0.00..0.20 rows=10 width=12) (actual time=0.000..0.000 rows=1 loops=3)
+   ->  Hash Join  (cost=3.28..18.96 rows=101 width=14) (actual time=0.297..0.323 rows=3 loops=1)
+         Hash Cond: (p.id = a.lote_padre_id)
+         Buffers: shared hit=24
+         ->  Seq Scan on lotes p  (cost=0.00..13.12 rows=412 width=18) (actual time=0.004..0.035 rows=412 loops=1)
+               Buffers: shared hit=9
+         ->  Hash  (cost=2.02..2.02 rows=101 width=12) (actual time=0.245..0.245 rows=3 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               Buffers: shared hit=15
+               ->  CTE Scan on ancestros a  (cost=0.00..2.02 rows=101 width=12) (actual time=0.070..0.239 rows=3 loops=1)
+                     Buffers: shared hit=15
+ Planning:
+   Buffers: shared hit=305
+ Planning Time: 2.021 ms
+ Execution Time: 0.546 ms
+(40 rows)
+
+
+=== 2. EXPLAIN (ANALYZE, BUFFERS) - DESCENDIENTES HACIA ADELANTE: PERF050 ===
+                                                                       QUERY PLAN                                                                        
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+ Sort  (cost=114.78..115.03 rows=101 width=22) (actual time=0.323..0.324 rows=3 loops=1)
+   Sort Key: d.nivel, h.id
+   Sort Method: quicksort  Memory: 25kB
+   Buffers: shared hit=27
+   CTE descendientes
+     ->  Recursive Union  (cost=8.30..92.46 rows=101 width=20) (actual time=0.056..0.231 rows=3 loops=1)
+           Buffers: shared hit=15
+           ->  Hash Join  (cost=8.30..15.15 rows=1 width=20) (actual time=0.056..0.069 rows=1 loops=1)
+                 Hash Cond: (lc.lote_padre_id = p.id)
+                 Buffers: shared hit=6
+                 ->  Seq Scan on lote_composicion lc  (cost=0.00..6.04 rows=304 width=16) (actual time=0.002..0.014 rows=304 loops=1)
+                       Buffers: shared hit=3
+                 ->  Hash  (cost=8.29..8.29 rows=1 width=8) (actual time=0.019..0.020 rows=1 loops=1)
+                       Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                       Buffers: shared hit=3
+                       ->  Index Scan using lotes_codigo_lote_key on lotes p  (cost=0.27..8.29 rows=1 width=8) (actual time=0.012..0.012 rows=1 loops=1)
+                             Index Cond: ((codigo_lote)::text = 'PERF050'::text)
+                             Buffers: shared hit=3
+           ->  Hash Join  (cost=0.33..7.63 rows=10 width=20) (actual time=0.029..0.047 rows=1 loops=3)
+                 Hash Cond: (lc_1.lote_padre_id = d_1.lote_hijo_id)
+                 Buffers: shared hit=9
+                 ->  Seq Scan on lote_composicion lc_1  (cost=0.00..6.04 rows=304 width=16) (actual time=0.001..0.022 rows=304 loops=3)
+                       Buffers: shared hit=9
+                 ->  Hash  (cost=0.20..0.20 rows=10 width=12) (actual time=0.007..0.007 rows=1 loops=3)
+                       Buckets: 1024  Batches: 1  Memory Usage: 9kB
+                       ->  WorkTable Scan on descendientes d_1  (cost=0.00..0.20 rows=10 width=12) (actual time=0.000..0.001 rows=1 loops=3)
+   ->  Hash Join  (cost=3.28..18.96 rows=101 width=22) (actual time=0.277..0.295 rows=3 loops=1)
+         Hash Cond: (h.id = d.lote_hijo_id)
+         Buffers: shared hit=24
+         ->  Seq Scan on lotes h  (cost=0.00..13.12 rows=412 width=18) (actual time=0.003..0.024 rows=412 loops=1)
+               Buffers: shared hit=9
+         ->  Hash  (cost=2.02..2.02 rows=101 width=12) (actual time=0.242..0.242 rows=3 loops=1)
+               Buckets: 1024  Batches: 1  Memory Usage: 9kB
+               Buffers: shared hit=15
+               ->  CTE Scan on descendientes d  (cost=0.00..2.02 rows=101 width=12) (actual time=0.057..0.232 rows=3 loops=1)
+                     Buffers: shared hit=15
+ Planning:
+   Buffers: shared hit=17
+ Planning Time: 0.391 ms
+ Execution Time: 0.432 ms
+(40 rows)
+
+
+============================================================================
+Fin del reporte de medición
+============================================================================
