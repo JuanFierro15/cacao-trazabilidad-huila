@@ -1,0 +1,5 @@
+# Recursos visuales: nunca convertir finales de línea
+*.mp4 binary
+*.webp binary
+*.png binary
+*.jpg binary
