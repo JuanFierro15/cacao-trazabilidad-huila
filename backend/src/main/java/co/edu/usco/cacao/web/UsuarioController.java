@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -51,7 +51,7 @@ public class UsuarioController {
         return ResponseEntity.status(HttpStatus.CREATED).body(creado);
     }
 
-    @PutMapping("/{id}")
+    @RequestMapping(value = "/{id}", method = {RequestMethod.PUT, RequestMethod.PATCH})
     @Operation(
         summary = "[ADMINISTRADOR] Actualizar datos, contraseña o estado de un usuario",
         description = "Permite actualizar el nombre completo y contraseña del propio administrador o de un operador, así como activar/suspender operadores."
@@ -70,6 +70,16 @@ public class UsuarioController {
         description = "Elimina un operador registrado y deja trazabilidad en la tabla de auditoría."
     )
     public ResponseEntity<Void> eliminarUsuario(@PathVariable Long id) {
+        usuarioServicio.eliminarUsuario(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/eliminar")
+    @Operation(
+        summary = "[ADMINISTRADOR] Eliminar cuenta de un operador (alternativa POST)",
+        description = "Elimina un operador registrado y deja trazabilidad en la tabla de auditoría."
+    )
+    public ResponseEntity<Void> eliminarUsuarioPost(@PathVariable Long id) {
         usuarioServicio.eliminarUsuario(id);
         return ResponseEntity.noContent().build();
     }

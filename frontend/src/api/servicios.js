@@ -76,11 +76,11 @@ export function crearUsuario(datos) {
 }
 
 export function actualizarUsuario(id, datos) {
-  return api.put('/usuarios/' + encodeURIComponent(id), datos)
+  const ruta = '/usuarios/' + encodeURIComponent(id)
+  return typeof api.put === 'function' ? api.put(ruta, datos) : api.patch(ruta, datos)
 }
 
 export function eliminarUsuario(id) {
-  return api.delete('/usuarios/' + encodeURIComponent(id))
+  const ruta = '/usuarios/' + encodeURIComponent(id)
+  return typeof api.delete === 'function' ? api.delete(ruta) : api.post(ruta + '/eliminar')
 }
-
-
