@@ -64,19 +64,19 @@ Cada bloque: objetivo → archivos → verificación → commit. No se pasa al s
 
 ### 4.1 `feat/backend-api` — Miguel Ángel Medina Díaz (base de datos y backend, MODO LOCAL)
 
-**B1. Dominio y persistencia** — *código hecho; falta la verificación contra la base*
+**B1. Dominio y persistencia** — *terminado (commit `5b2f465`, en `main` desde el Checkpoint 1)*
 - Objetivo: entidades JPA y repositorios que calcen exactamente con `V1`.
 - Archivos: `backend/src/main/java/co/edu/usco/cacao/{dominio,repositorio}/**`. Enums: `Rol`, `TipoLote`, `TipoGrano`, `EstadoLote`, `Etapa`, `TipoAlerta` con `@Enumerated(EnumType.STRING)`. `@Version` en `Lote.versionOptimista`. Sin Lombok.
 - Verificación: con PostgreSQL local corriendo, `mvnw.cmd -DskipTests spring-boot:run` muestra que Flyway aplicó V1 y V2 y la aplicación arranca **sin errores de validación de esquema**. Además: `git diff origin/main -- backend/pom.xml backend/src/main/resources/` vacío (no se tocó configuración ni migraciones para "probar sin base").
 - Commit si hubo correcciones: `fix: ajustar entidades al esquema V1`
 
-**B2. Seguridad JWT y errores**
+**B2. Seguridad JWT y errores** — *terminado (commit `41312f0`)*
 - Objetivo: login, filtro JWT, matriz de permisos del contrato (sección 7), `DataInitializer` idempotente, CORS, `@RestControllerAdvice` con el formato único de error (8.1), 401/403 en JSON.
 - Archivos: `config/`, `seguridad/`, `excepcion/`, `web/AuthController`. jjwt 0.12.6.
 - Verificación: login de `admin1` devuelve token; `GET /api/lotes` sin token → 401 JSON; `PATCH /api/lotes/CAC001/estado` con token de `operador1` → 403 JSON (aunque el endpoint aún sea mínimo). Reiniciar no duplica usuarios (`select count(*) from usuarios` = 2).
 - Commit: `feat: agregar autenticación JWT, roles y formato único de errores`
 
-**B3. Recepción, catálogos y filtros (RF01, RF11-filtro, cuota)**
+**B3. Recepción, catálogos y filtros (RF01, RF11-filtro, cuota)** — *terminado (commit `8651a50`; corrección de `GET /api/lotes` sin filtros en `18b6a4d`)*
 - Objetivo: `GET /api/config/reglas`, `GET /api/productores`, `POST /api/lotes` (código automático `CACnnn`, 409 duplicado, alerta CUOTA_EXCEDIDA, auditoría CREAR), `GET /api/lotes` con filtros, `GET /api/lotes/{codigo}`.
 - Verificación: lote válido 201 y persiste tras reiniciar; cantidad −5 o campo vacío → 400 con `errores` por campo y nada guardado; código repetido → 409.
 - Commit: `feat: agregar recepción y consulta de lotes con alerta de cuota`
@@ -106,7 +106,8 @@ Cada bloque: objetivo → archivos → verificación → commit. No se pasa al s
 - Verificación (modo local): respaldar → crear un lote → restaurar → el lote nuevo desaparece y conteos, sumas y códigos coinciden; el backend reinicia sin error de Flyway; no hay usuarios duplicados. El modo Docker lo verifica Juan David en el Checkpoint 3.
 - Commit: `feat: agregar scripts de respaldo, restauración y verificación de integridad`
 
-**B8. Pruebas automatizadas (mínimo 5, objetivo 8)**
+**B8. Pruebas automatizadas (mínimo 5, objetivo 8)** — *infraestructura adelantada en `9f2566d`; faltan los casos*
+- Ya hecho (desde el Checkpoint 1): perfil `test` en `backend/src/test/resources/application-test.yml` apuntando a `cacao_test`; `FlywayPruebasConfig` hace `clean()` + `migrate()` al iniciar la suite con un seguro que solo permite limpiar `cacao_test`; la anotación `@PruebaIntegracion` (`@SpringBootTest`, `@AutoConfigureMockMvc`, `@ActiveProfiles("test")`, `@Transactional`). Reglas para toda prueba nueva: usar `@PruebaIntegracion`; si una prueba necesita confirmar datos (por ejemplo, dos hilos para la idempotencia), crea su propio lote y comprueba sobre ese lote, nunca conteos globales; nunca apuntar las pruebas a la base `cacao`.
 - Objetivo: además de la unitaria de B4, pruebas de integración con perfil `test` contra la base real `cacao_test` (contrato, sección 4). Flyway la limpia y migra al iniciar la suite (`spring.flyway.clean-disabled=false` solo en `application-test.yml` y una estrategia de migración que haga `clean()` + `migrate()`). Casos: inventario insuficiente, idempotencia (sin doble consumo), 403 del operador al liberar, ficha pública sin campos prohibidos, validación de cantidad negativa, **regresión hora 12** (bloqueo de CAC001 → ficha de CAC001-T1 BLOQUEADO y no disponible, historial conservado).
 - Notas: la auditoría es solo inserción; no limpies datos con `deleteAll()` sobre ella (el trigger lo rechaza): usa `@Transactional` en las pruebas. Las dependencias de Testcontainers del `pom.xml` no se usan y se pueden quitar en este bloque.
 - Verificación: `mvnw.cmd test` en verde; copia la salida real del resumen (pruebas, fallos, modo usado) para E05.
@@ -142,18 +143,18 @@ Paleta: Café Cacao `#3E2723`, Ámbar Mazorca `#D97706`, Verde Origen `#15803D`,
 
 **F1. Base, sesión y cliente de API** — *terminado (commit b34b14e)*
 
-**F2. Recepción de lotes (RF01)**
+**F2. Recepción de lotes (RF01)** — *terminado (commit `90ee174`; validado contra la API real en el Checkpoint 1)*
 - Objetivo: formulario con productor (muestra finca, municipio, cuota y entregado en el año), fecha, tipo de grano, humedad y cantidad; errores por campo devueltos por la API junto a cada input; al guardar, muestra el código asignado, la alerta de cuota si la hubo y enlace a la trazabilidad.
 - Verificación: en 360 px de ancho es usable; cantidad −5 muestra el mensaje del backend (o de la simulación) y no navega.
 - Commit: `feat: agregar formulario de recepción de lotes`
 - **→ Checkpoint 1: PR a `main`.** Desde aquí, login y lotes contra la API real.
 
-**F3. Transformación + diferenciador (RF02, RF08)**
+**F3. Transformación + diferenciador (RF02, RF08)** — *terminado (commit `9e2d9a6`); verificado contra la API real de B4 el 16/10 (100 → 80, 409 del reenvío y 422)*
 - Objetivo: selector de lote (solo con disponible > 0 y no BLOQUEADO, mostrando el disponible), etapas desde `/api/config/reglas`, **semáforo de merma en vivo** (verde < 10 %, ámbar 10 %–umbral, rojo > umbral; el umbral viene de la API y el texto dice "vista previa"), **chips de incidencia en 1 clic** que agregan texto a la justificación (el chip "Adición de insumos" abre el campo `insumosAgregados`), costos opcionales. Ciclo de `operacionUuid` del contrato 8.5. Tras un registro exitoso, botón **"Reenviar la misma operación"** que reenvía el mismo cuerpo y UUID para demostrar la idempotencia (muestra el 409 de forma amigable).
 - Verificación: con simulaciones antes de B4 y contra la API real después: 100 → 80 muestra merma oficial 20,00 % y la alerta; 120 sobre 100 muestra el 422; el reenvío muestra el 409 y el inventario sigue igual.
 - Commit: `feat: agregar registro de transformación con semáforo de merma y chips de incidencia`
 
-**F4. Panel del administrador (RF04, RF05, RF11, RF12)**
+**F4. Panel del administrador (RF04, RF05, RF11, RF12)** — *terminado (commit `d4a2a20`); verificado contra la API real de B4 y B5; el CSV, solo con simulaciones hasta que entre B6*
 - Objetivo: inventario (recibido, consumido, disponible) con filtros por origen y estado; alertas con regla y causa; balance de cada transformación con las fórmulas tal como llegan de la API y **simulador de precio** (llama a `balance?precioVentaCop=`, no calcula en el navegador); descarga CSV.
 - Verificación: cambiar el precio a 30.000 cambia el margen calculado por el backend; el CSV descarga.
 - Commit: `feat: agregar panel del administrador con inventario, alertas, balance y CSV`
@@ -245,3 +246,28 @@ Commit sugerido: <mensaje>
 - **MODO LOCAL:** los mismos comandos con las herramientas nativas: `psql -h localhost -p %DB_PORT% -U cacao -d cacao -f datos\scripts\<archivo>.sql`, con la clave en la variable de entorno `PGPASSWORD` (tomada del `.env`, nunca escrita en un archivo versionado). `pg_dump` debe ser de la misma versión mayor que el servidor. Si Flyway advierte que la versión del servidor es más nueva que la soportada, se reporta pero no bloquea.
 - Base de pruebas `cacao_test`: se crea una vez en cada modo (contrato, sección 4).
 - Ningún agente instala ni reconfigura PostgreSQL o Docker. Si algo no está, se detiene y avisa.
+
+## 8. Estado actual y aprendizajes (se actualiza en cada checkpoint)
+
+**Estado al 15/10, 23:20**
+- **Checkpoint 1 cerrado** a las 23:07 sobre `main` `493571e` (PR #1 B1–B3, PR #2 F1–F3, PR #3 corrección de lotes y pruebas en `cacao_test`). Validado en el PC de Juan David sin simulaciones: login de los dos roles, `GET /api/lotes` con y sin filtros, recepción (201, 400 por campo, 409 por código repetido, alerta de cuota) y 403 del operador al cambiar estado; `mvnw test` 20/20 contra `cacao_test`.
+- El historial de git del checkpoint se guardó fuera del repositorio, en la carpeta hermana `evidencias_para_juan_manuel/`, para la documentación (E02).
+- Siguiente: Miguel con B4 y B5; Juan David con F4 (diseño pendiente de aprobación). **Checkpoint 2 a las 02:00.**
+- **Actualización 16/10, 00:50:** B4 (`c124c83`) y B5 (`8f4e479`) en `feat/backend-api` y F4 (`d4a2a20`) en `feat/frontend-ui`, probados juntos en el PC de Juan David (API real y navegador; detalle en `prompts/frontend/F4.md`). PR del Checkpoint 2 abiertos para las dos ramas. El tablero del proyecto (E02) está en GitHub Projects, con un issue por bloque.
+- La base de desarrollo de Juan David tiene, además de la semilla, CAC004, CAC005, una alerta y dos registros de auditoría creados al validar el Checkpoint 1. CAC001 sigue sin transformaciones. Antes de la demostración se restaura el respaldo limpio (I2). La base `cacao_test` ya existe en su Docker.
+- **Cuota de agy:** los modelos Claude de agy agotaron su cuota el 15/10 hacia las 20:33 (se reinicia en unas 135 h). Las delegaciones siguen con `gemini-3.8-flash-high`; su resultado se revisa con más cuidado (F2 y F3 necesitaron correcciones a mano en la revisión).
+
+**Aprendizajes del frontend (aplican de F4 en adelante)**
+- Nunca reemplazar una página por "Cargando…" o por un error si ya hay datos: el estado de carga se muestra solo con `cargando && !datos`, para que una recarga en segundo plano no oculte la confirmación ni le quite el foco.
+- Para enfocar un campo dentro de una sección que se acaba de abrir (`<details>`) o tras cambiar de vista, hacerlo en el siguiente ciclo (`setTimeout(..., 0)`).
+- Cada endpoint nuevo se implementa también en `api/simulaciones.js` con las formas exactas del contrato antes de que exista en el backend. Las simulaciones se cargan con import dinámico y nunca entran al build normal; se comprueba con `grep` sobre `dist/`.
+- Ningún comentario de código nombra archivos de agentes ni herramientas (incluido este archivo). Revisar con `grep -rniE '\b(IA|AI|claude|anthropic|gemini|antigravity|agy)\b' frontend/src` antes de cada commit.
+- Entradas numéricas: `leerDecimal` para kg y porcentajes ("120,5") y `leerMonto` para pesos ("1.600.000"). Identificadores de operación con `utilidades/uuid.js` (`crypto.randomUUID` no existe por http desde el celular).
+- Los textos de las alertas los arma el backend y no coinciden palabra por palabra con los de la simulación: la interfaz muestra siempre lo que llega de la API.
+- Verificación en el navegador: Chrome no deja la ventana por debajo de 502 px; los 360 px se prueban cargando la ruta dentro de un `iframe` de 360 px en la misma pestaña.
+
+**Entorno Windows**
+- `core.autocrlf=true`: la copia de trabajo queda en CRLF y el repositorio en LF. Los scripts que editan archivos deben aceptar `\r\n`.
+- No usar `python` en la terminal (abre el instalador de Microsoft Store); para scripts, `node`.
+- Al detener Vite o el backend lanzados en segundo plano, cerrar también el proceso `node` o `java` que escucha en 5173 u 8080; detener la tarea no basta.
+- Las copias temporales con `git worktree` dejan `target/` con rutas muy largas: borrarlas con el prefijo `\\?\` en PowerShell.

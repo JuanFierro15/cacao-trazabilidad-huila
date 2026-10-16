@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { ErrorApi } from '../../api/cliente.js'
+import { ROLES } from '../../auth/roles.js'
+import { useAuth } from '../../auth/useAuth.js'
 import {
   obtenerLote,
   obtenerLotes,
@@ -58,6 +60,7 @@ const ORDEN_CAMPOS = [
 ]
 
 export function PaginaTransformacion() {
+  const { rol } = useAuth()
   const {
     datos: reglas,
     cargando: cargandoReglas,
@@ -654,6 +657,14 @@ export function PaginaTransformacion() {
               className={`inline-flex min-h-[44px] items-center text-sm font-semibold text-mazorca underline hover:text-mazorca/80 ${FOCO}`}
             >
               Ver trazabilidad del lote de salida
+            </Link>
+          )}
+          {rol === ROLES.ADMINISTRADOR && (
+            <Link
+              to={`/admin/balance?transformacion=${transformacion.id}`}
+              className={`inline-flex min-h-[44px] items-center text-sm font-semibold text-mazorca underline hover:text-mazorca/80 ${FOCO}`}
+            >
+              Ver balance
             </Link>
           )}
         </div>
