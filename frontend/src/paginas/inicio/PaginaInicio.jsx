@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { AvisoSimulacion } from '../../componentes/AvisoSimulacion.jsx'
 import { FondoVideo } from '../../componentes/FondoVideo.jsx'
@@ -81,12 +82,45 @@ const PUNTOS_ASOCIACION = [
 
 export function PaginaInicio() {
   const [refTraza, trazaVisible] = useAlAparecer()
+  const [ocultarBarra, setOcultarBarra] = useState(false)
+  const [barraConSombra, setBarraConSombra] = useState(false)
+  const ultimoScrollYRef = useRef(0)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    ultimoScrollYRef.current = window.scrollY
+
+    function manejarScroll() {
+      const actualY = window.scrollY
+      const diferencia = actualY - ultimoScrollYRef.current
+
+      setBarraConSombra(actualY > 16)
+
+      if (actualY <= 64) {
+        setOcultarBarra(false)
+      } else if (diferencia > 6) {
+        setOcultarBarra(true)
+      } else if (diferencia < -6) {
+        setOcultarBarra(false)
+      }
+
+      ultimoScrollYRef.current = actualY
+    }
+
+    window.addEventListener('scroll', manejarScroll, { passive: true })
+    return () => window.removeEventListener('scroll', manejarScroll)
+  }, [])
 
   return (
-    <div className="flex min-h-screen flex-col bg-crema text-cacao">
+    <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-clip bg-crema text-cacao [overflow-anchor:none]">
       <AvisoSimulacion />
 
-      <header className="border-b border-cacao/15 bg-crema">
+      <header
+        onFocusCapture={() => setOcultarBarra(false)}
+        className={`sticky top-0 z-40 border-b border-cacao/15 bg-crema/95 backdrop-blur-md transition-transform duration-300 ease-out motion-reduce:transition-none ${
+          ocultarBarra ? '-translate-y-full' : 'translate-y-0'
+        } ${barraConSombra && !ocultarBarra ? 'shadow-md' : ''}`}
+      >
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3.5">
           <div className="flex items-center gap-3">
             <img
