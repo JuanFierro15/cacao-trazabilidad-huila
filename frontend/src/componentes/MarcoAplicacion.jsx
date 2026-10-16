@@ -339,22 +339,62 @@ export function MarcoAplicacion() {
 
           <div className="border-t border-crema/15 bg-cacao p-3">
             <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-col sm:items-stretch">
-              <div
-                title={`${sesion?.nombreCompleto ?? ''} · ${etiquetaRol(rol)}`}
-                className={`flex min-w-0 items-center overflow-hidden py-1 ${
-                  expandida ? 'gap-3 px-1.5' : 'gap-3 px-1.5 sm:justify-center sm:px-0'
-                }`}
-              >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-mazorca/40 bg-arena/15 text-arena">
-                  <IconoUsuario className="h-5 w-5" />
+              {rol === ROLES.ADMINISTRADOR ? (
+                <NavLink
+                  to="/admin/usuarios"
+                  title="Gestionar mi perfil y operadores"
+                  aria-label="Gestionar mi perfil y operadores"
+                  onClick={manejarSeleccionEnlace}
+                  className={({ isActive }) =>
+                    `group flex min-w-0 items-center overflow-hidden rounded-lg py-1 transition-colors ${
+                      expandida ? 'gap-3 px-1.5' : 'gap-3 px-1.5 sm:justify-center sm:px-0'
+                    } ${
+                      isActive
+                        ? 'bg-arena/20 ring-1 ring-mazorca'
+                        : 'hover:bg-crema/10'
+                    } ${FOCO}`
+                  }
+                >
+                  {({ isActive }) => (
+                    <>
+                      <div
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                          isActive
+                            ? 'border-mazorca bg-arena text-cacao'
+                            : 'border-mazorca/40 bg-arena/15 text-arena group-hover:border-mazorca group-hover:bg-arena/25'
+                        }`}
+                      >
+                        <IconoUsuario className="h-5 w-5" />
+                      </div>
+                      <div className={`min-w-0 ${claseTexto}`}>
+                        <p className="truncate text-sm font-semibold text-crema group-hover:underline">
+                          {sesion?.nombreCompleto}
+                        </p>
+                        <p className="text-xs text-arena/90">
+                          {etiquetaRol(rol)} · Gestionar usuarios
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </NavLink>
+              ) : (
+                <div
+                  title={`${sesion?.nombreCompleto ?? ''} · ${etiquetaRol(rol)}`}
+                  className={`flex min-w-0 items-center overflow-hidden py-1 ${
+                    expandida ? 'gap-3 px-1.5' : 'gap-3 px-1.5 sm:justify-center sm:px-0'
+                  }`}
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-mazorca/40 bg-arena/15 text-arena">
+                    <IconoUsuario className="h-5 w-5" />
+                  </div>
+                  <div className={`min-w-0 ${claseTexto}`}>
+                    <p className="truncate text-sm font-semibold text-crema">
+                      {sesion?.nombreCompleto}
+                    </p>
+                    <p className="text-xs text-arena/90">{etiquetaRol(rol)}</p>
+                  </div>
                 </div>
-                <div className={`min-w-0 ${claseTexto}`}>
-                  <p className="truncate text-sm font-semibold text-crema">
-                    {sesion?.nombreCompleto}
-                  </p>
-                  <p className="text-xs text-arena/90">{etiquetaRol(rol)}</p>
-                </div>
-              </div>
+              )}
 
               <button
                 type="button"

@@ -155,6 +155,9 @@ export const api = {
   get: (ruta, consulta) => solicitar('GET', ruta, { consulta }),
   getPublico: (ruta, consulta) => solicitar('GET', ruta, { consulta, publico: true }),
   post: (ruta, cuerpo) => solicitar('POST', ruta, { cuerpo }),
+  put: (ruta, cuerpo) => solicitar('PUT', ruta, { cuerpo }),
   patch: (ruta, cuerpo) => solicitar('PATCH', ruta, { cuerpo }),
+  delete: (ruta) => solicitar('DELETE', ruta),
   descargar: (ruta, consulta) => solicitar('GET', ruta, { consulta, tipoRespuesta: 'blob' }),
 }
+

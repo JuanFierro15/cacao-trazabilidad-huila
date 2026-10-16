@@ -28,6 +28,15 @@ export function AuthProvider({ children }) {
     setSesion(null)
   }, [])
 
+  const actualizarPerfilSesion = useCallback((cambios) => {
+    setSesion((actual) => {
+      if (!actual) return actual
+      const actualizada = { ...actual, ...cambios }
+      guardarSesion(actualizada)
+      return actualizada
+    })
+  }, [])
+
   useEffect(() => {
     registrarManejadorNoAutenticado(() =>
       cerrarSesion('Su sesión venció o no es válida. Inicie sesión de nuevo.'),
@@ -45,8 +54,10 @@ export function AuthProvider({ children }) {
       cierre,
       iniciarSesion,
       cerrarSesion,
+      actualizarPerfilSesion,
     }
-  }, [sesion, cierre, iniciarSesion, cerrarSesion])
+  }, [sesion, cierre, iniciarSesion, cerrarSesion, actualizarPerfilSesion])
 
   return <ContextoAuth.Provider value={valor}>{children}</ContextoAuth.Provider>
 }
+
