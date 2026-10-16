@@ -249,12 +249,13 @@ Commit sugerido: <mensaje>
 
 ## 8. Estado actual y aprendizajes (se actualiza en cada checkpoint)
 
-**Estado al 15/10, 23:20**
-- **Checkpoint 1 cerrado** a las 23:07 sobre `main` `493571e` (PR #1 B1–B3, PR #2 F1–F3, PR #3 corrección de lotes y pruebas en `cacao_test`). Validado en el PC de Juan David sin simulaciones: login de los dos roles, `GET /api/lotes` con y sin filtros, recepción (201, 400 por campo, 409 por código repetido, alerta de cuota) y 403 del operador al cambiar estado; `mvnw test` 20/20 contra `cacao_test`.
-- El historial de git del checkpoint se guardó fuera del repositorio, en la carpeta hermana `evidencias_para_juan_manuel/`, para la documentación (E02).
-- Siguiente: Miguel con B4 y B5; Juan David con F4 (diseño pendiente de aprobación). **Checkpoint 2 a las 02:00.**
-- **Actualización 16/10, 00:50:** B4 (`c124c83`) y B5 (`8f4e479`) en `feat/backend-api` y F4 (`d4a2a20`) en `feat/frontend-ui`, probados juntos en el PC de Juan David (API real y navegador; detalle en `prompts/frontend/F4.md`). PR del Checkpoint 2 abiertos para las dos ramas. El tablero del proyecto (E02) está en GitHub Projects, con un issue por bloque.
-- La base de desarrollo de Juan David tiene, además de la semilla, CAC004, CAC005, una alerta y dos registros de auditoría creados al validar el Checkpoint 1. CAC001 sigue sin transformaciones. Antes de la demostración se restaura el respaldo limpio (I2). La base `cacao_test` ya existe en su Docker.
+**Estado al 16/10, 01:05**
+- **Checkpoint 1 cerrado** el 15/10 a las 23:07 sobre `main` `493571e` (PR #1 B1–B3, PR #2 F1–F3, PR #3 corrección de lotes y pruebas en `cacao_test`).
+- **Checkpoint 2 cerrado** a la 01:01 sobre `main` `7c281cc` (PR #40 B4–B5, PR #41 F4 y F3 validado contra la API real). Validado en el PC de Juan David sin simulaciones: `mvnw test` 37/37 contra `cacao_test`; pruebas 3, 4, 5, 7 y 9 del contrato por API (34 comprobaciones, 0 fallidas) más la regresión del Checkpoint 1; inventario, alertas y balance en el navegador.
+- La evidencia de cada checkpoint (historial de git y salida real de la validación) se guarda fuera del repositorio, en la carpeta hermana `evidencias_para_juan_manuel/`, para la documentación (E02 y E05).
+- **Tablero (E02):** GitHub Projects "KGB — Asoprocacao (Hackathon USCO)", un issue por bloque (#4 a #38). Al integrar cada PR, sus issues pasan a Done y se cierran con un comentario que cita commits, PR y verificación real.
+- Siguiente: Miguel con B6, B7 y B8 (B6 trae el bloqueo en cascada, el recall y el CSV); Juan David con F5 y F6; Juan Manuel con los casos manuales. **Incidencia de la hora 12 cerca de las 02:00** (anotar la hora real en el issue #38). **Checkpoint 3 a las 06:00.**
+- La base de desarrollo de Juan David tiene, además de la semilla, los lotes de prueba CAC004 a CAC008 y sus derivados (CAC004-T1, CAC006-T1, CAC007-T1, CAC008-T1), con alertas, auditoría y un cambio de estado. CAC001 sigue sin transformaciones. Antes de la demostración se restaura el respaldo limpio (I2). La base `cacao_test` ya existe en su Docker.
 - **Cuota de agy:** los modelos Claude de agy agotaron su cuota el 15/10 hacia las 20:33 (se reinicia en unas 135 h). Las delegaciones siguen con `gemini-3.8-flash-high`; su resultado se revisa con más cuidado (F2 y F3 necesitaron correcciones a mano en la revisión).
 
 **Aprendizajes del frontend (aplican de F4 en adelante)**
