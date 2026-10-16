@@ -8,7 +8,7 @@ MVP de software para que una asociación cacaotera del Huila registre la recepci
 
 ## Requisitos
 
-- Docker Desktop (PostgreSQL 16 en contenedor)
+- PostgreSQL 16: con Docker Desktop (contenedor) o instalado en el equipo
 - Java 21
 - Node.js 22 LTS
 - Git
@@ -26,6 +26,8 @@ cd ../frontend
 npm install
 npm run dev                       # → http://localhost:5173
 ```
+
+Sin Docker: instalar PostgreSQL, crear el usuario y la base `cacao` (ver `docs/CONTRATO_TECNICO.md`, sección 4), poner el puerto en `DB_PORT` del `.env` y omitir `docker compose up -d`.
 
 Flyway crea el esquema y carga los datos sintéticos (CAC001, CAC002, CAC003) al arrancar el backend.
 
@@ -49,8 +51,8 @@ Flyway crea el esquema y carga los datos sintéticos (CAC001, CAC002, CAC003) al
 
 ## Equipo
 
-- Miguel Ángel Medina Díaz — Backend
-- Juan Manuel Villalba Rincón — Base de datos, datos y pitch
+- Miguel Ángel Medina Díaz — Base de datos y backend
 - Juan David Fierro Calderón — Frontend e integración
+- Juan Manuel Villalba Rincón — Documentación, pruebas manuales, usabilidad y pitch
 
 Programa de Ingeniería de Software — Universidad Surcolombiana.

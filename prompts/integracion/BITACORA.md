@@ -1,0 +1,8 @@
+# Bitácora — Integración
+
+Área: `main` y `feat/integracion`, incluido el registro del pitch si se usaron herramientas para prepararlo. Responsable: Juan David Fierro Calderón. Una fila por cada prompt de arranque de bloque o de delegación; el texto completo está en `prompts/integracion/<id-bloque>.md`. Índice general: `prompts/BITACORA.md`.
+
+| Fecha y hora | Integrante | Herramienta | Bloque | Prompt | Archivos generados | Revisión humana |
+|---|---|---|---|---|---|---|
+| 2026-10-15 18:42 | Juan David Fierro Calderón | Claude Code (claude-opus-5-5) | 0 — Creación del repositorio | `prompts/frontend/0.md` | Ajustes en `.gitignore`, `CLAUDE.md` y `PLAN_BLOQUES.md`; `GEMINI.md`; `prompts/`; `backend/mvnw`, `backend/mvnw.cmd`, `backend/.mvn/`, `backend/.gitattributes` (copiados de Spring Initializr); `frontend/` (generado con create-vite; `vite.config.js`, `src/index.css`, `src/App.jsx` e `index.html` ajustados) | Juan David revisó y aprobó los 4 commits. A su pedido se publicó el repositorio público en GitHub, con ramas `feat/*` e invitaciones a los compañeros |
+| 2026-10-15 20:14 | Juan David Fierro Calderón | Claude Code (claude-opus-5-5) | Reorganización del equipo: base de datos y backend se unifican en Miguel; Juan Manuel pasa a documentación, pruebas manuales y pitch sin rama | `prompts/integracion/reorganizacion.md` | Corrección de las referencias a la rama de pitch en `CLAUDE.md`, `PLAN_BLOQUES.md` y `docs/CONTRATO_TECNICO.md` (archivos reemplazados por Juan David antes del prompt, junto con `README.md`); `prompts/` reorganizado en tres bitácoras por área y un índice; eliminación de la rama `feat/db-datos` | Pendiente: Juan David revisa el commit antes de integrarlo |

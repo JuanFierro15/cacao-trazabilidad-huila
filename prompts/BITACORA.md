@@ -1,8 +1,11 @@
-# Bitácora de uso de herramientas
+# Bitácoras de uso de herramientas
 
-Registro exigido por el reglamento del reto. Una fila por cada prompt de arranque de bloque o de delegación. El texto completo de cada prompt está en `prompts/<frontend|backend|datos>/<id-bloque>.md`. La declaración formal de herramientas es `documentos/E08_IA_y_fuentes.md`.
+Registro exigido por el reglamento del reto. Cada área lleva su propia bitácora, con una fila por cada prompt de arranque de bloque o de delegación. El texto completo de cada prompt está en `prompts/<area>/<id-bloque>.md`. La declaración formal de herramientas es `documentos/E08_IA_y_fuentes.md`.
 
-| Fecha y hora | Integrante | Herramienta | Bloque | Prompt | Archivos generados | Revisión humana |
-|---|---|---|---|---|---|---|
-| 2026-10-15 18:42 | Juan David Fierro Calderón | Claude Code (claude-opus-5-5) | 0 — Creación del repositorio | `prompts/frontend/0.md` | Ajustes en `.gitignore`, `CLAUDE.md` y `PLAN_BLOQUES.md`; `GEMINI.md`; `prompts/`; `backend/mvnw`, `backend/mvnw.cmd`, `backend/.mvn/`, `backend/.gitattributes` (copiados de Spring Initializr); `frontend/` (generado con create-vite; `vite.config.js`, `src/index.css`, `src/App.jsx` e `index.html` ajustados) | Juan David revisó y aprobó los 4 commits. A su pedido se publicó el repositorio público en GitHub, con ramas `feat/*` e invitaciones a los compañeros |
-| 2026-10-15 19:20 | Juan David Fierro Calderón | Claude Code (claude-opus-5-5): diseño y revisión; agy (claude-opus-5-5-high): implementación | F1 — Base, sesión y cliente de API | `prompts/frontend/F1.md` | `frontend/src/` (cliente de API, simulaciones, sesión y rutas por rol, login, paneles, componentes y utilidades) | Juan David aprobó el diseño antes de delegar. En la revisión, Claude Code leyó el diff, corrió build y lint y probó en el navegador con y sin simulaciones; corrigió una carrera de redirección al cerrar sesión (`auth/AuthContext.jsx`, `auth/RutaProtegida.jsx`). Revisión de Juan David: pendiente antes del push |
+| Área | Responsable | Bitácora |
+|---|---|---|
+| Backend y base de datos (`feat/backend-api`) | Miguel Ángel Medina Díaz | [prompts/backend/BITACORA.md](backend/BITACORA.md) |
+| Frontend (`feat/frontend-ui`) | Juan David Fierro Calderón | [prompts/frontend/BITACORA.md](frontend/BITACORA.md) |
+| Integración (`main`, `feat/integracion` y registro del pitch) | Juan David Fierro Calderón | [prompts/integracion/BITACORA.md](integracion/BITACORA.md) |
+
+> No se agregan filas aquí; en un conflicto de merge se conserva este índice y las filas pasan a la bitácora del área.
