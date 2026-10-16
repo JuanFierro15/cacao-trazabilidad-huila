@@ -1,9 +1,9 @@
 # Estado del proyecto para redactar la documentación (E01–E10)
 
-Corte: **16/10/2026, 08:40 (hora de Colombia)**. `main` = `83c8dc0` (PR #47), más el PR que actualiza este archivo.
+Corte: **16/10/2026, 11:50 (hora de Colombia)**. `main` = `5ebadda` (PR #50), más el PR que actualiza este archivo.
 Repositorio: https://github.com/JuanFierro15/cacao-trazabilidad-huila · Tablero: https://github.com/users/JuanFierro15/projects/1
 
-Este archivo resume, con datos verificados, lo construido y lo medido, para que el equipo y su asistente de documentación redacten los PDF de `documentos/`. Reemplaza el corte de las 06:45. Registro de cada actualización en `prompts/integracion/BITACORA.md`.
+Este archivo resume, con datos verificados, lo construido y lo medido, para que el equipo y su asistente de documentación redacten los PDF de `documentos/`. Reemplaza los cortes de las 06:45 y las 08:40; lo que cambió desde las 08:40 está en la sección 0.1. Registro de cada actualización en `prompts/integracion/BITACORA.md`.
 
 ## 0. Cómo usar este archivo
 
@@ -11,6 +11,35 @@ Este archivo resume, con datos verificados, lo construido y lo medido, para que 
 2. Para cada entregable, la tabla de la sección 1.1 dice qué pide el reto, de qué secciones de este archivo salen los datos y qué falta.
 3. Los archivos citados con ruta relativa están en el repositorio. Los que empiezan por `evidencias_para_juan_manuel/` o `Hackaton_II/` están fuera del repositorio, en el PC de Juan David: hay que pedírselos para adjuntar capturas o copiar tablas.
 4. Si un dato no está aquí ni en los archivos citados, se escribe "pendiente" y se pregunta al equipo.
+
+### 0.1 Cambios desde el corte de las 08:40 y qué hay que corregir en cada entregable
+
+Entre las 09:37 y las 11:32 se trabajó en la rama `design-test` (14 commits de Juan David y Miguel), integrada a `main` por el PR #50 a las 11:46 (`5ebadda`). Tarea del tablero: #51.
+
+**Qué cambió en la aplicación:**
+- **Función nueva, gestión de operadores y perfil del administrador** (no es uno de RF01–RF12):
+  - `GET /api/usuarios` (lista sin contraseñas), `POST /api/usuarios` (crea un operador, contraseña con BCrypt), `PUT/PATCH /api/usuarios/{id}` (nombre, contraseña, activar o suspender) y `DELETE /api/usuarios/{id}` (con alternativa `POST /api/usuarios/{id}/eliminar`). **Solo el administrador** (`/api/usuarios/**` en `SecurityConfig`).
+  - Reglas: nombre de usuario único (409 `USUARIO_DUPLICADO`), contraseña de al menos 6 caracteres (400), el administrador necesita su contraseña actual para cambiar la propia (400), no puede suspenderse ni eliminarse a sí mismo ni eliminar administradores (422 `OPERACION_NO_PERMITIDA`), un operador suspendido no inicia sesión.
+  - Cada cambio queda en la auditoría con la entidad `USUARIO` y las acciones `CREAR`, `ACTUALIZAR`, `CAMBIO_ESTADO` y `ELIMINAR`; la contraseña nunca se guarda en la auditoría (se anota `[PROTEGIDO]` → `[ACTUALIZADO]`).
+  - Pantalla nueva `/admin/usuarios` ("Perfil y gestión de operadores"), solo para el administrador.
+  - Sin migraciones nuevas: usa la tabla `usuarios` existente.
+- **Diseño:** navegación interna en una barra lateral con íconos que se contrae al quitar el cursor (reemplaza la barra superior de F8A); inicio con video a fondo completo, barra de navegación que se oculta al bajar y botones con ícono de mazorca; login con logo y retorno al inicio; ficha pública con botón de retorno, emblema y un modal de consulta para el comprador; `html` y `body` con `overflow-x: clip` para evitar scroll horizontal.
+
+**Verificación real de esos cambios (11:41–11:48):** 52 pruebas automatizadas sin fallos; build y lint sin errores; 20/20 comprobaciones por API de los endpoints de usuarios (sección 5.6); recorrido de la demo por la interfaz sin regresiones (recepción con alerta de cuota, transformación 250 → 200 con 20,00 % y MERMA_ALTA, alertas, trazabilidad con QR, ficha a 360 px); sin scroll horizontal a 360 ni a 1280 px; movimiento reducido respetado; los 46 campos de los formularios con etiqueta. Después se restauró `respaldo_demo.dump` con "INTEGRIDAD CONFIRMADA".
+
+**Qué cambiar en cada entregable:**
+
+| Entregable | Qué agregar o corregir |
+|---|---|
+| E02 | Agregar la historia de gestión de operadores (rol administrador; crear, editar, suspender y eliminar operadores, y cambiar su propio perfil), marcada como **adicional a RF01–RF12**, con su aceptación (409, 400, 422 y 403 de la sección 0.1). Sumar la tarea #51 y el PR #50 a la relación historia → tarea → commit → prueba, y actualizar el tablero (sección 3). En requisitos de calidad: contraseñas con BCrypt y auditoría de cuentas |
+| E03 | Flujo de usuario: el administrador tiene la pantalla `/admin/usuarios`, y el comprador también consulta desde un modal en el inicio. Control de acceso: agregar `/api/usuarios/**` (solo administrador) a la tabla de permisos. Esquema de pantallas: usar las capturas de `evidencias_para_juan_manuel/E03/actual/` (11:49), porque las de `E03/despues/` ya no coinciden con la navegación lateral ni con el inicio y el login actuales. Diferencias con el diseño: la barra superior de `frontend/DISENO.md` se cambió por una barra lateral |
+| E05 | Agregar los casos de usuarios (sección 5.6), declarar que esos endpoints **no tienen pruebas automatizadas propias** (las 52 siguen pasando) y anotar el recorrido de regresión de las 11:44. Limitación: el token de un operador suspendido sigue siendo válido hasta vencer |
+| E06 | Las comprobaciones de etiquetas (46 campos), 360 px y movimiento reducido se repitieron sobre la versión nueva. El contraste (F7) y el teclado (F8) se midieron antes de `design-test`: la barra lateral, el modal y `/admin/usuarios` no se revisaron todavía con teclado ni contraste. La prueba con la persona externa sigue pendiente |
+| E07 | El README no menciona la gestión de operadores: se puede agregar que el administrador crea y suspende operadores en `/admin/usuarios`; los usuarios de demostración no cambian |
+| E08 | Los 14 commits de `design-test` **no tienen registro en `prompts/`**: falta declarar qué herramienta y qué modelo se usaron (Miguel, 09:37–09:40; Juan David, 10:37–11:32) y qué revisión humana hubo |
+| E10 | En `ENTREGA.md`, agregar una fila a la matriz para la gestión de operadores (componentes `UsuarioController`, `UsuarioServicio` y `PaginaUsuarios`, verificación por API de la sección 5.6) |
+
+Nota técnica: `docs/CONTRATO_TECNICO.md` (tabla de permisos de la sección 7) no incluye `/api/usuarios`; la fuente de verdad de ese permiso es `SecurityConfig`.
 
 ## 1. Reglas para redactar
 
@@ -28,7 +57,7 @@ Este archivo resume, con datos verificados, lo construido y lo medido, para que 
 |---|---|---|---|
 | **E01** `documentos/E01_problema.pdf` (1–2 pág.) | Asociación, usuarios, registros actuales, dificultad prioritaria, consecuencias, objetivo del MVP, alcance, exclusiones, 2 restricciones y 2 indicadores con su medición; distinguir caso, supuestos y consultas reales | Secciones 2, 4 (alcance y exclusiones) y 9 (indicadores) | Por redactar (#29). El problema sale del reto oficial y de `Hackaton_II/Contexto_Hackaton/` |
 | **E02** `documentos/E02_requisitos.pdf` + tablero | Mínimo 12 historias de RF01–RF12 con ID, rol, necesidad, beneficio, prioridad y aceptación; requisitos de calidad; responsables y estado final; funciones incompletas; historia → tarea → commit → prueba; cambio de la hora 12 | Secciones 3, 4 y 6, y la matriz de `ENTREGA.md` | Por redactar (#30). Historias con Dado/Cuando/Entonces en `evidencias_para_juan_manuel/entregables/E02_insumos.md` (usar los estados de la sección 4) |
-| **E03** `documentos/E03_diseno.pdf` | Flujo de usuario, arquitectura, modelo de datos, estados, inventario, control de acceso, dónde viven las reglas, 2 decisiones técnicas, esquema de pantallas; el diseño debe coincidir con la aplicación y documentar diferencias | Sección 7 | En curso (#31). Diagramas en `evidencias_para_juan_manuel/entregables/E03_insumos.md`; capturas actuales en `evidencias_para_juan_manuel/E03/despues/` |
+| **E03** `documentos/E03_diseno.pdf` | Flujo de usuario, arquitectura, modelo de datos, estados, inventario, control de acceso, dónde viven las reglas, 2 decisiones técnicas, esquema de pantallas; el diseño debe coincidir con la aplicación y documentar diferencias | Sección 7 | En curso (#31). Diagramas en `evidencias_para_juan_manuel/entregables/E03_insumos.md`; capturas actuales en `evidencias_para_juan_manuel/E03/actual/`; cambios de la sección 0.1 |
 | **E04** código | Código, dependencias, datos de demostración, usuarios, etiqueta final y hash | Secciones 3 y 8 | Etiqueta `v1.0-entrega` a las 12:00 |
 | **E05** `documentos/E05_pruebas.pdf` | Mínimo 15 casos ejecutados y 5 automatizadas, cada caso con ID, requisito, datos, pasos, esperado, obtenido, estado y evidencia; corrección o limitación de cada fallo; regresión de la hora 12; medición sobre 100 registros | Sección 5 | Por redactar (#32). Casos en `evidencias_para_juan_manuel/entregables/E05_insumos.md`; faltan los casos manuales de Juan Manuel (#25) |
 | **E06** `documentos/E06_usabilidad.pdf` (máx. 2 pág.) | Persona ajena al equipo, 2 tareas sin guía (registrar un lote y encontrar su trazabilidad), perfil, tiempo, éxito, dificultades, al menos una mejora derivada con antes y después; comprobar móvil, etiquetas, contraste, teclado y mensajes de error | Sección 5.4 | En curso (#33). **Falta la prueba con la persona externa (#26) y su mejora** |
@@ -59,6 +88,8 @@ Este archivo resume, con datos verificados, lo construido y lo medido, para que 
 | Integración | 16/10, 06:37 | `e22780b` | #45 (I1, I2 e I3 parcial) | Ver secciones 5 y 8 |
 | Estado para documentar | 16/10, 06:46 | `b49dca6` | #46 | Primer corte de este archivo |
 | Identidad visual y contraste | 16/10, 08:29 | `83c8dc0` | #47 (F8A–F8C y F7) | Ver secciones 5.3, 5.4 y 7 |
+| Estado para documentar (2.º corte) | 16/10, 08:42 | `a55de13` | #49 | Corte de las 08:40 de este archivo |
+| Diseño y gestión de operadores | 16/10, 11:46 | `5ebadda` | #50 (rama `design-test`) | Ver sección 0.1 |
 
 - **Proceso:** una rama por rol; todo entra a `main` por PR con merge commit (sin squash); un commit por bloque con Conventional Commits en español; bitácora por bloque en `prompts/`; tablero con un issue por bloque que se cierra con un comentario de evidencia.
 - **Commits del PR #47:** `c7fa4e7` (preparación: guía de diseño, recursos y fuentes), `000e8f1` (F8A), `3891452` (F7), `50588ef` (F8B), `ecaa41e` (F8C), `4ce9e41` y `bf7e492` (registros).
@@ -68,8 +99,8 @@ Este archivo resume, con datos verificados, lo construido y lo medido, para que 
   - F8B: con movimiento reducido, en escritorio la línea horizontal del recorrido quedaba invisible; corregido en la revisión antes del commit `50588ef`.
   - F8C: el sello del estado de la ficha dejaba 6 px de scroll horizontal a 360 px; corregido en la revisión antes del commit `ecaa41e`.
   - F7: 16 campos de texto heredaban un placeholder de 3,14:1; corregido en `3891452`.
-- **Tablero al corte (36 tareas):**
-  - Done (20): Bloque 0, B1–B9, F1–F6, F8 (#48), I1, I2 y hora 12 (#38).
+- **Tablero al corte (37 tareas):**
+  - Done (21): Bloque 0, B1–B9, F1–F6, F8 (#48), diseño y gestión de operadores (#51), I1, I2 y hora 12 (#38).
   - In Progress (9): F7 (#20), I3 (#23), JM5 pitch (#28), E03 (#31), E06 (#33), E07 (#34), E08 (#35), E09 (#36) y E10 (#37).
   - Todo (7): JM1–JM4 (#24–#27), E01 (#29), E02 (#30) y E05 (#32).
   - Exportación actualizada: `gh project item-list 1 --owner JuanFierro15 --format json`.
@@ -140,9 +171,9 @@ Después de F8, el flujo del pitch se recorrió por la interfaz (clics y teclas 
 | Prueba con persona ajena al equipo (2 tareas sin guía, perfil, tiempo, éxito, dificultades) | **Pendiente** (#26) | — |
 | Mejora derivada de esa prueba, con antes y después | **Pendiente** | — |
 | Contraste legible | Hecho (F7). De 2,41–4,18:1 a 4,79–5,78:1, medido en el navegador sobre el fondo real de cada texto | Tabla en `prompts/frontend/F7.md`; 7 capturas antes y 7 después en `evidencias_para_juan_manuel/E06/` |
-| Etiquetas de formulario | Hecho. Los 35 campos de los formularios tienen `label` asociado (revisión del código del 16/10 a las 08:40) | Código en `frontend/src/` |
+| Etiquetas de formulario | Hecho. Los 46 campos de los formularios tienen `label` asociado (revisión del código del 16/10 a las 11:49, ya con `/admin/usuarios`) | Código en `frontend/src/` |
 | Navegación por teclado | Hecho en el inicio y el login: con Tab se llega a todos los controles con contorno de foco visible; Enter activa anclas y el botón del video | `prompts/frontend/F8A.md` y `F8B.md` |
-| Vista móvil (360 px) | Hecho: login, recepción, trazabilidad, ficha e inicio sin scroll horizontal | `prompts/frontend/F8A.md`, `F8B.md`, `F8C.md`; capturas a 360 px en `evidencias_para_juan_manuel/E03/despues/` |
+| Vista móvil (360 px) | Hecho: login, recepción, trazabilidad, ficha e inicio sin scroll horizontal, repetido sobre la versión de las 11:46 | `prompts/frontend/F8A.md`, `F8B.md`, `F8C.md`; capturas a 360 px en `evidencias_para_juan_manuel/E03/actual/` |
 | Mensajes de error comprensibles | Hecho: errores en español con qué pasó y qué hacer, junto a cada campo (400) o en caja general (403, 409, 422) | Checkpoints 1 y 2; contrato, sección 8.1 |
 | Movimiento reducido (adicional) | Hecho: con `prefers-reduced-motion` no hay animaciones y el video queda en pausa | `prompts/frontend/F8A.md`–`F8C.md` |
 
@@ -163,6 +194,28 @@ Sobre 100 cadenas sintéticas (400 lotes, 300 transformaciones). 5 llamadas de c
 - Reportes en `datos/rendimiento/resultados/`.
 
 **Otras verificaciones reales:** el QR escaneado con un celular abre la ficha sin inicio de sesión (16/10, 05:15); el CSV abre en Excel 16 con 13 columnas y los números como números; la instalación compila y pasa las pruebas desde un clon nuevo. **Pendiente:** la instalación completa de Juan Manuel en otro equipo (#27).
+
+### 5.6 Gestión de operadores por API (16/10, 11:44, rama `design-test`)
+
+20 comprobaciones, 20 correctas:
+
+| # | Caso | Resultado |
+|---|---|---|
+| 1 | Listar usuarios sin token | 401 |
+| 2–3 | El operador lista o crea usuarios | 403 `ACCESO_DENEGADO` |
+| 4–5 | El administrador lista usuarios | 200, solo `id`, `username`, `nombreCompleto`, `rol` y `activo` (sin contraseña ni hash) |
+| 6 | Crear `Operador2` con clave válida | 201, guardado como `operador2` con rol OPERADOR |
+| 7 | Crear `operador2` otra vez | 409 `USUARIO_DUPLICADO` |
+| 8 | Contraseña de 3 caracteres | 400 con error en el campo `password` |
+| 9 | El operador nuevo inicia sesión | 200, rol OPERADOR |
+| 10–11 | Suspender al operador y volver a iniciar sesión | 200 `activo: false`; el login responde 401 |
+| 12 | Token emitido antes de suspender | Sigue respondiendo 200 hasta vencer (limitación) |
+| 13 | El administrador cambia su clave sin la actual | 400 en `passwordActual` |
+| 14–15 | El administrador se suspende o se elimina a sí mismo | 422 `OPERACION_NO_PERMITIDA` |
+| 16 | El operador elimina un usuario | 403 |
+| 17 | El administrador elimina al operador | 204 |
+| 18 | Eliminar un usuario inexistente | 404 `NO_ENCONTRADO` |
+| 19–20 | Auditoría | Registra `CREAR`, `ACTUALIZAR`, `CAMBIO_ESTADO` y `ELIMINAR` sobre `USUARIO`, sin la contraseña |
 
 ## 6. Hora 12 (E02, tarjeta de cambio)
 
@@ -185,7 +238,7 @@ Sobre 100 cadenas sintéticas (400 lotes, 300 transformaciones). 5 llamadas de c
   - Tokens de color en `@theme` de Tailwind: cacao `#3A1F0D`, crema `#FFFDF9`, arena `#F3E5D0`, mazorca `#D97706`, mazorca oscuro `#B4520F` (texto naranja), origen `#15803D`; el verde y el naranja del boceto original quedan solo para decoración porque con texto blanco no llegan a 4,5:1.
   - Tipografía: Barlow (texto) y Barlow Condensed (títulos), instaladas localmente para no depender de internet en la feria.
   - "La traza": la línea con nodos del logo se usa como firma visual en el inicio, la trazabilidad y la ficha; el estado de la ficha entra como un sello. Todo respeta el movimiento reducido.
-- **Esquema de pantallas:** las capturas que coinciden con la aplicación actual están en `evidencias_para_juan_manuel/E03/despues/` (login, recepción, trazabilidad de CAC002, ficha de CAC002 e inicio, a 1280 y 360 px). Las de `E03/antes/` y las 12 de `entregables/capturas/` muestran el aspecto anterior a F8: sirven para el antes y después o para mostrar funciones (recall, balance, alertas), aclarando que el estilo cambió.
+- **Esquema de pantallas:** las capturas que coinciden con la aplicación actual están en `evidencias_para_juan_manuel/E03/actual/` (11:49: login, recepción, trazabilidad de CAC002, ficha de CAC002 e inicio a 1280 y 360 px, más `/admin/usuarios` e inventario a 1280 px). Las de `E03/despues/` muestran F8 antes de la barra lateral; las de `E03/antes/` y las 12 de `entregables/capturas/` muestran el aspecto anterior a F8. Sirven para el antes y después o para mostrar funciones (recall, balance, alertas), aclarando que el estilo cambió.
 - **Decisión técnica candidata nueva:** estilos con tokens en `@theme` y animaciones solo con CSS. Razón: sin dependencias nuevas y con movimiento reducido en un solo lugar. Alternativa descartada: Motion o GSAP. Limitación: sin transiciones animadas entre pantallas.
 - **Diferencias entre el diseño y la aplicación** (el reto pide documentarlas):
   - La guía pedía transiciones entre vistas con `viewTransition` de React Router; no se aplicaron porque con `BrowserRouter` no tienen efecto y cambiar a `createBrowserRouter` tocaba las rutas.
@@ -228,6 +281,7 @@ Registro por bloque, con el prompt y la revisión humana, en `prompts/backend/`,
   - agy para implementar F1 (claude-opus-5-5-high), F2–F6 e I1 (gemini-3.8-flash-high) y F8A–F8C (gemini-4-argon-high). Los modelos Claude de agy agotaron su cuota el 15/10 a las 20:33 y el 16/10 a las 07:41 seguían sin cuota.
   - Cada delegación se revisó, y las correcciones a mano están anotadas en su archivo de `prompts/` (por ejemplo, en F8B y F8C las dos correcciones de la sección 3).
   - Skills de diseño versionadas como registro de uso: `frontend-design` (Anthropic, Apache 2.0) en `.claude/skills/` y `.agents/skills/`, y `web-design-guidelines` (Vercel) en `.claude/skills/`.
+- **Rama `design-test` (PR #50):** 14 commits de Miguel (09:37–09:40, inicio y login) y de Juan David (10:37–11:32, barra lateral, gestión de operadores y ficha) **sin registro en `prompts/`**. Falta declarar la herramienta, el modelo y la revisión humana.
 - **Imágenes, logo optimizado y videos de `frontend/public/assets/`:** ilustraciones generadas con IA (lo dice el pie de la página de inicio). **Falta anotar la herramienta y el modelo con que se generaron.**
 - **Presentación del pitch:** tipo Slides de claude.ai, exportada a PDF.
 - **IA dentro del producto:** ninguna. La aplicación no llama a servicios de IA, así que no aplican el ejemplo de error ni el costo de IA en operación.
@@ -243,6 +297,9 @@ Registro por bloque, con el prompt y la revisión humana, en `prompts/backend/`,
 |---|---|---|
 | Prueba de usabilidad con una persona externa (2 tareas sin guía, tiempos, dificultades) y la mejora que salga de ella, con antes y después | Juan Manuel (#26) y Juan David (#20) | E06 y F7 |
 | Herramienta y modelo con que se generaron las imágenes y los videos | Juan David | E08 |
+| Herramienta, modelo y revisión de los 14 commits de `design-test` | Juan David y Miguel | E08 |
+| Revisar con teclado y contraste la barra lateral, el modal de la ficha y `/admin/usuarios` | Juan David | E06 |
+| Fila de la gestión de operadores en la matriz de `ENTREGA.md` | Juan David | E10 |
 | Modelo por bloque del backend, si E08 lo pide así | Miguel | E08 |
 | Casos de prueba manuales | Juan Manuel (#25) | E05 |
 | Instalación limpia en otro equipo siguiendo el README | Juan Manuel (#27) | E07 e I3 |
