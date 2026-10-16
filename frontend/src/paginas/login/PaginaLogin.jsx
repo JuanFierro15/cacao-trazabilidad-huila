@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { rutaInicioPorRol } from '../../auth/roles.js'
 import { useAuth } from '../../auth/useAuth.js'
 import { AvisoSimulacion } from '../../componentes/AvisoSimulacion.jsx'
+import { FondoVideo } from '../../componentes/FondoVideo.jsx'
 import { MensajeError } from '../../componentes/MensajeError.jsx'
 
 // Credenciales de demostración publicadas en el README (contrato, sección 7); no son secretos.
@@ -65,11 +66,34 @@ export function PaginaLogin() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-crema text-cacao">
-      <AvisoSimulacion />
-      <main className="flex flex-1 items-center justify-center px-4 py-8">
-        <div className="w-full max-w-sm rounded-xl border border-cacao/15 bg-white p-6 shadow-md">
-          <h1 className="text-2xl font-bold">Cacao con historia</h1>
+    <div className="relative flex min-h-screen flex-col bg-cacao text-cacao">
+      <FondoVideo
+        src="/assets/recorrido-grano.mp4"
+        poster="/assets/recorrido-grano-poster.jpg"
+        className="absolute inset-0"
+      />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-cacao/70" />
+      <div className="relative z-10">
+        <AvisoSimulacion />
+      </div>
+      <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-8 pb-20">
+        <div className="mb-3 w-full max-w-sm">
+          <Link
+            to="/"
+            className={`inline-block rounded px-1 py-1 text-sm font-semibold text-crema underline decoration-mazorca underline-offset-4 transition-colors hover:text-arena ${FOCO}`}
+          >
+            Volver al inicio
+          </Link>
+        </div>
+        <img
+          src="/assets/logo-emblema-192.webp"
+          alt="Asoprocacao"
+          width={72}
+          height={72}
+          className="mb-4 h-18 w-auto"
+        />
+        <div className="w-full max-w-sm rounded-2xl border border-mazorca/30 bg-crema/95 p-6 shadow-md">
+          <h1 className="font-display text-2xl font-bold">Cacao con historia</h1>
           <p className="mt-1 text-sm text-cacao/80">Ingrese con su usuario de Asoprocacao.</p>
 
           {mensajeAviso && (

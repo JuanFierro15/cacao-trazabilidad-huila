@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cacao: #3E2723;
+  --color-cacao: #3A1F0D;
+  --color-crema: #FFFDF9;
+  --color-arena: #F3E5D0;
   --color-mazorca: #D97706;
+  --color-mazorca-oscuro: #B4520F;
   --color-origen: #15803D;
-  --color-crema: #FDFBF7;
+  --color-selva: #27AE60;
+  --font-sans: "Barlow", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Barlow Condensed", "Barlow", ui-sans-serif, sans-serif;
 }
 
 body {

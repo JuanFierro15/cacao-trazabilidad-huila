@@ -28,7 +28,7 @@ function clasesEnlace({ isActive }) {
   // El enlace activo se marca con subrayado y peso, no solo con color.
   const base = `inline-block rounded px-1 py-2 text-sm ${FOCO}`
   return isActive
-    ? `${base} font-semibold underline decoration-2 underline-offset-4`
+    ? `${base} font-semibold underline decoration-mazorca decoration-2 underline-offset-4`
     : `${base} text-crema/90 hover:underline`
 }
 
@@ -43,7 +43,16 @@ export function MarcoAplicacion() {
       <AvisoSimulacion />
       <header className="bg-cacao text-crema">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-          <p className="text-lg font-bold">Cacao con historia</p>
+          <div className="flex items-center gap-2.5">
+            <img
+              src="/assets/logo-emblema-96.webp"
+              alt=""
+              width={32}
+              height={32}
+              className="h-8 w-auto"
+            />
+            <p className="font-display text-lg font-bold">Cacao con historia</p>
+          </div>
           <div className="flex flex-wrap items-center gap-3">
             <p className="text-sm">
               <span className="font-semibold">{sesion?.nombreCompleto}</span>
