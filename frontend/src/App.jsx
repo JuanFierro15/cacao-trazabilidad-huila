@@ -9,6 +9,7 @@ import { PaginaAlertas } from './paginas/admin/PaginaAlertas.jsx'
 import { PaginaAuditoria } from './paginas/admin/PaginaAuditoria.jsx'
 import { PaginaBalance } from './paginas/admin/PaginaBalance.jsx'
 import { PaginaRecall } from './paginas/admin/PaginaRecall.jsx'
+import { PaginaUsuarios } from './paginas/admin/PaginaUsuarios.jsx'
 import { PanelAdministrador } from './paginas/admin/PanelAdministrador.jsx'
 import { PaginaInicio } from './paginas/inicio/PaginaInicio.jsx'
 import { PaginaLogin } from './paginas/login/PaginaLogin.jsx'
@@ -54,6 +55,7 @@ function App() {
               <Route path="/admin/recall" element={<PaginaRecall />} />
               <Route path="/admin/recall/:codigo" element={<PaginaRecall />} />
               <Route path="/admin/auditoria" element={<PaginaAuditoria />} />
+              <Route path="/admin/usuarios" element={<PaginaUsuarios />} />
             </Route>
           </Route>
 

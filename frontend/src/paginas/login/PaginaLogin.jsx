@@ -5,6 +5,7 @@ import { useAuth } from '../../auth/useAuth.js'
 import { AvisoSimulacion } from '../../componentes/AvisoSimulacion.jsx'
 import { FondoVideo } from '../../componentes/FondoVideo.jsx'
 import { MensajeError } from '../../componentes/MensajeError.jsx'
+import { ModalFichaComprador } from '../../componentes/ModalFichaComprador.jsx'
 
 // Credenciales de demostración publicadas en el README (contrato, sección 7); no son secretos.
 const DEMO_OPERADOR = { username: 'operador1', password: 'cacao123' }
@@ -35,6 +36,7 @@ export function PaginaLogin() {
   const [password, setPassword] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState(null)
+  const [modalFichaAbierto, setModalFichaAbierto] = useState(false)
 
   // Mismo destino que tras un ingreso exitoso, para que no importe cuál de los
   // dos redireccionamientos ocurra primero.
@@ -66,35 +68,58 @@ export function PaginaLogin() {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-cacao text-cacao">
+    <div className="relative flex min-h-dvh flex-col overflow-x-clip bg-cacao text-cacao">
       <FondoVideo
         src="/assets/recorrido-grano.mp4"
         poster="/assets/recorrido-grano-poster.jpg"
         className="absolute inset-0"
       />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-cacao/70" />
-      <div className="relative z-10">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 bg-cacao/70" />
+      <div className="relative z-20">
         <AvisoSimulacion />
       </div>
-      <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-8 pb-20">
-        <div className="mb-3 w-full max-w-sm">
-          <Link
-            to="/"
-            className={`inline-block rounded px-1 py-1 text-sm font-semibold text-crema underline decoration-mazorca underline-offset-4 transition-colors hover:text-arena ${FOCO}`}
-          >
-            Volver al inicio
-          </Link>
-        </div>
-        <img
-          src="/assets/logo-emblema-192.webp"
-          alt="Asoprocacao"
-          width={72}
-          height={72}
-          className="mb-4 h-18 w-auto"
-        />
-        <div className="w-full max-w-sm rounded-2xl border border-mazorca/30 bg-crema/95 p-6 shadow-md">
-          <h1 className="font-display text-2xl font-bold">Cacao con historia</h1>
-          <p className="mt-1 text-sm text-cacao/80">Ingrese con su usuario de Asoprocacao.</p>
+      <main className="relative z-20 flex flex-1 flex-col items-center justify-center px-4 py-6 pb-16">
+        <div className="w-full max-w-sm overflow-hidden rounded-2xl border border-mazorca/35 bg-crema/95 shadow-xl">
+          <div className="flex items-center justify-between gap-3 border-b border-cacao/15 bg-arena/75 px-5 py-3.5">
+            <Link
+              to="/"
+              className={`group inline-flex items-center gap-2 rounded-lg border border-cacao/20 bg-crema/90 px-3 py-1.5 text-xs font-semibold text-cacao shadow-2xs transition-all duration-200 hover:border-mazorca hover:bg-crema ${FOCO}`}
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-3.5 w-3.5 text-mazorca-oscuro transition-transform duration-200 group-hover:-translate-x-0.5"
+              >
+                <path d="M12.5 15 7.5 10l5-5" />
+              </svg>
+              <span>Volver al inicio</span>
+            </Link>
+
+            <div className="flex items-center gap-2.5">
+              <div className="text-right">
+                <p className="font-display text-sm font-bold leading-none text-cacao">
+                  Asoprocacao
+                </p>
+                <p className="mt-0.5 text-[11px] leading-none text-cacao/75">Campoalegre, Huila</p>
+              </div>
+              <img
+                src="/assets/logo-emblema-192.webp"
+                alt="Asoprocacao"
+                width={40}
+                height={40}
+                className="h-10 w-auto shrink-0"
+              />
+            </div>
+          </div>
+
+          <div className="p-6">
+            <h1 className="font-display text-2xl font-bold">Cacao con historia</h1>
+            <p className="mt-1 text-sm text-cacao/80">Ingrese con su usuario de Asoprocacao.</p>
 
           {mensajeAviso && (
             <p role="status" className="mt-4 rounded-md border border-mazorca bg-mazorca/10 p-3 text-sm">
@@ -181,16 +206,23 @@ export function PaginaLogin() {
               </button>
             </div>
             <div className="mt-4 text-center">
-              <Link
-                to="/ficha"
-                className={`text-sm font-semibold text-cacao underline hover:text-cacao/80 ${FOCO}`}
+              <button
+                type="button"
+                onClick={() => setModalFichaAbierto(true)}
+                className={`cursor-pointer text-sm font-semibold text-cacao underline hover:text-cacao/80 ${FOCO}`}
               >
                 ¿Es comprador? Consulte un producto por su código
-              </Link>
+              </button>
             </div>
+          </div>
           </div>
         </div>
       </main>
+
+      <ModalFichaComprador
+        abierto={modalFichaAbierto}
+        onCerrar={() => setModalFichaAbierto(false)}
+      />
     </div>
   )
 }

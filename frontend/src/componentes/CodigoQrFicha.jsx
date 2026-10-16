@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react'
-import { Link } from 'react-router'
 import { QRCodeSVG } from 'qrcode.react'
 import { urlFichaPublica, usaUrlLocal } from '../utilidades/urlFicha.js'
+import { ModalFichaComprador } from './ModalFichaComprador.jsx'
 
 const FOCO = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mazorca'
 
 export function CodigoQrFicha({ codigoLote }) {
   const [mensajeCopia, setMensajeCopia] = useState(null)
+  const [modalAbierto, setModalAbierto] = useState(false)
   const textoUrlRef = useRef(null)
 
   const url = urlFichaPublica(codigoLote)
@@ -68,14 +69,13 @@ export function CodigoQrFicha({ codigoLote }) {
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Link
-              to={`/ficha/${encodeURIComponent(codigoLote)}`}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              type="button"
+              onClick={() => setModalAbierto(true)}
               className={`inline-block rounded-md bg-cacao px-4 py-2 text-sm font-semibold text-crema hover:bg-cacao/90 ${FOCO}`}
             >
               Abrir ficha pública
-            </Link>
+            </button>
 
             <button
               type="button"
@@ -101,6 +101,12 @@ export function CodigoQrFicha({ codigoLote }) {
           )}
         </div>
       </div>
+
+      <ModalFichaComprador
+        abierto={modalAbierto}
+        codigoInicial={codigoLote}
+        onCerrar={() => setModalAbierto(false)}
+      />
     </section>
   )
 }

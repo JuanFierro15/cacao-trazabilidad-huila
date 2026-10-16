@@ -67,3 +67,20 @@ export function obtenerAuditoria(filtros = {}) {
   return api.get('/auditoria', filtros)
 }
 
+export function obtenerUsuarios() {
+  return api.get('/usuarios')
+}
+
+export function crearUsuario(datos) {
+  return api.post('/usuarios', datos)
+}
+
+export function actualizarUsuario(id, datos) {
+  const ruta = '/usuarios/' + encodeURIComponent(id)
+  return typeof api.put === 'function' ? api.put(ruta, datos) : api.patch(ruta, datos)
+}
+
+export function eliminarUsuario(id) {
+  const ruta = '/usuarios/' + encodeURIComponent(id)
+  return typeof api.delete === 'function' ? api.delete(ruta) : api.post(ruta + '/eliminar')
+}

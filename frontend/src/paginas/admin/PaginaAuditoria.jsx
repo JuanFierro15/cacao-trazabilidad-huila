@@ -64,6 +64,7 @@ function FormularioFiltrosAuditoria({ referenciaInicial, entidadInicial, onFiltr
           <option value="">Todas</option>
           <option value="LOTE">Lote</option>
           <option value="TRANSFORMACION">Transformación</option>
+          <option value="USUARIO">Usuario</option>
         </select>
       </div>
 

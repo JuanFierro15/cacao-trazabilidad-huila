@@ -12,6 +12,12 @@
   --font-display: "Barlow Condensed", "Barlow", ui-sans-serif, sans-serif;
 }
 
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 body {
   @apply bg-crema text-cacao;
 }

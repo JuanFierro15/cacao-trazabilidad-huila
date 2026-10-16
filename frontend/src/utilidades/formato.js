@@ -148,6 +148,8 @@ export function etiquetaTipoAlerta(tipo) {
 
 const ETIQUETAS_ACCION_AUDITORIA = {
   CREAR: 'Creación',
+  ACTUALIZAR: 'Actualización',
+  ELIMINAR: 'Eliminación',
   CONSUMO: 'Consumo',
   CAMBIO_ESTADO: 'Cambio de estado',
 }
@@ -159,8 +161,10 @@ export function etiquetaAccionAuditoria(accion) {
 const ETIQUETAS_ENTIDAD_AUDITORIA = {
   LOTE: 'Lote',
   TRANSFORMACION: 'Transformación',
+  USUARIO: 'Usuario',
 }
 
 export function etiquetaEntidadAuditoria(entidad) {
   return ETIQUETAS_ENTIDAD_AUDITORIA[entidad] ?? entidad ?? SIN_VALOR
 }
+
