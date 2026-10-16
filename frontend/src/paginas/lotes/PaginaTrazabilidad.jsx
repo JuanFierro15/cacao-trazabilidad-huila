@@ -469,7 +469,16 @@ function ContenidoTrazabilidad({ codigo }) {
       </p>
 
       {/* Código QR */}
-      <CodigoQrFicha codigoLote={trazabilidad.codigoLote} />
+      <CodigoQrFicha
+        codigoLote={trazabilidad.codigoLote}
+        producto={trazabilidad.producto}
+        estado={trazabilidad.estado}
+        finca={origen?.finca}
+        municipio={origen?.municipio}
+        variedad={origen?.variedadCacao}
+        humedad={loteRaiz.porcentajeHumedad}
+        tipoGrano={loteRaiz.tipoGrano}
+      />
     </div>
   )
 }

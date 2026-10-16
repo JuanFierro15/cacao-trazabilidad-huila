@@ -6,6 +6,7 @@ import { FichaProductor } from '../../componentes/FichaProductor.jsx'
 import { InsigniaEstado } from '../../componentes/InsigniaEstado.jsx'
 import { ListaAlertas } from '../../componentes/ListaAlertas.jsx'
 import { MensajeError } from '../../componentes/MensajeError.jsx'
+import { TermometroHumedad } from '../../componentes/TermometroHumedad.jsx'
 import {
   etiquetaTipoGrano,
   fechaHoyBogota,
@@ -478,6 +479,11 @@ export function PaginaRecepcion() {
               {erroresPorCampo.porcentajeHumedad}
             </p>
           )}
+          <TermometroHumedad
+            humedadTexto={porcentajeHumedad}
+            tipoGrano={tipoGrano}
+            cantidadTexto={cantidadRecibida}
+          />
         </div>
 
         {/* Campo Cantidad */}

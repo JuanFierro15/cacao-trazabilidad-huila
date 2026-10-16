@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { obtenerFichaPublica } from '../api/servicios.js'
+import { BotonImprimirCertificado, CertificadoImprimible } from './CertificadoImprimible.jsx'
 import { MensajeError } from './MensajeError.jsx'
 import { formatearFecha, formatearFechaHora } from '../utilidades/formato.js'
 import { useConsultaApi } from '../utilidades/useConsultaApi.js'
@@ -7,7 +8,7 @@ import { useConsultaApi } from '../utilidades/useConsultaApi.js'
 const FOCO = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mazorca'
 const CODIGOS_EJEMPLO = ['CAC001', 'CAC002', 'CAC003']
 
-export function DetalleFichaPublica({ codigoLote }) {
+export function DetalleFichaPublica({ codigoLote, conImpresion = false }) {
   const {
     datos: ficha,
     cargando,
@@ -83,9 +84,25 @@ export function DetalleFichaPublica({ codigoLote }) {
         role={esAlerta ? 'alert' : 'status'}
         className={`sello rounded-lg p-4 shadow-xs ${estadoClase}`}
       >
-        <p className="text-base font-bold">{tituloEstado}</p>
-        <p className="mt-1 text-sm opacity-95">{ficha.mensajeEstado}</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-base font-bold">{tituloEstado}</p>
+            <p className="mt-1 text-sm opacity-95">{ficha.mensajeEstado}</p>
+          </div>
+          {conImpresion && <BotonImprimirCertificado />}
+        </div>
       </div>
+
+      {conImpresion && (
+        <CertificadoImprimible
+          codigoLote={ficha.codigoLote}
+          producto={ficha.producto}
+          estado={ficha.estado}
+          finca={ficha.origen?.finca}
+          municipio={ficha.origen?.municipio}
+          variedad={ficha.origen?.variedadCacao}
+        />
+      )}
 
       {/* Producto y código */}
       <div className="space-y-4 rounded-lg border border-cacao/20 bg-white p-5 shadow-xs">

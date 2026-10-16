@@ -136,6 +136,14 @@ Se elige el lote de origen (solo los que tienen disponible y no están bloqueado
 
 ![Gestión de operadores](docs/capturas/gestion-operadores.png)
 
+### Valor agregado: economía circular, calidad y certificado (F9)
+
+Solo en el frontend; las reglas oficiales y el backend no cambian.
+
+- **Economía circular** (`/admin/balance`, debajo del simulador): con los kg de merma de la transformación elegida calcula, con dos supuestos editables (70 % recuperable y 4.500 COP/kg, valores de ejemplo), los kg de subproducto aprovechable, el ingreso extra, el costo unitario neto y el margen impulsado, comparados con el costo y el margen oficiales. Con merma 0 explica que no hay subproducto. Nota fija: "Cálculo complementario de economía circular; el balance oficial del ejercicio se conserva arriba."
+- **Termómetro de humedad** (`/operador/recepcion`, bajo el campo de humedad): barra con marcador y veredicto según la referencia NTC 1252 de **máximo 7,0 %** (óptimo 6,5–7,0 %; alerta por encima, con los kg de agua excedente; aviso por debajo). Solo para grano seco. Los umbrales están en `utilidades/calidadCacao.js` y vienen de fuentes secundarias, no de la norma oficial de ICONTEC: verificarlos antes de afirmarlos ante el jurado.
+- **Certificado imprimible con QR:** el botón "Imprimir etiqueta / Certificado QR" de la trazabilidad y de la ficha pública abre la impresión con una página limpia (emblema, lote, origen, variedad, estado y QR; en la trazabilidad también la humedad). La ficha pública no lleva humedad porque la API pública no la devuelve. Sin costos, cantidades ni nombre de la persona productora.
+
 ### Versión móvil
 
 Operador, comprador y administrador funcionan a 360 px sin scroll horizontal. Por debajo de 640 px la navegación interna es un **menú hamburguesa**: una barra de 57 px con el botón de menú, y un panel a una columna con los textos completos que se cierra con Escape, al elegir un enlace o al tocar fuera.
@@ -532,6 +540,7 @@ Guía completa en [`frontend/DISENO.md`](frontend/DISENO.md).
 | F8A–F8C | Identidad visual: tokens, tipografía, login con video, inicio público, la traza y el sello | `000e8f1`, `50588ef`, `ecaa41e` | #47 | ✅ |
 | design-test | Gestión de operadores, barra lateral, inicio, login y modal de la ficha (14 commits) | — | #50 | ✅ |
 | F8D | Menú hamburguesa en móvil | `d2ca434` | #53 | ✅ |
+| F9 | Economía circular en el balance, termómetro de humedad en la recepción y certificado imprimible con QR | commit de F9 | #57 | ✅ |
 | I1 | Rendimiento sobre 100 registros | `8d3bf6a` | #45 | ✅ |
 | I2 | Respaldo de demostración (+ `a11efcb`) | `ec0f4f9` | #45 | ✅ |
 | I3 | README, `ENTREGA.md`, pitch, documentación, instalación limpia de Juan Manuel (sin problemas) y etiqueta | `5da9a66`, `54cad38` | #45, #54, #56 | ✅ |
@@ -561,6 +570,7 @@ Una rama por rol; todo entra a `main` por PR con merge commit (sin squash); un c
 | Documentación e índice final | 12:19 | `25e8606` | #54 |
 | Estado final en este archivo | 12:34 | `b4d3c60` | #55 |
 | Cierre: instalación limpia, usabilidad, herramientas y etiqueta | 12:39 | commit de cierre | #56 |
+| F9: economía circular, termómetro de humedad y certificado imprimible | 13:47 | commit de integración de F9 | #57 |
 | **Etiqueta `v1.0-entrega`** | creada a las 12:20 sobre `25e8606`; movida al commit de cierre | hash en la descripción de la etiqueta | — |
 
 **La etiqueta se movió** a pedido del equipo: se creó a las 12:20 sobre `25e8606` y se trasladó al commit de cierre para que la entrega incluya la instalación limpia, la mejora de usabilidad, las herramientas declaradas y este archivo. El hash que se registra es el de la etiqueta actual.
@@ -572,7 +582,8 @@ Una rama por rol; todo entra a `main` por PR con merge commit (sin squash); un c
 **Limitaciones declaradas:**
 - RF02: un solo lote de entrada por transformación (lo permite el reto); las mezclas no están implementadas, aunque `lote_composicion` las admite.
 - RF04: no hay alerta por retraso; hay merma alta, registro incompleto, sobrecosto y cuota excedida.
-- RF06: la ficha no muestra el nombre de la persona productora (dato personal).
+- RF06: la ficha no muestra el nombre de la persona productora (dato personal) ni la humedad (la API pública no la devuelve); el certificado impreso desde la trazabilidad sí lleva la humedad.
+- F9: los umbrales de humedad (6,5 y 7,0 %) vienen de fuentes secundarias; los 70 % y 4.500 COP/kg de la economía circular son supuestos de ejemplo editables.
 - Gestión de operadores: sin pruebas automatizadas propias; el token de un operador suspendido sigue valiendo hasta que vence.
 - Rendimiento medido en local; sin modo sin conexión en el celular (la aplicación funciona en la red local sin internet).
 - La documentación tiene 24 páginas y supera las 15 sugeridas para E01–E03 y E05–E09; el equipo lo consultó con un jurado y no hay problema.
@@ -718,7 +729,7 @@ La declaración formal está en el apartado E08 de `documentos/E01-E09_documenta
 |---|---|---|
 | Miguel | agy (Antigravity CLI) con Gemini 4 Argon, Claude Opus 5.5 y Gemini 3.8 Flash, con esfuerzo máximo | Implementación de B1–B9, con revisión del diff y commits propios (`prompts/backend/`) |
 | Juan David | Claude Code (claude-opus-5-5) | Diseño, revisión, pruebas, commits, PR, tablero, integración, F7, el pitch y este archivo |
-| Juan David | agy | F1 (claude-opus-5-5-high), F2–F6 e I1 (gemini-3.8-flash-high), F8A–F8C (gemini-4-argon-high) y F8D (gemini-3.8-flash-high), cada uno revisado y corregido a mano donde se anota |
+| Juan David | agy | F1 (claude-opus-5-5-high), F2–F6 e I1 (gemini-3.8-flash-high), F8A–F8C (gemini-4-argon-high) y F8D y F9 (gemini-3.8-flash-high), cada uno revisado y corregido a mano donde se anota |
 | Miguel y Juan David | Gemini (modelo Argon, esfuerzo alto) | Rama `design-test` (14 commits): inicio y login, barra lateral, gestión de operadores y modal de la ficha. No tiene archivo de registro en `prompts/`; se declara aquí y en E08 |
 
 - **Producto:** la aplicación no usa servicios de IA en funcionamiento (no hay costo ni dependencia de IA en la operación).
