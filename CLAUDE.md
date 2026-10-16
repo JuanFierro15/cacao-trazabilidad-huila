@@ -17,7 +17,7 @@ MVP del **II Hackathon de Programación** (USCO, Semillero DEVURITY, 15 y 16 de 
 
 @./docs/CONTRATO_TECNICO.md
 
-**Entrega final:** etiqueta `v1.0-entrega` → commit `25e8606b5f6bea06edb281a4572100f43a52bc37` (16/10/2026, 12:20) · Índice: [`ENTREGA.md`](ENTREGA.md) · Documentación: [`documentos/E01-E09_documentacion_KGB.pdf`](documentos/E01-E09_documentacion_KGB.pdf) · Pitch: [`pitch/`](pitch/) · Tablero: <https://github.com/users/JuanFierro15/projects/1>
+**Entrega final:** etiqueta `v1.0-entrega` sobre el commit de cierre (el hash completo está en la descripción de la etiqueta y se obtiene con `git rev-list -n 1 v1.0-entrega`) · Índice: [`ENTREGA.md`](ENTREGA.md) · Documentación: [`documentos/E01-E09_documentacion_KGB.pdf`](documentos/E01-E09_documentacion_KGB.pdf) · Pitch: [`pitch/`](pitch/) · Tablero: <https://github.com/users/JuanFierro15/projects/1>
 
 ---
 
@@ -60,7 +60,7 @@ Reto "Cacao con historia, calidad y valor" de la II Feria Universitaria de CTeI 
 | Respaldo y restauración verificables | Scripts en PowerShell y bash que comparan conteos, kg y códigos antes y después |
 | Mínimo 5 pruebas automatizadas y 15 casos | 52 pruebas JUnit contra PostgreSQL real, más casos por API y por la interfaz |
 | Consulta sobre 100 registros en menos de 3 s | p95 de 22,27 ms sobre 400 lotes |
-| Etiqueta final con hash | `v1.0-entrega` → `25e8606b5f6bea06edb281a4572100f43a52bc37` |
+| Etiqueta final con hash | `v1.0-entrega` sobre el commit de cierre; el hash completo va en la descripción de la etiqueta y en el registro oficial |
 
 **Cómo se califica** (pesó en cada decisión): funcionamiento real RF01–RF12, 25 puntos; diseño y calidad técnica, 15; pruebas y confiabilidad, 15; experiencia de usuario, pertinencia, requisitos y ciclo de vida, 10 cada uno; innovación y viabilidad, 10; pitch, 5. Fallas críticas: perder registros, consumir más de lo disponible, exponer costos al público y liberar sin autorización.
 
@@ -80,7 +80,7 @@ Reto "Cacao con historia, calidad y valor" de la II Feria Universitaria de CTeI 
 | **Juan David Fierro Calderón** | Frontend, identidad visual e integración: rendimiento, respaldo de demostración, README, `ENTREGA.md`, tablero, PR y etiqueta | `feat/frontend-ui`, `feat/integracion` |
 | **Juan Manuel Villalba Rincón** | Documentación contra lo construido, casos manuales, prueba de usabilidad, instalación limpia y **presentación del pitch** | Sin rama |
 
-El contexto inicial del reto ponía a Juan Manuel en la base de datos; el equipo se reorganizó al inicio y la base quedó con Miguel (registro en `prompts/integracion/reorganizacion.md`). La rama `design-test` (16/10, 09:37–11:32) la trabajaron Miguel y Juan David.
+El contexto inicial del reto ponía a Juan Manuel en la base de datos; el equipo se reorganizó al inicio y la base quedó con Miguel (registro en `prompts/integracion/reorganizacion.md`). La rama `design-test` (16/10, 09:37–11:32) la trabajaron Miguel y Juan David con Gemini (modelo Argon, esfuerzo alto).
 
 ---
 
@@ -383,7 +383,7 @@ README.md · ENTREGA.md · CLAUDE.md · GEMINI.md · docker-compose.yml · .env.
 
 ## 10. Instalación y uso local
 
-La guía completa, probada desde un clon nuevo, está en [`README.md`](README.md). Resumen en modo Docker:
+La guía completa está en [`README.md`](README.md); se probó desde un clon nuevo y Juan Manuel hizo con ella la instalación limpia en otro equipo, sin problemas. Resumen en modo Docker:
 
 ```bash
 git clone https://github.com/JuanFierro15/cacao-trazabilidad-huila.git
@@ -449,6 +449,8 @@ La base `cacao_test` se crea una vez (`docker compose exec db createdb -U cacao 
 - Recorrido de la demo por la interfaz con clics y teclas reales: PRD-C con 250 kg → alerta de cuota (330 de 300 kg); 250 → 200 con chip → 20,00 % y MERMA_ALTA; alertas como administrador; trazabilidad con QR; ficha a 360 px.
 - QR escaneado con un celular en la red local; CSV abierto en Excel 16 con 13 columnas y números como números.
 - Clon nuevo: compila, pasa las 52 pruebas y construye el frontend.
+- Instalación limpia en otro equipo siguiendo el README (Juan Manuel, 16/10): completada sin problemas.
+- Prueba de usabilidad con una persona externa (Juan Manuel): su mejora fue el modal para consultar un producto por su código; el detalle está en el apartado E06 del documento.
 
 **Rendimiento (prueba 10, meta: menos de 3 s)** con 100 cadenas sintéticas (400 lotes y 300 transformaciones), 5 llamadas de calentamiento y 30 medidas de `GET /api/lotes/PERF050-T3/trazabilidad`:
 
@@ -501,6 +503,7 @@ Guía completa en [`frontend/DISENO.md`](frontend/DISENO.md).
 - **Movimiento reducido:** con `prefers-reduced-motion` no hay animaciones y los videos quedan en pausa con su póster; los videos tienen botón de pausa (WCAG 2.2.2).
 - **Móvil:** 360 px sin scroll horizontal en todas las vistas revisadas; menú hamburguesa por debajo de 640 px.
 - **Errores en español:** qué pasó y qué hacer, junto a cada campo (400) o en una caja general (403, 409, 422).
+- **Mejora derivada de la prueba de usabilidad (E06):** el modal para consultar un producto por su código (`ModalFichaComprador`, commit `0b8057a` de `design-test`), que se abre desde el inicio, `/ficha`, el login y la trazabilidad.
 - **Diferencias con la guía:** la barra superior de F8A se cambió por una barra lateral (y un menú hamburguesa en móvil); el sello arranca en escala 1,06 y no en 1,12 para no dejar scroll horizontal a 360 px; no hay transiciones entre vistas porque `BrowserRouter` no las aplica.
 
 ---
@@ -525,13 +528,13 @@ Guía completa en [`frontend/DISENO.md`](frontend/DISENO.md).
 | F4 | Panel del administrador | `d4a2a20` | #41 | ✅ |
 | F5 | Trazabilidad, ficha pública y QR | `478b078` | #43 | ✅ |
 | F6 | Estado, recall y auditoría | `915f515` | #43 | ✅ |
-| F7 | Contraste de accesibilidad (falta la mejora de la prueba de usabilidad) | `3891452` | #47 | Parcial |
+| F7 | Contraste de accesibilidad y mejora de la prueba de usabilidad (modal de consulta del producto) | `3891452`, `0b8057a` | #47, #50 | ✅ |
 | F8A–F8C | Identidad visual: tokens, tipografía, login con video, inicio público, la traza y el sello | `000e8f1`, `50588ef`, `ecaa41e` | #47 | ✅ |
 | design-test | Gestión de operadores, barra lateral, inicio, login y modal de la ficha (14 commits) | — | #50 | ✅ |
 | F8D | Menú hamburguesa en móvil | `d2ca434` | #53 | ✅ |
 | I1 | Rendimiento sobre 100 registros | `8d3bf6a` | #45 | ✅ |
 | I2 | Respaldo de demostración (+ `a11efcb`) | `ec0f4f9` | #45 | ✅ |
-| I3 | README, `ENTREGA.md`, pitch, documentación y etiqueta | `5da9a66`, `54cad38` | #45, #54 | Falta la instalación limpia de Juan Manuel |
+| I3 | README, `ENTREGA.md`, pitch, documentación, instalación limpia de Juan Manuel (sin problemas) y etiqueta | `5da9a66`, `54cad38` | #45, #54, #56 | ✅ |
 
 Cada bloque tiene su prompt y su revisión en `prompts/<area>/<bloque>.md`.
 
@@ -556,7 +559,11 @@ Una rama por rol; todo entra a `main` por PR con merge commit (sin squash); un c
 | design-test | 11:46 | `5ebadda` | #50 |
 | Menú hamburguesa | 12:17 | `376b9cf` | #53 |
 | Documentación e índice final | 12:19 | `25e8606` | #54 |
-| **Etiqueta `v1.0-entrega`** | 12:20 | `25e8606b5f6bea06edb281a4572100f43a52bc37` | — |
+| Estado final en este archivo | 12:34 | `b4d3c60` | #55 |
+| Cierre: instalación limpia, usabilidad, herramientas y etiqueta | 12:39 | commit de cierre | #56 |
+| **Etiqueta `v1.0-entrega`** | creada a las 12:20 sobre `25e8606`; movida al commit de cierre | hash en la descripción de la etiqueta | — |
+
+**La etiqueta se movió** a pedido del equipo: se creó a las 12:20 sobre `25e8606` y se trasladó al commit de cierre para que la entrega incluya la instalación limpia, la mejora de usabilidad, las herramientas declaradas y este archivo. El hash que se registra es el de la etiqueta actual.
 
 **Hora 12:** a las 02:00 la organización pidió un entregable de documentación para Classroom, sin cambios en el software. Se subió la carpeta `Evidencia2am` (fuera del repositorio). RF09 no cambió; el bloqueo en cascada y el recall se construyeron igual y su regresión está automatizada.
 
@@ -568,6 +575,7 @@ Una rama por rol; todo entra a `main` por PR con merge commit (sin squash); un c
 - RF06: la ficha no muestra el nombre de la persona productora (dato personal).
 - Gestión de operadores: sin pruebas automatizadas propias; el token de un operador suspendido sigue valiendo hasta que vence.
 - Rendimiento medido en local; sin modo sin conexión en el celular (la aplicación funciona en la red local sin internet).
+- La documentación tiene 24 páginas y supera las 15 sugeridas para E01–E03 y E05–E09; el equipo lo consultó con un jurado y no hay problema.
 
 ---
 
@@ -711,10 +719,10 @@ La declaración formal está en el apartado E08 de `documentos/E01-E09_documenta
 | Miguel | agy (Antigravity CLI) con Gemini 4 Argon, Claude Opus 5.5 y Gemini 3.8 Flash, con esfuerzo máximo | Implementación de B1–B9, con revisión del diff y commits propios (`prompts/backend/`) |
 | Juan David | Claude Code (claude-opus-5-5) | Diseño, revisión, pruebas, commits, PR, tablero, integración, F7, el pitch y este archivo |
 | Juan David | agy | F1 (claude-opus-5-5-high), F2–F6 e I1 (gemini-3.8-flash-high), F8A–F8C (gemini-4-argon-high) y F8D (gemini-3.8-flash-high), cada uno revisado y corregido a mano donde se anota |
-| Equipo | — | La rama `design-test` (14 commits) no tiene registro en `prompts/`; su declaración está pendiente |
+| Miguel y Juan David | Gemini (modelo Argon, esfuerzo alto) | Rama `design-test` (14 commits): inicio y login, barra lateral, gestión de operadores y modal de la ficha. No tiene archivo de registro en `prompts/`; se declara aquí y en E08 |
 
 - **Producto:** la aplicación no usa servicios de IA en funcionamiento (no hay costo ni dependencia de IA en la operación).
-- **Material visual:** las fotos, el logo optimizado y los videos de `frontend/public/assets/` son ilustraciones generadas con IA, como dice el pie de la página de inicio; falta anotar la herramienta y el modelo.
+- **Material visual:** las fotos, el logo optimizado y los videos de `frontend/public/assets/` son ilustraciones generadas con Gemini (modelo Argon, esfuerzo alto), como dice el pie de la página de inicio.
 - **Skills de diseño:** `frontend-design` (Anthropic, Apache 2.0) y `web-design-guidelines` (Vercel), en `.claude/skills/` y `.agents/skills/`.
 - **Presentación del pitch:** tipo Slides de claude.ai, exportada a PDF.
 - **Librerías:** Spring Boot, Spring Security, Hibernate, Flyway, jjwt, el driver JDBC de PostgreSQL, springdoc-openapi; React, React Router, Vite, Tailwind CSS, qrcode.react; fuentes Barlow y Barlow Condensed (SIL OFL 1.1); PostgreSQL 16.
@@ -724,9 +732,6 @@ La declaración formal está en el apartado E08 de `documentos/E01-E09_documenta
 
 ## 19. Pendientes tras la entrega
 
-- Instalación limpia desde cero en otro equipo siguiendo el README (Juan Manuel, #27) y cierre de I3 (#23).
-- Mejora derivada de la prueba de usabilidad con una persona externa (F7, #20).
-- Revisar con teclado y contraste la barra lateral, el modal de la ficha y `/admin/usuarios`.
-- Declarar la herramienta, el modelo y la revisión de los commits de `design-test`, y la herramienta y el modelo del material visual.
-- Confirmar que el documento de 24 páginas respeta el límite de 15 (sin contar la presentación ni las salidas de pruebas).
+- Revisar con teclado y contraste la barra lateral, el modal de la ficha y `/admin/usuarios` (no se midieron después de `design-test`).
+- Casos manuales (#25) y ensayos del pitch (#28) de Juan Manuel, si quedan abiertos en el tablero.
 - **Antes de la evaluación:** restaurar `respaldo_demo.dump`, cambiar la clave de la base y el `JWT_SECRET` del `.env` del PC de la demostración, y ensayar el pitch (#28) con la demo sobre el Productor C (250 kg), nunca sobre CAC001.

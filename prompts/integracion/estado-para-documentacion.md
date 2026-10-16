@@ -12,6 +12,14 @@ Este archivo resume, con datos verificados, lo construido y lo medido, para que 
 3. Los archivos citados con ruta relativa están en el repositorio. Los que empiezan por `evidencias_para_juan_manuel/` o `Hackaton_II/` están fuera del repositorio, en el PC de Juan David: hay que pedírselos para adjuntar capturas o copiar tablas.
 4. Si un dato no está aquí ni en los archivos citados, se escribe "pendiente" y se pregunta al equipo.
 
+### 0.0 Cierre (16/10, 12:39)
+
+- **Instalación limpia:** Juan Manuel la completó en otro equipo siguiendo el README, sin problemas (#27).
+- **Prueba de usabilidad:** su mejora fue el modal para consultar un producto por su código (`ModalFichaComprador`, `0b8057a`).
+- **Herramienta y modelo:** el material visual de `frontend/public/assets/` y los 14 commits de `design-test` se hicieron con Gemini, modelo Argon, esfuerzo alto.
+- **Límite de páginas:** la documentación tiene 24 páginas; el equipo lo consultó con un jurado y no hay problema por pasar de 15.
+- **Etiqueta:** `v1.0-entrega` se movió del commit `25e8606` al commit de cierre; el hash que se registra es el de la etiqueta actual.
+
 ### 0.1 Cambios desde el corte de las 08:40 y qué hay que corregir en cada entregable
 
 Entre las 09:37 y las 11:32 se trabajó en la rama `design-test` (14 commits de Juan David y Miguel), integrada a `main` por el PR #50 a las 11:46 (`5ebadda`). Tarea del tablero: #51.
@@ -296,13 +304,10 @@ Registro por bloque, con el prompt y la revisión humana, en `prompts/backend/`,
 | Pendiente | Responsable | Afecta a |
 |---|---|---|
 | Prueba de usabilidad con una persona externa (2 tareas sin guía, tiempos, dificultades) y la mejora que salga de ella, con antes y después | Juan Manuel (#26) y Juan David (#20) | E06 y F7 |
-| Herramienta y modelo con que se generaron las imágenes y los videos | Juan David | E08 |
-| Herramienta, modelo y revisión de los 14 commits de `design-test` | Juan David y Miguel | E08 |
 | Revisar con teclado y contraste la barra lateral, el modal de la ficha y `/admin/usuarios` | Juan David | E06 |
 | Fila de la gestión de operadores en la matriz de `ENTREGA.md` | Juan David | E10 |
 | Modelo por bloque del backend, si E08 lo pide así | Miguel | E08 |
 | Casos de prueba manuales | Juan Manuel (#25) | E05 |
-| Instalación limpia en otro equipo siguiendo el README | Juan Manuel (#27) | E07 e I3 |
 | Ensayos del pitch (3, con cronómetro) | Juan Manuel (#28) | E09 |
 | PDF de `documentos/`: E01, E02, E03, E05, E06, E07, E08 y E09_piloto | Equipo | E01–E09 |
 | Etiqueta `v1.0-entrega` y hash en `ENTREGA.md` | Juan David, 12:00 | E04 y E10 |
