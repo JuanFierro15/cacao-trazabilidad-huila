@@ -106,4 +106,16 @@ public class ReglaNegocioException extends RuntimeException {
             "La cantidad de salida supera la cantidad de entrada. Debe indicar los insumos agregados que justifican el aumento de peso."
         );
     }
+
+    public static ReglaNegocioException usuarioDuplicado(String username) {
+        return new ReglaNegocioException(
+            CodigoError.USUARIO_DUPLICADO,
+            "El nombre de usuario '" + username + "' ya está registrado. Elija un nombre de usuario distinto.",
+            List.of(new ErrorCampoDTO("username", "Este nombre de usuario ya está en uso."))
+        );
+    }
+
+    public static ReglaNegocioException operacionNoPermitida(String mensaje) {
+        return new ReglaNegocioException(CodigoError.OPERACION_NO_PERMITIDA, mensaje);
+    }
 }

@@ -109,6 +109,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/alertas").hasRole("ADMINISTRADOR")
                 .requestMatchers(HttpMethod.GET, "/api/auditoria").hasRole("ADMINISTRADOR")
                 .requestMatchers(HttpMethod.GET, "/api/reportes/exportar-csv").hasRole("ADMINISTRADOR")
+                .requestMatchers("/api/usuarios", "/api/usuarios/**").hasRole("ADMINISTRADOR")
 
                 // Rutas compartidas entre OPERADOR y ADMINISTRADOR
                 .requestMatchers(HttpMethod.GET, "/api/config/reglas").hasAnyRole("OPERADOR", "ADMINISTRADOR")
