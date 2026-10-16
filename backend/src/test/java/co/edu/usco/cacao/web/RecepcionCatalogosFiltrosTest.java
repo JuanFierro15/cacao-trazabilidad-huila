@@ -228,6 +228,18 @@ class RecepcionCatalogosFiltrosTest {
     }
 
     @Test
+    @DisplayName("GET /api/lotes sin parámetros devuelve 200 y los 3 lotes semilla")
+    void listarLotesSinParametrosDevuelveLosTresLotesSemilla() throws Exception {
+        mockMvc.perform(get("/api/lotes")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenOperador))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(3))
+            .andExpect(jsonPath("$[0].codigoLote").value("CAC001"))
+            .andExpect(jsonPath("$[1].codigoLote").value("CAC002"))
+            .andExpect(jsonPath("$[2].codigoLote").value("CAC003"));
+    }
+
+    @Test
     @DisplayName("GET /api/lotes permite filtrar por origen, estado y tipo, y GET /api/lotes/{codigo} devuelve 404 si no existe")
     void filtrarLotesYConsultarPorCodigo() throws Exception {
         mockMvc.perform(get("/api/lotes")

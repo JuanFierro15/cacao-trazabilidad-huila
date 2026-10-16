@@ -10,6 +10,7 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
 | B1 — Dominio y persistencia (PostgreSQL Local) | 2026-10-15 20:28 | `.\mvnw.cmd -DskipTests spring-boot:run` | Flyway (`V1` + `V2`) + Hibernate `ddl-auto=validate` sobre PostgreSQL 17.4 | 2 migraciones + 7 entidades JPA | 2 / 7 | 0 | 0 | 8.27 s | `Started CacaoTrazabilidadApplication` |
 | B2 — Seguridad JWT y errores | 2026-10-15 20:46 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) sobre PostgreSQL 17.4 | 12 tests | 12 | 0 | 0 | 18.280 s | `BUILD SUCCESS` |
 | B3 — Recepción, catálogos y filtros | 2026-10-15 21:07 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `RecepcionCatalogosFiltrosTest` (7) sobre PostgreSQL 17.4 | 19 tests | 19 | 0 | 0 | 25.523 s | `BUILD SUCCESS` |
+| B3 (fix) — `GET /api/lotes` sin parámetros | 2026-10-15 21:39 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `RecepcionCatalogosFiltrosTest` (8) sobre PostgreSQL 17.4 | 20 tests | 20 | 0 | 0 | 24.473 s | `BUILD SUCCESS` |
 
 ---
 
@@ -47,9 +48,9 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
 
 ---
 
-## Detalle del Bloque B3 — Recepción, catálogos y filtros
+## Detalle del Bloque B3 — Recepción, catálogos y filtros (incluye corrección `GET /api/lotes`)
 
-- **Fecha y hora:** `2026-10-15T21:07:48-05:00`
+- **Fecha y hora:** `2026-10-15T21:39:33-05:00`
 - **Comando:** `.\mvnw.cmd test`
 - **Salida real de Surefire:**
 
@@ -58,21 +59,21 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
 [INFO]  T E S T S
 [INFO] -------------------------------------------------------
 [INFO] Running co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
-[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.192 s -- in co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.172 s -- in co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
 [INFO] Running co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
-[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.10 s -- in co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.79 s -- in co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
 [INFO] Running co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
-[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.088 s -- in co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.077 s -- in co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
 [INFO] 
 [INFO] Results:
 [INFO] 
-[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
 [INFO] 
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  25.523 s
-[INFO] Finished at: 2026-10-15T21:07:48-05:00
+[INFO] Total time:  24.473 s
+[INFO] Finished at: 2026-10-15T21:39:33-05:00
 [INFO] ------------------------------------------------------------------------
 ```
 
@@ -84,3 +85,5 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
   5. `crearLoteCodigoRepetidoDevuelve409`: `POST /api/lotes` con `codigoLote = "CAC001"` devuelve `409 LOTE_DUPLICADO`.
   6. `crearLoteSuperandoCuotaGeneraAlertaCuotaExcedida`: `POST /api/lotes` que supera la cuota anual de `PRD-C` (`330 kg > 300 kg`) devuelve `201` con alerta `CUOTA_EXCEDIDA` activa sin bloquear la recepción.
   7. `filtrarLotesYConsultarPorCodigo`: `GET /api/lotes?origen=Rivera&estado=PENDIENTE&tipo=RECEPCION` devuelve `CAC001`, y `GET /api/lotes/CAC999` devuelve `404 NO_ENCONTRADO`.
+  8. `listarLotesSinParametrosDevuelveLosTresLotesSemilla`: `GET /api/lotes` sin parámetros devuelve `200 OK` y los 3 lotes semilla (`CAC001`, `CAC002`, `CAC003`), validando que `:origen = null` en PostgreSQL no dispare `ERROR: function lower(bytea) does not exist`.
+

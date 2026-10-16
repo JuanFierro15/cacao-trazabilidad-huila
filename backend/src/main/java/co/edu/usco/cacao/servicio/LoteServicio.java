@@ -144,7 +144,9 @@ public class LoteServicio {
 
     @Transactional(readOnly = true)
     public List<LoteDTO> listarLotes(String origen, String estado, String tipo) {
-        String origenFiltro = (origen == null || origen.isBlank()) ? null : origen.trim();
+        String origenFiltro = (origen == null || origen.isBlank())
+            ? null
+            : origen.trim().toLowerCase(Locale.ROOT);
         EstadoLote estadoFiltro = parsearEstado(estado);
         TipoLote tipoFiltro = parsearTipoLote(tipo);
 
