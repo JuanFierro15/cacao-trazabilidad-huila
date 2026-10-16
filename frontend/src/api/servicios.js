@@ -20,6 +20,14 @@ export function obtenerLote(codigo) {
   return api.get('/lotes/' + encodeURIComponent(codigo))
 }
 
+export function obtenerTrazabilidad(codigo) {
+  return api.get('/lotes/' + encodeURIComponent(codigo) + '/trazabilidad')
+}
+
+export function obtenerFichaPublica(codigo) {
+  return api.getPublico('/public/ficha/' + encodeURIComponent(codigo))
+}
+
 export function registrarLote(datos) {
   return api.post('/lotes', datos)
 }
@@ -45,5 +53,17 @@ export function obtenerBalance(id, precioVentaCop) {
 
 export function descargarCsv(filtros = {}) {
   return api.descargar('/reportes/exportar-csv', filtros)
+}
+
+export function cambiarEstadoLote(codigo, datos) {
+  return api.patch('/lotes/' + encodeURIComponent(codigo) + '/estado', datos)
+}
+
+export function obtenerRecall(codigo) {
+  return api.get('/lotes/' + encodeURIComponent(codigo) + '/recall')
+}
+
+export function obtenerAuditoria(filtros = {}) {
+  return api.get('/auditoria', filtros)
 }
 

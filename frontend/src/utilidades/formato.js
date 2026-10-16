@@ -19,6 +19,15 @@ export function formatearKg(valor) {
   return `${formatearNumero(valor, 3)} kg`
 }
 
+export function formatearHectareas(valor) {
+  if (sinValor(valor)) return SIN_VALOR
+  const numero = new Intl.NumberFormat(LOCALE, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(valor)
+  return `${numero} ha`
+}
+
 export function formatearPorcentaje(valor) {
   if (sinValor(valor)) return SIN_VALOR
   const numero = new Intl.NumberFormat(LOCALE, {
@@ -135,4 +144,23 @@ const ETIQUETAS_TIPO_ALERTA = {
 
 export function etiquetaTipoAlerta(tipo) {
   return ETIQUETAS_TIPO_ALERTA[tipo] ?? tipo ?? SIN_VALOR
+}
+
+const ETIQUETAS_ACCION_AUDITORIA = {
+  CREAR: 'Creación',
+  CONSUMO: 'Consumo',
+  CAMBIO_ESTADO: 'Cambio de estado',
+}
+
+export function etiquetaAccionAuditoria(accion) {
+  return ETIQUETAS_ACCION_AUDITORIA[accion] ?? accion ?? SIN_VALOR
+}
+
+const ETIQUETAS_ENTIDAD_AUDITORIA = {
+  LOTE: 'Lote',
+  TRANSFORMACION: 'Transformación',
+}
+
+export function etiquetaEntidadAuditoria(entidad) {
+  return ETIQUETAS_ENTIDAD_AUDITORIA[entidad] ?? entidad ?? SIN_VALOR
 }

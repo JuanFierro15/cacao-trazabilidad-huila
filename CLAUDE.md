@@ -82,12 +82,12 @@ Cada bloque: objetivo → archivos → verificación → commit. No se pasa al s
 - Commit: `feat: agregar recepción y consulta de lotes con alerta de cuota`
 - **→ Checkpoint 1: PR a `main`.**
 
-**B4. Transformaciones (RF02, RF04, RF05, RF08, RF10, RF12)**
+**B4. Transformaciones (RF02, RF04, RF05, RF08, RF10, RF12)** — *terminado (commit `c124c83`, en `main` desde el Checkpoint 2)*
 - Objetivo: `POST/GET /api/transformaciones` y `GET /api/transformaciones/{id}/balance` siguiendo **al pie de la letra** el orden transaccional de la sección 6 del contrato: idempotencia por `operacionUuid`, bloqueo pesimista, lote derivado `-Tn`, composición, alertas MERMA_ALTA / REGISTRO_INCOMPLETO / SOBRECOSTO, auditoría CONSUMO y CREAR. Cálculos en una clase pura `CalculadoraTransformacion` (sin Spring) con su prueba unitaria.
 - Verificación: CAC001 100 → 80 da merma 20,00 %, alerta activa, `CAC001-T1` con 80 kg; balance 20.000 COP/kg y 20,00 %; reenvío con mismo UUID → 409 y el inventario no cambia; 120 kg sobre 100 → 422; salida 0 → `calculable: false`.
 - Commit: `feat: agregar transformaciones con inventario, idempotencia, alertas y balance`
 
-**B5. Trazabilidad, ficha pública, estado, alertas y auditoría (RF03, RF06, RF09, RF10)**
+**B5. Trazabilidad, ficha pública, estado, alertas y auditoría (RF03, RF06, RF09, RF10)** — *terminado (commit `8f4e479`, en `main` desde el Checkpoint 2)*
 - Objetivo: `GET .../trazabilidad` (consulta recursiva del contrato), `GET /api/public/ficha/{codigo}` con DTO de lista blanca, `PATCH .../estado` (motivo obligatorio, solo un lote por ahora), `GET /api/alertas`, `GET /api/auditoria`.
 - Verificación: la ficha no contiene ningún campo prohibido (revisar el JSON crudo); operador recibe 403 al liberar; el cambio de admin aparece en auditoría.
 - Commit: `feat: agregar trazabilidad, ficha pública, cambio de estado y consulta de auditoría`
@@ -160,7 +160,7 @@ Paleta: Café Cacao `#3E2723`, Ámbar Mazorca `#D97706`, Verde Origen `#15803D`,
 - Commit: `feat: agregar panel del administrador con inventario, alertas, balance y CSV`
 - **→ Checkpoint 2: PR a `main`.**
 
-**F5. Trazabilidad, ficha pública y QR (RF03, RF06)**
+**F5. Trazabilidad, ficha pública y QR (RF03, RF06)** — *terminado (commit `478b078`, subido a `feat/frontend-ui`, entra a `main` en el PR del Checkpoint 3); falta escanear el QR con un celular*
 - Objetivo: línea de tiempo interna (`/lotes/:codigo/trazabilidad`); **Pasaporte Digital** público en `/ficha/:codigoLote` sin login, con estado destacado (BLOQUEADO en rojo con advertencia, nunca como disponible), origen y recorrido; QR con `qrcode.react` apuntando a la URL del contrato (sección 4).
 - Verificación: el QR escaneado desde un celular en la misma red abre la ficha; la ficha no muestra ningún dato interno.
 - Commit: `feat: agregar línea de trazabilidad, ficha pública y código QR`
@@ -249,12 +249,17 @@ Commit sugerido: <mensaje>
 
 ## 8. Estado actual y aprendizajes (se actualiza en cada checkpoint)
 
-**Estado al 15/10, 23:20**
-- **Checkpoint 1 cerrado** a las 23:07 sobre `main` `493571e` (PR #1 B1–B3, PR #2 F1–F3, PR #3 corrección de lotes y pruebas en `cacao_test`). Validado en el PC de Juan David sin simulaciones: login de los dos roles, `GET /api/lotes` con y sin filtros, recepción (201, 400 por campo, 409 por código repetido, alerta de cuota) y 403 del operador al cambiar estado; `mvnw test` 20/20 contra `cacao_test`.
-- El historial de git del checkpoint se guardó fuera del repositorio, en la carpeta hermana `evidencias_para_juan_manuel/`, para la documentación (E02).
-- Siguiente: Miguel con B4 y B5; Juan David con F4 (diseño pendiente de aprobación). **Checkpoint 2 a las 02:00.**
-- **Actualización 16/10, 00:50:** B4 (`c124c83`) y B5 (`8f4e479`) en `feat/backend-api` y F4 (`d4a2a20`) en `feat/frontend-ui`, probados juntos en el PC de Juan David (API real y navegador; detalle en `prompts/frontend/F4.md`). PR del Checkpoint 2 abiertos para las dos ramas. El tablero del proyecto (E02) está en GitHub Projects, con un issue por bloque.
-- La base de desarrollo de Juan David tiene, además de la semilla, CAC004, CAC005, una alerta y dos registros de auditoría creados al validar el Checkpoint 1. CAC001 sigue sin transformaciones. Antes de la demostración se restaura el respaldo limpio (I2). La base `cacao_test` ya existe en su Docker.
+**Estado al 16/10, 04:05**
+- **Checkpoint 1 cerrado** el 15/10 a las 23:07 sobre `main` `493571e` (PR #1 B1–B3, PR #2 F1–F3, PR #3 corrección de lotes y pruebas en `cacao_test`).
+- **Checkpoint 2 cerrado** a la 01:01 sobre `main` `7c281cc` (PR #40 B4–B5, PR #41 F4 y F3 validado contra la API real). Validado en el PC de Juan David sin simulaciones: `mvnw test` 37/37 contra `cacao_test`; pruebas 3, 4, 5, 7 y 9 del contrato por API (34 comprobaciones, 0 fallidas) más la regresión del Checkpoint 1; inventario, alertas y balance en el navegador.
+- La evidencia de cada checkpoint (historial de git y salida real de la validación) se guarda fuera del repositorio, en la carpeta hermana `evidencias_para_juan_manuel/`, para la documentación (E02 y E05).
+- **Tablero (E02):** GitHub Projects "KGB — Asoprocacao (Hackathon USCO)", un issue por bloque (#4 a #38). Al integrar cada PR, sus issues pasan a Done y se cierran con un comentario que cita commits, PR y verificación real.
+- **Después del Checkpoint 2:** F5 terminado y subido (`478b078`, trazabilidad interna, ficha pública sin sesión, consulta por código y QR; el QR se decodificó en el navegador con la URL de la red). Para escanearlo desde un celular: `VITE_PUBLIC_BASE_URL=http://<IP-del-PC>:5173` en el `.env` (hoy la IP es `192.168.1.222`) y el puerto 5173 permitido en el firewall de Windows.
+- **B6, B7 y B8:** ya están en `feat/backend-api`, sin PR: B6 `13e29d8` (bloqueo en cascada, recall y CSV), B7 `0912a5c` (respaldo, restauración e integridad) y B8 `5ae4c56` (pruebas automatizadas y regresión de la hora 12). Falta validarlos en el PC de Juan David (modo Docker) y abrir el PR del Checkpoint 3. F6 se construye sobre B6.
+- **Entregables:** el 16/10 a la 01:50 se prepararon los insumos de E02, E03 y E05 (historias, tablero exportado, relación con commits y pruebas, diagramas Mermaid generados del código, 12 capturas reales, 28 casos ejecutados y las 37 pruebas JUnit) en `evidencias_para_juan_manuel/entregables/`, fuera del repositorio. Los PDF los redacta el equipo; E08 también. Faltan E01, E06, E07, E09 y E10, y completar lo que dependa de B6, B7, I1 y la hora 12. Registro en `prompts/integracion/insumos-entregables.md` (commit `0f928d9`).
+- Siguiente: validar B6–B8 y F6 (Juan David); Juan Manuel con los casos manuales y la redacción. **Incidencia de la hora 12:** anotar la hora real, quién la recibió y qué se pidió en el issue #38. **Checkpoint 3 a las 06:00.**
+- **Material visual en `frontend/public/assets/`** (logo de Asoprocacao y video de fondo del login): lo está subiendo Juan David para una mejora visual que se hará **después** de terminar todos los bloques de frontend y backend. Hasta que él lo pida, ningún agente lo usa, lo modifica, lo borra ni lo agrega a un commit (queda sin versionar).
+- La base de desarrollo de Juan David tiene, además de la semilla, los lotes de prueba CAC004 a CAC008 y sus derivados (CAC004-T1, CAC006-T1, CAC007-T1, CAC008-T1), con alertas y auditoría; CAC007-T1 quedó BLOQUEADO y CAC008-T1 LIBERADO por pruebas. CAC001 sigue sin transformaciones. Antes de la demostración se restaura el respaldo limpio (I2). La base `cacao_test` ya existe en su Docker.
 - **Cuota de agy:** los modelos Claude de agy agotaron su cuota el 15/10 hacia las 20:33 (se reinicia en unas 135 h). Las delegaciones siguen con `gemini-3.8-flash-high`; su resultado se revisa con más cuidado (F2 y F3 necesitaron correcciones a mano en la revisión).
 
 **Aprendizajes del frontend (aplican de F4 en adelante)**
@@ -265,6 +270,10 @@ Commit sugerido: <mensaje>
 - Entradas numéricas: `leerDecimal` para kg y porcentajes ("120,5") y `leerMonto` para pesos ("1.600.000"). Identificadores de operación con `utilidades/uuid.js` (`crypto.randomUUID` no existe por http desde el celular).
 - Los textos de las alertas los arma el backend y no coinciden palabra por palabra con los de la simulación: la interfaz muestra siempre lo que llega de la API.
 - Verificación en el navegador: Chrome no deja la ventana por debajo de 502 px; los 360 px se prueban cargando la ruta dentro de un `iframe` de 360 px en la misma pestaña.
+- Si una página depende de un parámetro de ruta (código de lote), su contenido se monta con `key={codigo}`: así, al pasar de un lote a otro o volver atrás, nunca se ven los datos del anterior bajo el código nuevo. La regla `cargando && !datos` es solo para recargas del mismo recurso.
+- La ficha pública llama con `api.getPublico` (sin token y sin cerrar sesión ante un 401).
+- Antes de delegar un bloque, revisar el código real del backend que va a consumir (DTO, textos y casos borde) y ajustar el diseño y las simulaciones a eso, no solo al contrato: en F4 el balance tenía casos no calculables que el contrato no describía.
+- Con B4 o B5 recién subidos, el frontend se puede probar contra la rama del backend levantándola en una copia temporal (`git worktree`) sobre la base de desarrollo, sin esperar al PR.
 
 **Entorno Windows**
 - `core.autocrlf=true`: la copia de trabajo queda en CRLF y el repositorio en LF. Los scripts que editan archivos deben aceptar `\r\n`.

@@ -66,7 +66,7 @@ function nombreArchivoDesde(contentDisposition) {
 
 // Misma lógica para respuestas reales y simuladas: así el manejo de errores
 // que se prueba en modo simulación es el mismo que corre contra el backend.
-function lanzarErrorHttp(status, cuerpo, ruta) {
+function lanzarErrorHttp(status, cuerpo, ruta, { publico = false } = {}) {
   const tieneFormatoContrato =
     cuerpo && typeof cuerpo === 'object' && typeof cuerpo.codigo === 'string' && typeof cuerpo.mensaje === 'string'
 
@@ -74,7 +74,7 @@ function lanzarErrorHttp(status, cuerpo, ruta) {
     ? new ErrorApi({ status, codigo: cuerpo.codigo, mensaje: cuerpo.mensaje, errores: cuerpo.errores, cuerpo })
     : new ErrorApi({ status, codigo: `ERROR_HTTP_${status}`, mensaje: mensajeGenerico(status), cuerpo })
 
-  if (status === 401 && ruta !== RUTA_LOGIN && manejadorNoAutenticado) {
+  if (status === 401 && ruta !== RUTA_LOGIN && !publico && manejadorNoAutenticado) {
     manejadorNoAutenticado(error)
   }
   throw error
@@ -90,9 +90,9 @@ async function leerJsonSeguro(respuesta) {
   }
 }
 
-async function solicitarSimulado(metodo, ruta, { cuerpo, consulta, tipoRespuesta }, token) {
+async function solicitarSimulado(metodo, ruta, { cuerpo, consulta, tipoRespuesta, publico = false }, token) {
   const { responderSimulado } = await import('./simulaciones.js')
-  const resultado = await responderSimulado({ metodo, ruta, consulta, cuerpo, token })
+  const resultado = await responderSimulado({ metodo, ruta, consulta, cuerpo, token: publico ? null : token })
 
   if (resultado.status >= 200 && resultado.status < 300) {
     if (resultado.status === 204) return null
@@ -101,14 +101,14 @@ async function solicitarSimulado(metodo, ruta, { cuerpo, consulta, tipoRespuesta
     }
     return resultado.cuerpo ?? null
   }
-  return lanzarErrorHttp(resultado.status, resultado.cuerpo, ruta)
+  return lanzarErrorHttp(resultado.status, resultado.cuerpo, ruta, { publico })
 }
 
-async function solicitar(metodo, ruta, { cuerpo, consulta, tipoRespuesta = 'json' } = {}) {
-  const token = obtenerToken()
+async function solicitar(metodo, ruta, { cuerpo, consulta, tipoRespuesta = 'json', publico = false } = {}) {
+  const token = publico ? null : obtenerToken()
 
   if (USAR_SIMULACIONES) {
-    return solicitarSimulado(metodo, ruta, { cuerpo, consulta, tipoRespuesta }, token)
+    return solicitarSimulado(metodo, ruta, { cuerpo, consulta, tipoRespuesta, publico }, token)
   }
 
   const cabeceras = { Accept: 'application/json' }
@@ -148,11 +148,12 @@ async function solicitar(metodo, ruta, { cuerpo, consulta, tipoRespuesta = 'json
   }
 
   const cuerpoError = await leerJsonSeguro(respuesta).catch(() => null)
-  return lanzarErrorHttp(respuesta.status, cuerpoError ?? null, ruta)
+  return lanzarErrorHttp(respuesta.status, cuerpoError ?? null, ruta, { publico })
 }
 
 export const api = {
   get: (ruta, consulta) => solicitar('GET', ruta, { consulta }),
+  getPublico: (ruta, consulta) => solicitar('GET', ruta, { consulta, publico: true }),
   post: (ruta, cuerpo) => solicitar('POST', ruta, { cuerpo }),
   patch: (ruta, cuerpo) => solicitar('PATCH', ruta, { cuerpo }),
   descargar: (ruta, consulta) => solicitar('GET', ruta, { consulta, tipoRespuesta: 'blob' }),

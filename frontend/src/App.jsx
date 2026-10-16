@@ -6,13 +6,17 @@ import { useAuth } from './auth/useAuth.js'
 import { MarcoAplicacion } from './componentes/MarcoAplicacion.jsx'
 import { PaginaNoEncontrada } from './paginas/PaginaNoEncontrada.jsx'
 import { PaginaAlertas } from './paginas/admin/PaginaAlertas.jsx'
+import { PaginaAuditoria } from './paginas/admin/PaginaAuditoria.jsx'
 import { PaginaBalance } from './paginas/admin/PaginaBalance.jsx'
+import { PaginaRecall } from './paginas/admin/PaginaRecall.jsx'
 import { PanelAdministrador } from './paginas/admin/PanelAdministrador.jsx'
 import { PaginaLogin } from './paginas/login/PaginaLogin.jsx'
-import { PaginaDetalleLote } from './paginas/lotes/PaginaDetalleLote.jsx'
+import { PaginaTrazabilidad } from './paginas/lotes/PaginaTrazabilidad.jsx'
 import { PaginaRecepcion } from './paginas/operador/PaginaRecepcion.jsx'
 import { PaginaTransformacion } from './paginas/operador/PaginaTransformacion.jsx'
 import { PanelOperador } from './paginas/operador/PanelOperador.jsx'
+import { PaginaConsultaFicha } from './paginas/publico/PaginaConsultaFicha.jsx'
+import { PaginaFichaPublica } from './paginas/publico/PaginaFichaPublica.jsx'
 
 function Inicio() {
   const { autenticado, rol } = useAuth()
@@ -26,13 +30,15 @@ function App() {
         <Routes>
           <Route path="/" element={<Inicio />} />
           <Route path="/login" element={<PaginaLogin />} />
+          <Route path="/ficha" element={<PaginaConsultaFicha />} />
+          <Route path="/ficha/:codigoLote" element={<PaginaFichaPublica />} />
 
           <Route element={<RutaProtegida roles={[ROLES.OPERADOR, ROLES.ADMINISTRADOR]} />}>
             <Route element={<MarcoAplicacion />}>
               <Route path="/operador" element={<PanelOperador />} />
               <Route path="/operador/recepcion" element={<PaginaRecepcion />} />
               <Route path="/operador/transformacion" element={<PaginaTransformacion />} />
-              <Route path="/lotes/:codigo/trazabilidad" element={<PaginaDetalleLote />} />
+              <Route path="/lotes/:codigo/trazabilidad" element={<PaginaTrazabilidad />} />
             </Route>
           </Route>
 
@@ -41,6 +47,9 @@ function App() {
               <Route path="/admin" element={<PanelAdministrador />} />
               <Route path="/admin/alertas" element={<PaginaAlertas />} />
               <Route path="/admin/balance" element={<PaginaBalance />} />
+              <Route path="/admin/recall" element={<PaginaRecall />} />
+              <Route path="/admin/recall/:codigo" element={<PaginaRecall />} />
+              <Route path="/admin/auditoria" element={<PaginaAuditoria />} />
             </Route>
           </Route>
 
