@@ -9,6 +9,7 @@
 # 2. DROP DATABASE IF EXISTS ... WITH (FORCE) y CREATE DATABASE.
 # 3. pg_restore --no-owner.
 # 4. Ejecutar verificacion de integridad posterior (estado DESPUES).
+# 5. Comparar el estado final con el reporte .integridad.txt del respaldo.
 # ============================================================================
 
 [CmdletBinding()]
@@ -50,6 +51,8 @@ if ($tamanio -eq 0) {
     exit 1
 }
 
+$ArchivoIntegridad = [System.IO.Path]::ChangeExtension($ArchivoRespaldo, ".integridad.txt")
+
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host "  RESTAURACION DE BASE DE DATOS - CACAO TRAZABILIDAD        " -ForegroundColor Cyan
 Write-Host "============================================================" -ForegroundColor Cyan
@@ -71,6 +74,8 @@ try {
 } catch {
     $ModoDocker = $false
 }
+
+$salidaDespues = $null
 
 if ($ModoDocker) {
     Write-Host "[MODO DOCKER DETECTADO]" -ForegroundColor Green
@@ -100,7 +105,8 @@ if ($ModoDocker) {
 
     Write-Host ""
     Write-Host "--- ESTADO DE INTEGRIDAD DESPUES DE RESTAURAR ---" -ForegroundColor Green
-    & docker compose exec -T db psql -U cacao -d cacao -f /datos/scripts/verificar_integridad.sql
+    $salidaDespues = & docker compose exec -T db psql -U cacao -d cacao -f /datos/scripts/verificar_integridad.sql
+    $salidaDespues | ForEach-Object { Write-Host $_ }
 
 } else {
     Write-Host "[MODO LOCAL DETECTADO]" -ForegroundColor Yellow
@@ -161,7 +167,32 @@ if ($ModoDocker) {
 
     Write-Host ""
     Write-Host "--- ESTADO DE INTEGRIDAD DESPUES DE RESTAURAR ---" -ForegroundColor Green
-    & psql -h $dbHost -p $dbPort -U $dbUser -d $dbName -f $ScriptIntegridad
+    $salidaDespues = & psql -h $dbHost -p $dbPort -U $dbUser -d $dbName -f $ScriptIntegridad
+    $salidaDespues | ForEach-Object { Write-Host $_ }
+}
+
+# 5. Comparacion con reporte de integridad previo
+if (Test-Path $ArchivoIntegridad) {
+    Write-Host ""
+    Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
+    Write-Host "  COMPARACION CON REPORTE DE INTEGRIDAD ORIGINAL            " -ForegroundColor Cyan
+    Write-Host "------------------------------------------------------------" -ForegroundColor Cyan
+    $lineasOriginal = (Get-Content $ArchivoIntegridad) | ForEach-Object { $_.TrimEnd() } | Where-Object { $_ -ne "" }
+    $lineasDespues = $salidaDespues | ForEach-Object { $_.TrimEnd() } | Where-Object { $_ -ne "" }
+
+    $textoOriginal = $lineasOriginal -join "`n"
+    $textoDespues = $lineasDespues -join "`n"
+
+    if ($textoOriginal -eq $textoDespues) {
+        Write-Host "[INTEGRIDAD CONFIRMADA] El estado restaurado COINCIDE EXACTAMENTE con el respaldo original." -ForegroundColor Green
+        Write-Host "Conteos, balances de masa, inconsistencias (0) y codigos de lotes son 100% identicos." -ForegroundColor Green
+    } else {
+        Write-Host "[ADVERTENCIA] Se detectaron discrepancias frente al reporte de integridad original:" -ForegroundColor Yellow
+        Write-Host ("  Reporte original: " + $ArchivoIntegridad) -ForegroundColor Yellow
+    }
+} else {
+    Write-Host ""
+    Write-Host ("[NOTA] No se encontro reporte de integridad previo para comparar: " + $ArchivoIntegridad) -ForegroundColor DarkGray
 }
 
 Write-Host "------------------------------------------------------------" -ForegroundColor Green

@@ -10,8 +10,10 @@
 # 2. DROP DATABASE IF EXISTS ... WITH (FORCE) y CREATE DATABASE.
 # 3. pg_restore --no-owner.
 # 4. Ejecutar verificación de integridad posterior (estado DESPUÉS).
+# 5. Comparar el estado final con el reporte .integridad.txt del respaldo.
 # ============================================================================
 
+export MSYS_NO_PATHCONV=1
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -46,6 +48,10 @@ if [ "$TAMANIO" -eq 0 ]; then
     exit 1
 fi
 
+ARCHIVO_INTEGRIDAD="${ARCHIVO_RESPALDO%.*}.integridad.txt"
+TMP_POST_INTEGRIDAD="$(mktemp)"
+trap 'rm -f "$TMP_POST_INTEGRIDAD"' EXIT
+
 echo "============================================================"
 echo "  RESTAURACIÓN DE BASE DE DATOS — CACAO TRAZABILIDAD        "
 echo "============================================================"
@@ -78,7 +84,7 @@ if [ "$MODO" = "DOCKER" ]; then
 
     echo ""
     echo ">>> ESTADO DE INTEGRIDAD DESPUÉS DE RESTAURAR <<<"
-    docker compose exec -T db psql -U cacao -d cacao -f /datos/scripts/verificar_integridad.sql
+    docker compose exec -T db psql -U cacao -d cacao -f /datos/scripts/verificar_integridad.sql | tee "$TMP_POST_INTEGRIDAD"
 else
     echo "[MODO LOCAL DETECTADO]"
 
@@ -98,20 +104,55 @@ else
         export PGPASSWORD="$POSTGRES_PASSWORD"
     fi
 
+    # Si psql o pg_restore no están en el PATH, buscar en rutas estándar de Windows (Git Bash)
+    if ! command -v psql >/dev/null 2>&1 || ! command -v pg_restore >/dev/null 2>&1; then
+        for pg_dir in /c/Program\ Files/PostgreSQL/*/bin; do
+            if [ -d "$pg_dir" ]; then
+                export PATH="$pg_dir:$PATH"
+            fi
+        done
+    fi
+
+    RUTA_RESPALDO_PG="$ARCHIVO_RESPALDO"
+    RUTA_SCRIPT_PG="$SCRIPT_INTEGRIDAD"
+    if command -v cygpath >/dev/null 2>&1; then
+        RUTA_RESPALDO_PG="$(cygpath -w "$ARCHIVO_RESPALDO")"
+        RUTA_SCRIPT_PG="$(cygpath -w "$SCRIPT_INTEGRIDAD")"
+    fi
+
     echo ""
     echo ">>> ESTADO DE INTEGRIDAD ANTES DE RESTAURAR <<<"
-    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_INTEGRIDAD"
+    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$RUTA_SCRIPT_PG"
 
     echo ""
     echo "Terminando conexiones activas y recreando base de datos '$DB_NAME'..."
     psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d postgres -c "DROP DATABASE IF EXISTS $DB_NAME WITH (FORCE);" -c "CREATE DATABASE $DB_NAME;"
 
     echo "Restaurando respaldo con pg_restore..."
-    pg_restore -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" --no-owner "$ARCHIVO_RESPALDO" || true
+    pg_restore -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" --no-owner "$RUTA_RESPALDO_PG" || true
 
     echo ""
     echo ">>> ESTADO DE INTEGRIDAD DESPUÉS DE RESTAURAR <<<"
-    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$SCRIPT_INTEGRIDAD"
+    psql -h "$DB_HOST" -p "$DB_PORT" -U "$DB_USER" -d "$DB_NAME" -f "$RUTA_SCRIPT_PG" | tee "$TMP_POST_INTEGRIDAD"
+fi
+
+# Comparación con el reporte de integridad del respaldo original
+if [ -f "$ARCHIVO_INTEGRIDAD" ]; then
+    echo ""
+    echo "------------------------------------------------------------"
+    echo "  COMPARACIÓN CON REPORTE DE INTEGRIDAD ORIGINAL            "
+    echo "------------------------------------------------------------"
+    if diff -u -w -B <(tr -d '\r' < "$ARCHIVO_INTEGRIDAD") <(tr -d '\r' < "$TMP_POST_INTEGRIDAD") >/dev/null 2>&1; then
+        echo "[INTEGRIDAD CONFIRMADA] El estado restaurado COINCIDE EXACTAMENTE con el respaldo original."
+        echo "Conteos, balances de masa, inconsistencias (0) y códigos de lotes son 100% idénticos."
+    else
+        echo "[ADVERTENCIA] Se detectaron discrepancias frente al reporte de integridad original:"
+        echo "Archivo de referencia: $ARCHIVO_INTEGRIDAD"
+        diff -u -w -B <(tr -d '\r' < "$ARCHIVO_INTEGRIDAD") <(tr -d '\r' < "$TMP_POST_INTEGRIDAD") || true
+    fi
+else
+    echo ""
+    echo "[NOTA] No se encontró $ARCHIVO_INTEGRIDAD para comparación automática."
 fi
 
 echo "------------------------------------------------------------"

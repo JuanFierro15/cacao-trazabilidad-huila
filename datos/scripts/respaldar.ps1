@@ -5,6 +5,7 @@
 # - MODO DOCKER: si el servicio db de docker compose esta activo.
 # - MODO LOCAL: si no hay Docker o no esta corriendo el servicio db.
 # Siempre escribe usando -f (NUNCA redireccion '>', que corrompe binarios en PowerShell).
+# Genera junto al .dump un reporte de integridad (.integridad.txt).
 # ============================================================================
 
 [CmdletBinding()]
@@ -18,6 +19,7 @@ $ErrorActionPreference = "Stop"
 $DirectorioScript = $PSScriptRoot
 $RaizRepo = (Resolve-Path (Join-Path $DirectorioScript "..\..")).Path
 $DirectorioRespaldos = Join-Path $RaizRepo "datos\respaldos"
+$ScriptIntegridad = Join-Path $DirectorioScript "verificar_integridad.sql"
 
 if (-not (Test-Path $DirectorioRespaldos)) {
     New-Item -ItemType Directory -Path $DirectorioRespaldos -Force | Out-Null
@@ -31,6 +33,8 @@ if (-not $ArchivoSalida) {
         $ArchivoSalida = Join-Path (Get-Location) $ArchivoSalida
     }
 }
+
+$ArchivoIntegridad = [System.IO.Path]::ChangeExtension($ArchivoSalida, ".integridad.txt")
 
 Write-Host "============================================================" -ForegroundColor Cyan
 Write-Host "  RESPALDO DE BASE DE DATOS - CACAO CON HISTORIA Y CALIDAD  " -ForegroundColor Cyan
@@ -68,6 +72,10 @@ if ($ModoDocker) {
         Write-Error ("Error al ejecutar pg_dump dentro del contenedor Docker (codigo: " + $LASTEXITCODE + ")")
         exit $LASTEXITCODE
     }
+
+    Write-Host "Generando reporte de integridad del respaldo..."
+    $salidaIntegridad = & docker compose exec -T db psql -U cacao -d cacao -f /datos/scripts/verificar_integridad.sql
+    $salidaIntegridad | Set-Content -Path $ArchivoIntegridad -Encoding utf8
 } else {
     Write-Host "[MODO LOCAL DETECTADO]" -ForegroundColor Yellow
     Write-Host "Usando herramientas locales de PostgreSQL y variables de .env"
@@ -114,14 +122,21 @@ if ($ModoDocker) {
         Write-Error ("Error al ejecutar pg_dump en modo local (codigo: " + $LASTEXITCODE + ")")
         exit $LASTEXITCODE
     }
+
+    Write-Host "Generando reporte de integridad del respaldo..."
+    $salidaIntegridad = & psql -h $dbHost -p $dbPort -U $dbUser -d $dbName -f $ScriptIntegridad
+    $salidaIntegridad | Set-Content -Path $ArchivoIntegridad -Encoding utf8
 }
 
 if (Test-Path $ArchivoSalida) {
     $tamanio = (Get-Item $ArchivoSalida).Length
     Write-Host "------------------------------------------------------------" -ForegroundColor Green
     Write-Host "Respaldo completado con exito:" -ForegroundColor Green
-    Write-Host ("  Archivo : " + $ArchivoSalida)
-    Write-Host ("  Tamano  : " + $tamanio + " bytes")
+    Write-Host ("  Archivo .dump      : " + $ArchivoSalida)
+    Write-Host ("  Tamano             : " + $tamanio + " bytes")
+    if (Test-Path $ArchivoIntegridad) {
+        Write-Host ("  Reporte integridad : " + $ArchivoIntegridad)
+    }
     Write-Host "------------------------------------------------------------" -ForegroundColor Green
 } else {
     Write-Error ("El archivo de respaldo no fue creado: " + $ArchivoSalida)
