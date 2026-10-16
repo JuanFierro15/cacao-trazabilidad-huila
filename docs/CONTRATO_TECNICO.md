@@ -1,6 +1,6 @@
 # Contrato técnico — Trazabilidad de cacao Asoprocacao
 
-Fuente única de verdad para las tres ramas. Si el código y este documento no coinciden, manda este documento hasta que se acuerde un cambio.
+Fuente única de verdad para todas las ramas. Si el código y este documento no coinciden, manda este documento hasta que se acuerde un cambio.
 
 **Cómo se cambia:** se edita en un PR propio hacia `main` con prefijo `docs(contrato):`, se avisa en el grupo y cada rama hace `git pull origin main`. Nadie cambia el contrato en silencio dentro de su rama.
 
@@ -10,13 +10,14 @@ Fuente única de verdad para las tres ramas. Si el código y este documento no c
 
 | Integrante | Rama | Es dueño de |
 |---|---|---|
-| Miguel Ángel Medina Díaz | `feat/backend-api` | `backend/**` excepto `backend/src/main/resources/db/migration/` |
-| Juan Manuel Villalba Rincón | `feat/db-datos` | `backend/src/main/resources/db/migration/`, `datos/**`, `pitch/**` |
-| Juan David Fierro Calderón | `feat/frontend-ui` | `frontend/**`; integra `main` y cierra `README.md` y `ENTREGA.md` |
+| Miguel Ángel Medina Díaz | `feat/backend-api` | Base de datos y backend: `backend/**` (incluidas las migraciones), `datos/scripts/` |
+| Juan David Fierro Calderón | `feat/frontend-ui` y luego `feat/integracion` | `frontend/**`; en integración: `datos/rendimiento/`, `datos/respaldos/`, `README.md`, `ENTREGA.md`, `pitch/` (sube los archivos que entrega Juan Manuel) |
+| Juan Manuel Villalba Rincón | ninguna | Sin archivos propios. No programa ni hace commits: revisa la documentación contra lo construido, ejecuta los casos de prueba manuales, coordina la prueba de usabilidad, hace la instalación limpia final y prepara el pitch, que entrega a Juan David |
 
 Reglas:
 - Nadie edita archivos fuera de su carpeta. Si lo necesita, pide el cambio al dueño.
-- Las migraciones aplicadas (`V1`, `V2`, ...) **no se editan nunca**. Flyway guarda un checksum de cada una; si cambia, el backend no arranca. Un cambio de esquema es siempre una migración nueva `V<n+1>__descripcion.sql`, la escribe Juan Manuel y se avisa en el grupo.
+- Base de datos y backend tienen un solo dueño (Miguel) porque las entidades JPA y el esquema cambian juntos: separar esas dos tareas entre dos personas genera esperas y conflictos.
+- Las migraciones aplicadas (`V1`, `V2`, ...) **no se editan nunca**. Flyway guarda un checksum de cada una; si cambia, el backend no arranca. Un cambio de esquema es siempre una migración nueva `V<n+1>__descripcion.sql`, la escribe Miguel y se avisa en el grupo.
 - `documentos/` se llena al final desde `main`.
 
 ## 2. Stack y versiones
@@ -26,7 +27,7 @@ Reglas:
 | Base de datos | PostgreSQL 16 (Docker, imagen `postgres:16-alpine`) |
 | Migraciones | Flyway (gestionado por Spring Boot) + `flyway-database-postgresql` |
 | Backend | Java 21, Spring Boot **3.5.16**, Spring Web, Spring Security, Spring Data JPA, Bean Validation, jjwt 0.12.6 |
-| Pruebas backend | JUnit 5, Spring Boot Test, Spring Security Test, Testcontainers (PostgreSQL) |
+| Pruebas backend | JUnit 5, Spring Boot Test, Spring Security Test; integración con perfil `test` sobre una base PostgreSQL real `cacao_test` (sin Testcontainers, porque no todos tienen Docker) |
 | Frontend | Node 22 LTS, React 19, Vite, Tailwind CSS v4 (`@tailwindcss/vite`), React Router 7, `qrcode.react` |
 | Lenguaje frontend | JavaScript (JSX), sin TypeScript |
 
@@ -61,7 +62,7 @@ El reto pide `src/` y `tests/`; se acepta estructura equivalente si `ENTREGA.md`
 
 | Servicio | Puerto | Nota |
 |---|---|---|
-| PostgreSQL | **5433** en el host (5432 dentro del contenedor) | 5433 para no chocar con un PostgreSQL local |
+| PostgreSQL | **5433** en Docker (5432 dentro del contenedor); en modo local, el puerto del servidor instalado | se define en `DB_PORT` del `.env` de cada uno |
 | Backend | 8080 | `http://localhost:8080/api` |
 | Frontend | 5173 | Vite con `server.host: true` para abrir desde el celular |
 
@@ -70,6 +71,13 @@ El reto pide `src/` y `tests/`; se acepta estructura equivalente si `ENTREGA.md`
 - `JWT_SECRET` debe tener al menos 32 caracteres (HS256 exige 256 bits; jjwt lanza `WeakKeyException` si es más corto).
 - En desarrollo el frontend llama a `/api/...` y Vite lo redirige a `http://localhost:8080` (proxy). Así no hay CORS en desarrollo. El backend igual permite `APP_CORS_ORIGENES`.
 - URL que codifica el QR: `${VITE_PUBLIC_BASE_URL || window.location.origin}/ficha/{codigoLote}`. Para el celular, `VITE_PUBLIC_BASE_URL=http://<IP-del-PC-en-la-red>:5173`.
+- **Dos modos de base de datos.** Cada integrante tiene su propia base local; no se comparten datos entre PCs, solo código.
+  - **Modo Docker:** `docker compose up -d` levanta PostgreSQL 16 en el puerto 5433.
+  - **Modo local (sin Docker):** PostgreSQL instalado en el PC (16 recomendado, mínimo 13). Se crea una vez el usuario y la base con el superusuario del servidor:
+    `psql -U postgres -p <puerto> -c "CREATE ROLE cacao LOGIN PASSWORD '<la de .env>' CREATEDB;" -c "CREATE DATABASE cacao OWNER cacao;"`
+    y se pone ese puerto en `DB_PORT`. La carpeta `bin` de PostgreSQL debe estar en el PATH (`psql`, `pg_dump`, `pg_restore`), y `pg_dump` debe ser de la misma versión mayor que el servidor.
+  - En los dos modos, Flyway crea las tablas y carga los datos al arrancar el backend.
+  - Base de pruebas: `cacao_test` (modo local: `psql -U cacao -p <puerto> -d cacao -c "CREATE DATABASE cacao_test;"`; modo Docker: `docker compose exec db createdb -U cacao cacao_test`).
 - Zona horaria: `America/Bogota`. Fechas `YYYY-MM-DD`; marcas de tiempo ISO-8601 con desfase (`2026-10-15T20:10:00-05:00`).
 
 ## 5. Modelo de datos
@@ -442,7 +450,7 @@ Qué se audita, en la misma transacción del cambio:
 
 - `V2` carga productores PRD-A, PRD-B, PRD-C y lotes **CAC001 (100 kg, Rivera)**, **CAC002 (150 kg, Campoalegre)**, **CAC003 (80 kg, Algeciras)**, todos SECO y PENDIENTE.
 - CAC001 arranca **sin transformaciones**: el jurado registra en vivo 100 kg → 80 kg. Para ensayar se trabaja sobre otro lote o se restaura `respaldo_demo.dump` antes de la evaluación.
-- Datos de rendimiento: prefijo `PERF`, se cargan con un script aparte en `datos/rendimiento/` y nunca van en una migración Flyway.
+- Datos de rendimiento: prefijo `PERF`, se cargan con un script aparte en `datos/rendimiento/` y nunca van en una migración Flyway. La medición oficial se hace en el PC de la demostración (el de Juan David).
 
 ## 10. Pruebas del jurado → comportamiento esperado
 
@@ -453,7 +461,7 @@ Qué se audita, en la misma transacción del cambio:
 | 3 | Transformar 100 → 80 | `POST /api/transformaciones` | 201, merma 20,00 %, alerta MERMA_ALTA, aparece en trazabilidad |
 | 4 | Costo y margen | `GET .../balance` | 20.000 COP/kg y 20,00 %, fórmulas y supuestos en la respuesta |
 | 5 | Ficha como comprador | `GET /api/public/ficha/{codigo}` | sin ningún campo de la lista prohibida |
-| 6 | Reiniciar y restaurar | scripts de `datos/scripts/` | mismos conteos, sumas e identificadores antes y después |
+| 6 | Reiniciar y restaurar | scripts de `datos/scripts/` (detectan modo Docker o local) | mismos conteos, sumas e identificadores antes y después |
 | 7 | Consumir de más y reenviar | `POST /api/transformaciones` ×2 | 422 INVENTARIO_INSUFICIENTE; reenvío → 409 OPERACION_DUPLICADA, inventario intacto |
 | 8 | Bloquear CAC001 | `PATCH .../estado` + ficha | ficha BLOQUEADO, `disponibleParaVenta: false`, origen visible, historial intacto |
 | 9 | Liberar como operador | `PATCH .../estado` con token de operador | 403; el cambio hecho por admin1 aparece en `GET /api/auditoria` |
