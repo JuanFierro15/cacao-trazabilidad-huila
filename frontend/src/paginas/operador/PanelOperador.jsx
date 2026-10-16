@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { obtenerLotes } from '../../api/servicios.js'
 import { useAuth } from '../../auth/useAuth.js'
 import { MensajeError } from '../../componentes/MensajeError.jsx'
@@ -13,6 +14,14 @@ export function PanelOperador() {
       <div>
         <h1 className="text-2xl font-bold">Panel del operador</h1>
         <p className="mt-1 text-cacao/80">Hola, {sesion?.nombreCompleto}.</p>
+        <div className="mt-3">
+          <Link
+            to="/operador/recepcion"
+            className="inline-block rounded-md bg-cacao px-4 py-2 text-sm font-semibold text-crema hover:bg-cacao/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mazorca"
+          >
+            Registrar recepción
+          </Link>
+        </div>
       </div>
 
       <section aria-labelledby="titulo-lotes-operador" className="space-y-3">

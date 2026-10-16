@@ -19,3 +19,7 @@ export function obtenerLotes(filtros = {}) {
 export function obtenerLote(codigo) {
   return api.get('/lotes/' + encodeURIComponent(codigo))
 }
+
+export function registrarLote(datos) {
+  return api.post('/lotes', datos)
+}

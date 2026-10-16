@@ -5,10 +5,14 @@ import { AvisoSimulacion } from './AvisoSimulacion.jsx'
 
 // Un arreglo por rol para que los bloques siguientes solo agreguen entradas.
 const NAVEGACION_POR_ROL = {
-  [ROLES.OPERADOR]: [{ a: '/operador', texto: 'Panel del operador' }],
+  [ROLES.OPERADOR]: [
+    { a: '/operador', texto: 'Panel del operador' },
+    { a: '/operador/recepcion', texto: 'Recepción de lotes' },
+  ],
   [ROLES.ADMINISTRADOR]: [
     { a: '/admin', texto: 'Panel del administrador' },
     { a: '/operador', texto: 'Operación' },
+    { a: '/operador/recepcion', texto: 'Recepción de lotes' },
   ],
 }
 

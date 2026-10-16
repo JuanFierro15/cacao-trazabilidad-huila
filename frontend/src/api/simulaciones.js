@@ -1,3 +1,5 @@
+import { formatearNumero } from '../utilidades/formato.js'
+
 // Simulación del backend para avanzar antes de que existan los endpoints reales.
 // Solo se descarga con VITE_USE_MOCKS=true (import dinámico en cliente.js).
 // El estado vive en memoria y se reinicia al recargar la página.
@@ -61,6 +63,8 @@ const lotes = [
   loteRecepcionSemilla(2, 'CAC002', 2, 'Campoalegre', 7.2, 150),
   loteRecepcionSemilla(3, 'CAC003', 3, 'Algeciras', 7.8, 80),
 ]
+
+const alertas = []
 
 const REGLAS = {
   umbralMermaPorcentaje: 15.0,
@@ -225,6 +229,148 @@ function manejarDetalleLote({ parametros }) {
   return respuesta(200, aLoteDTO(lote))
 }
 
+function manejarCrearLote({ cuerpo }) {
+  const errores = []
+
+  const productorId = cuerpo?.productorId
+  if (productorId === null || productorId === undefined || productorId === '') {
+    errores.push({ campo: 'productorId', mensaje: 'Es obligatorio' })
+  } else if (!Number.isInteger(productorId) || !productores.some((p) => p.id === productorId)) {
+    errores.push({ campo: 'productorId', mensaje: 'No existe el productor seleccionado' })
+  }
+
+  const fechaTexto = texto(cuerpo?.fechaRecepcion)
+  if (!fechaTexto) {
+    errores.push({ campo: 'fechaRecepcion', mensaje: 'Es obligatorio' })
+  } else if (!/^\d{4}-\d{2}-\d{2}$/.test(fechaTexto)) {
+    errores.push({ campo: 'fechaRecepcion', mensaje: 'Use una fecha válida (AAAA-MM-DD)' })
+  } else {
+    const [anio, mes, dia] = fechaTexto.split('-').map(Number)
+    const dt = new Date(Date.UTC(anio, mes - 1, dia))
+    if (dt.getUTCFullYear() !== anio || dt.getUTCMonth() + 1 !== mes || dt.getUTCDate() !== dia) {
+      errores.push({ campo: 'fechaRecepcion', mensaje: 'Use una fecha válida (AAAA-MM-DD)' })
+    }
+  }
+
+  const tipoGrano = cuerpo?.tipoGrano
+  if (tipoGrano === null || tipoGrano === undefined || tipoGrano === '') {
+    errores.push({ campo: 'tipoGrano', mensaje: 'Es obligatorio' })
+  } else if (tipoGrano !== 'SECO' && tipoGrano !== 'BABA') {
+    errores.push({ campo: 'tipoGrano', mensaje: 'Debe ser SECO o BABA' })
+  }
+
+  const humedad = cuerpo?.porcentajeHumedad
+  if (humedad !== null && humedad !== undefined) {
+    if (typeof humedad !== 'number' || !Number.isFinite(humedad)) {
+      errores.push({ campo: 'porcentajeHumedad', mensaje: 'Debe ser un número' })
+    } else if (humedad < 0 || humedad > 100) {
+      errores.push({ campo: 'porcentajeHumedad', mensaje: 'Debe estar entre 0 y 100' })
+    }
+  }
+
+  const cantidad = cuerpo?.cantidadRecibida
+  if (cantidad === null || cantidad === undefined || cantidad === '') {
+    errores.push({ campo: 'cantidadRecibida', mensaje: 'Es obligatorio' })
+  } else if (typeof cantidad !== 'number' || !Number.isFinite(cantidad)) {
+    errores.push({ campo: 'cantidadRecibida', mensaje: 'Debe ser un número' })
+  } else if (cantidad <= 0) {
+    errores.push({ campo: 'cantidadRecibida', mensaje: 'Debe ser mayor que 0' })
+  }
+
+  const codigoLimpio = texto(cuerpo?.codigoLote)
+  if (codigoLimpio && !/^[A-Z0-9-]{3,30}$/.test(codigoLimpio)) {
+    errores.push({ campo: 'codigoLote', mensaje: 'Use de 3 a 30 caracteres: letras mayúsculas, números o guion' })
+  }
+
+  if (errores.length > 0) {
+    return respuestaError(
+      400,
+      'VALIDACION',
+      'Hay datos inválidos o sin completar. Revise los campos marcados.',
+      errores,
+    )
+  }
+
+  if (codigoLimpio && lotes.some((l) => l.codigoLote === codigoLimpio)) {
+    return respuestaError(
+      409,
+      'LOTE_DUPLICADO',
+      `Ya existe un lote con el código ${codigoLimpio}. Use otro código o deje el campo vacío para que el sistema asigne uno.`,
+    )
+  }
+
+  let codigoFinal = codigoLimpio
+  if (!codigoFinal) {
+    let maxNum = 0
+    for (const l of lotes) {
+      const match = /^CAC(\d+)$/.exec(l.codigoLote)
+      if (match) {
+        const num = parseInt(match[1], 10)
+        if (num > maxNum) maxNum = num
+      }
+    }
+    codigoFinal = `CAC${String(maxNum + 1).padStart(3, '0')}`
+  }
+
+  const anioLote = fechaTexto.slice(0, 4)
+  const productor = productores.find((p) => p.id === productorId)
+  const previo = lotes
+    .filter(
+      (l) => l.tipoLote === 'RECEPCION' && l.productorId === productor.id && l.fechaRecepcion.startsWith(`${anioLote}-`),
+    )
+    .reduce((suma, l) => suma + l.cantidadRecibida, 0)
+  const cantidadRedondeada = Math.round(cantidad * 1000) / 1000
+  const total = Math.round((previo + cantidadRedondeada) * 1000) / 1000
+  const alertasGeneradas = []
+
+  if (total > productor.cuotaMaximaKg) {
+    const siguienteIdAlerta = alertas.length > 0 ? Math.max(...alertas.map((a) => a.id)) + 1 : 1
+    const cuotaFormateada = formatearNumero(productor.cuotaMaximaKg, 3)
+    const hectareasFormateada = formatearNumero(productor.hectareasProductivas, 2)
+    const reglaAplicada = `Entregas del año por encima de la cuota de plausibilidad de la finca (${cuotaFormateada} kg)`
+    const causa = `${productor.nombreProductor} (${productor.nombreFinca}, ${hectareasFormateada} ha) suma ${formatearNumero(total, 3)} kg en ${anioLote}: ${formatearNumero(previo, 3)} kg entregados antes y ${formatearNumero(cantidadRedondeada, 3)} kg en este lote. La cuota es de ${cuotaFormateada} kg (${hectareasFormateada} ha × ${formatearNumero(REGLAS.rendimientoPlausibleKgHaAnio, 3)} kg/ha/año). La recepción quedó registrada; verifique el origen del grano.`
+
+    const alerta = {
+      id: siguienteIdAlerta,
+      tipoAlerta: 'CUOTA_EXCEDIDA',
+      loteCodigo: codigoFinal,
+      transformacionId: null,
+      reglaAplicada,
+      causa,
+      valorMedido: total,
+      umbral: productor.cuotaMaximaKg,
+      fechaGeneracion: isoBogota(),
+      activa: true,
+    }
+    alertas.push(alerta)
+    alertasGeneradas.push(alerta)
+  }
+
+  const siguienteIdLote = lotes.length > 0 ? Math.max(...lotes.map((l) => l.id)) + 1 : 1
+  const nuevoLote = {
+    id: siguienteIdLote,
+    codigoLote: codigoFinal,
+    tipoLote: 'RECEPCION',
+    producto: tipoGrano === 'SECO' ? 'Cacao seco' : 'Cacao en baba',
+    productorId: productor.id,
+    origenMunicipio: productor.municipio,
+    fechaRecepcion: fechaTexto,
+    tipoGrano,
+    porcentajeHumedad: humedad !== undefined && humedad !== null ? humedad : null,
+    cantidadRecibida: cantidadRedondeada,
+    cantidadConsumida: 0,
+    cantidadDisponible: cantidadRedondeada,
+    unidad: 'kg',
+    estado: 'PENDIENTE',
+    motivoEstado: null,
+    lotesPadre: [],
+    alertasActivas: alertasGeneradas.length,
+  }
+  lotes.push(nuevoLote)
+
+  return respuesta(201, { lote: aLoteDTO(nuevoLote), alertasGeneradas })
+}
+
 // --- Tabla de rutas: matriz completa de la sección 7 ---
 // Las rutas sin manejador existen para que los permisos (401/403) se simulen
 // igual que en el backend aunque la función aún no esté construida.
@@ -235,7 +381,7 @@ const RUTAS = [
 
   { metodo: 'GET', patron: /^\/config\/reglas$/, roles: AMBOS_ROLES, manejador: manejarReglas },
   { metodo: 'GET', patron: /^\/productores$/, roles: AMBOS_ROLES, manejador: manejarProductores },
-  { metodo: 'POST', patron: /^\/lotes$/, roles: AMBOS_ROLES },
+  { metodo: 'POST', patron: /^\/lotes$/, roles: AMBOS_ROLES, manejador: manejarCrearLote },
   { metodo: 'GET', patron: /^\/lotes$/, roles: AMBOS_ROLES, manejador: manejarListaLotes },
   { metodo: 'GET', patron: /^\/lotes\/([^/]+)$/, roles: AMBOS_ROLES, manejador: manejarDetalleLote },
   { metodo: 'GET', patron: /^\/lotes\/([^/]+)\/trazabilidad$/, roles: AMBOS_ROLES },

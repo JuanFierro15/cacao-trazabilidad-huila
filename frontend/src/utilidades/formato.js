@@ -58,6 +58,25 @@ export function formatearFechaHora(isoConDesfase) {
   }).format(fecha)
 }
 
+export function leerDecimal(texto) {
+  if (texto === null || texto === undefined) return null
+  if (typeof texto !== 'string') {
+    if (typeof texto === 'number' && Number.isFinite(texto)) return texto
+    return NaN
+  }
+  const limpio = texto.trim()
+  if (limpio === '') return null
+  const normalizado = limpio.replace(',', '.')
+  if (/^-?\d+(\.\d+)?$/.test(normalizado)) {
+    return Number(normalizado)
+  }
+  return NaN
+}
+
+export function fechaHoyBogota() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: ZONA_HORARIA }).format(new Date())
+}
+
 const ETIQUETAS_ESTADO = {
   PENDIENTE: 'Pendiente',
   LIBERADO: 'Liberado',
@@ -66,4 +85,33 @@ const ETIQUETAS_ESTADO = {
 
 export function etiquetaEstado(estado) {
   return ETIQUETAS_ESTADO[estado] ?? estado ?? SIN_VALOR
+}
+
+const ETIQUETAS_TIPO_GRANO = {
+  SECO: 'Seco',
+  BABA: 'En baba',
+}
+
+export function etiquetaTipoGrano(tipo) {
+  return ETIQUETAS_TIPO_GRANO[tipo] ?? tipo ?? SIN_VALOR
+}
+
+const ETIQUETAS_TIPO_LOTE = {
+  RECEPCION: 'Recepción',
+  DERIVADO: 'Derivado',
+}
+
+export function etiquetaTipoLote(tipo) {
+  return ETIQUETAS_TIPO_LOTE[tipo] ?? tipo ?? SIN_VALOR
+}
+
+const ETIQUETAS_TIPO_ALERTA = {
+  CUOTA_EXCEDIDA: 'Cuota de plausibilidad excedida',
+  MERMA_ALTA: 'Merma alta',
+  SOBRECOSTO: 'Sobrecosto',
+  REGISTRO_INCOMPLETO: 'Registro incompleto',
+}
+
+export function etiquetaTipoAlerta(tipo) {
+  return ETIQUETAS_TIPO_ALERTA[tipo] ?? tipo ?? SIN_VALOR
 }
