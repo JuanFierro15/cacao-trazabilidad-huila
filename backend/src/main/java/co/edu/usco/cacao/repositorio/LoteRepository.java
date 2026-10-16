@@ -50,7 +50,7 @@ public interface LoteRepository extends JpaRepository<Lote, Long> {
         SELECT l
           FROM Lote l
           JOIN FETCH l.productor
-         WHERE (:origen IS NULL OR LOWER(l.origenMunicipio) = LOWER(:origen))
+         WHERE (:origen IS NULL OR LOWER(l.origenMunicipio) = :origen)
            AND (:estado IS NULL OR l.estado = :estado)
            AND (:tipo IS NULL OR l.tipoLote = :tipo)
          ORDER BY l.id ASC
