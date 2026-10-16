@@ -104,16 +104,26 @@ export function PaginaInicio() {
         </div>
       </header>
 
-      <main className="flex-1">
+      <main className="min-w-0 flex-1 overflow-x-clip">
         {/* Héroe */}
-        <section className="mx-auto max-w-6xl px-4 py-10 md:py-16">
-          <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-12 md:gap-10">
-            <div className="space-y-6 md:col-span-7">
-              <h1 className="font-display text-5xl font-bold leading-none tracking-tight text-cacao md:text-7xl">
+        <section className="relative isolate w-full max-w-full overflow-hidden bg-cacao text-crema">
+          <FondoVideo
+            src="/assets/hero-productores.mp4"
+            poster="/assets/hero-productores-poster.jpg"
+            className="inset-0 absolute h-full w-full"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-linear-to-r/oklab from-cacao/90 via-cacao/80 to-cacao/50"
+          />
+
+          <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 pb-18 md:py-24">
+            <div className="max-w-2xl space-y-6">
+              <h1 className="font-display text-5xl font-bold leading-none tracking-tight text-crema md:text-7xl">
                 Del cultivo al comprador, cada grano con su historia
               </h1>
 
-              <p className="max-w-2xl text-base leading-relaxed text-cacao/85 md:text-lg">
+              <p className="text-base leading-relaxed text-crema/90 md:text-lg">
                 Asoprocacao registra el acopio, la transformación y la venta de su cacao en una sola
                 plataforma. Cada lote sale con una ficha pública y un código QR que muestran su
                 origen, su recorrido y si está disponible para la venta.
@@ -121,7 +131,7 @@ export function PaginaInicio() {
 
               <div
                 id="consulta"
-                className="scroll-mt-24 space-y-3 rounded-xl border border-cacao/20 bg-arena/50 p-5"
+                className="scroll-mt-24 space-y-3 rounded-2xl border border-mazorca/30 bg-arena/80 p-5 text-cacao shadow-md backdrop-blur-sm"
               >
                 <p className="text-sm font-medium text-cacao">
                   ¿Compró cacao de Asoprocacao? Escriba el código impreso en el empaque o escanee el
@@ -133,20 +143,11 @@ export function PaginaInicio() {
               <div>
                 <Link
                   to="/login"
-                  className={`inline-block rounded px-1 py-1 text-sm font-semibold text-cacao underline decoration-mazorca decoration-2 underline-offset-4 transition-colors hover:text-mazorca-oscuro ${FOCO}`}
+                  className={`inline-block rounded px-1 py-1 text-sm font-semibold text-crema underline decoration-mazorca decoration-2 underline-offset-4 transition-colors hover:text-arena ${FOCO}`}
                 >
                   Ingresar al sistema
                 </Link>
               </div>
-            </div>
-
-            <div className="md:col-span-5">
-              <FondoVideo
-                src="/assets/hero-productores.mp4"
-                poster="/assets/hero-productores-poster.jpg"
-                mascara={true}
-                className="aspect-video w-full rounded-2xl bg-arena"
-              />
             </div>
           </div>
         </section>

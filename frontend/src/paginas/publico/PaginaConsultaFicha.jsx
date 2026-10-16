@@ -59,11 +59,11 @@ export function FormularioConsultaFicha({ valorInicial = '' }) {
             }}
             aria-invalid={errorValidacion ? true : undefined}
             aria-describedby={errorValidacion ? 'error-codigo-producto' : undefined}
-            className={`block w-full rounded-md border border-cacao/30 bg-white px-3 py-2 text-base text-cacao ${FOCO} aria-invalid:border-red-700`}
+            className={`block w-full rounded-md border border-cacao/30 bg-crema/75 px-3 py-2 text-base text-cacao shadow-inner transition-colors focus:bg-crema/95 ${FOCO} aria-invalid:border-red-700`}
           />
           <button
             type="submit"
-            className={`rounded-md bg-cacao px-5 py-2 font-semibold text-crema hover:bg-cacao/90 sm:shrink-0 ${FOCO}`}
+            className={`rounded-md bg-cacao px-5 py-2 font-semibold text-crema shadow-xs transition-colors hover:bg-cacao/90 sm:shrink-0 ${FOCO}`}
           >
             Ver ficha
           </button>
