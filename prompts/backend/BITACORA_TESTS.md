@@ -224,3 +224,56 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
   5. `exportarCsvConFormatoParaExcel`: `GET /api/reportes/exportar-csv` (con o sin `Accept: application/json`) responde con `text/csv;charset=UTF-8`, `Content-Disposition: attachment; filename="lotes_YYYYMMDD_HHmm.csv"`, BOM UTF-8 (`EF BB BF`), separador `;`, 13 columnas del contrato, valores decimales con coma (`,`), costos calculados de la transformación productora (`1600000,00;20000,00;25000,00;20,00` en `CAC001-T1`), filtrado por municipio (`origen=rivera`) y estado, rechazo con `400 VALIDACION` para estados inválidos, y `403 ACCESO_DENEGADO` para operadores.
 
 
+---
+
+## Detalle del Bloque B7 — Respaldo, restauración e integridad
+
+- **Fecha y hora:** `2026-10-16T01:28:29-05:00`
+- **Comandos:**
+  1. `powershell.exe -ExecutionPolicy Bypass -File .\datos\scripts\respaldar.ps1`
+  2. Inserción de lote de prueba temporal `TEMP-TEST-001` (50 kg) en `cacao`
+  3. `powershell.exe -ExecutionPolicy Bypass -File .\datos\scripts\restaurar.ps1`
+  4. `.\mvnw.cmd test`
+- **Salida real de Surefire (`mvnw.cmd test`):**
+
+```text
+[INFO] Running co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.168 s -- in co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Running co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.38 s -- in co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Running co.edu.usco.cacao.servicio.CalculadoraTransformacionTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.043 s -- in co.edu.usco.cacao.servicio.CalculadoraTransformacionTest
+[INFO] Running co.edu.usco.cacao.web.IncidenciaRecallCsvTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.684 s -- in co.edu.usco.cacao.web.IncidenciaRecallCsvTest
+[INFO] Running co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.793 s -- in co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Running co.edu.usco.cacao.web.TransformacionIntegracionTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.011 s -- in co.edu.usco.cacao.web.TransformacionIntegracionTest
+[INFO] Running co.edu.usco.cacao.web.TrazabilidadFichaEstadoAuditoriaTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.756 s -- in co.edu.usco.cacao.web.TrazabilidadFichaEstadoAuditoriaTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 42, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  26.880 s
+[INFO] Finished at: 2026-10-16T01:28:29-05:00
+[INFO] ------------------------------------------------------------------------
+```
+
+- **Verificaciones del ciclo de respaldo y restauración:**
+  1. **Generación de respaldo (`respaldar.ps1`):** detección de modo local desde `.env`, extracción de binarios PostgreSQL nativos y ejecución de `pg_dump -Fc -f` sin redirección `>`, generando `datos/respaldos/respaldo_20261016_012538.dump` (33,416 bytes).
+  2. **Verificación de integridad (`verificar_integridad.sql`):** valida 8 conteos de entidades principales, balance de masa global (`recibida = consumida + disponible`, discrepancia 0.000 kg), 0 filas en inconsistencias individuales, y lista ordenada de códigos (`CAC001`, `CAC002`, `CAC003`).
+  3. **Simulación de alteración:** inserción del lote temporal `TEMP-TEST-001` (50 kg) en la base `cacao`.
+  4. **Restauración completa (`restaurar.ps1`):**
+     - Muestra el estado previo con 4 lotes (380.000 kg).
+     - Ejecuta `DROP DATABASE IF EXISTS cacao WITH (FORCE); CREATE DATABASE cacao;`.
+     - Aplica `pg_restore --no-owner`.
+     - Muestra el estado posterior: exactamente 3 lotes originales (330.000 kg), 0 inconsistencias, y confirmación de que el lote temporal desapareció por completo.
+  5. **Estabilidad del backend:** los 42 tests de integración siguen pasando en verde sobre `cacao_test`, y `DataInitializer` inicializa usuarios sin errores de duplicidad ni fallos de migración en Flyway.
+
+
+
