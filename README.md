@@ -219,4 +219,4 @@ Programa de Ingeniería de Software, Universidad Surcolombiana.
 ## 11. Instalación limpia verificada
 
 - **Compilación y pruebas desde un clon nuevo** (Juan David, 16/10/2026 a las 06:24, PC de la demostración): `git clone` de `feat/integracion` (`ec0f4f9`) en una carpeta vacía, `.env` configurado y base `cacao_test` existente. `mvnw -DskipTests package` generó el `.jar`; `mvnw test` dio 52 pruebas, 0 fallos y 0 errores; en el frontend, `npm ci`, `npm run build` y `npm run lint` terminaron sin errores. Las dependencias de Maven salieron de la caché local del equipo, así que esto no prueba su descarga desde internet.
-- **Instalación completa desde cero en otro equipo, siguiendo este README** (Juan Manuel): pendiente. Lo que falle se corrige en este archivo.
+- **Instalación completa desde cero en otro equipo, siguiendo este README** (Juan Manuel, 16/10/2026): completada sin problemas, según lo informado al equipo; no hubo que corregir nada de este archivo.
