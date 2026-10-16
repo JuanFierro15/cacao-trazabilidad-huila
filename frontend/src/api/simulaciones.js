@@ -68,6 +68,39 @@ const lotes = [
 const transformaciones = []
 const alertas = []
 
+// Se llena con las operaciones de la sesión, igual que en el backend: la semilla V2 no deja filas de auditoría.
+const auditoria = []
+
+let siguienteIdAuditoria = 1
+
+function registrarAuditoria({
+  usuarioUsername,
+  usuarioRol,
+  accion,
+  entidadAfectada,
+  registroReferencia,
+  campoModificado,
+  valorAnterior,
+  valorNuevo,
+  motivo,
+}) {
+  const fila = {
+    id: siguienteIdAuditoria++,
+    fechaHora: isoBogota(),
+    usuarioUsername,
+    usuarioRol,
+    accion,
+    entidadAfectada,
+    registroReferencia,
+    campoModificado,
+    valorAnterior,
+    valorNuevo,
+    motivo,
+  }
+  auditoria.push(fila)
+  return fila
+}
+
 const REGLAS = {
   umbralMermaPorcentaje: 15.0,
   rendimientoPlausibleKgHaAnio: 600,
@@ -240,7 +273,7 @@ function manejarDetalleLote({ parametros }) {
   return respuesta(200, aLoteDTO(lote))
 }
 
-function manejarCrearLote({ cuerpo }) {
+function manejarCrearLote({ cuerpo, usuario }) {
   const errores = []
 
   const productorId = cuerpo?.productorId
@@ -379,6 +412,18 @@ function manejarCrearLote({ cuerpo }) {
     raizCodigo: codigoFinal,
   }
   lotes.push(nuevoLote)
+
+  registrarAuditoria({
+    usuarioUsername: usuario?.sub ?? 'operador1',
+    usuarioRol: usuario?.rol ?? 'OPERADOR',
+    accion: 'CREAR',
+    entidadAfectada: 'LOTE',
+    registroReferencia: nuevoLote.codigoLote,
+    campoModificado: 'cantidad_recibida',
+    valorAnterior: null,
+    valorNuevo: String(nuevoLote.cantidadRecibida),
+    motivo: 'Recepción de lote en acopio',
+  })
 
   return respuesta(201, { lote: aLoteDTO(nuevoLote), alertasGeneradas })
 }
@@ -581,6 +626,7 @@ function manejarCrearTransformacion({ cuerpo, usuario }) {
       ? Math.round(((precioRaw - costoUnitarioCop) / precioRaw) * 10000) / 100
       : null
 
+  const disponibleAntes = origen.cantidadDisponible
   origen.cantidadConsumida = Math.round((origen.cantidadConsumida + e) * 1000) / 1000
   origen.cantidadDisponible = Math.round((origen.cantidadRecibida - origen.cantidadConsumida) * 1000) / 1000
 
@@ -646,6 +692,47 @@ function manejarCrearTransformacion({ cuerpo, usuario }) {
     fechaRegistro: isoBogota(),
   }
   transformaciones.push(nuevaTransformacion)
+
+  const usuarioSub = usuario?.sub ?? 'operador1'
+  const usuarioRol = usuario?.rol ?? 'OPERADOR'
+
+  registrarAuditoria({
+    usuarioUsername: usuarioSub,
+    usuarioRol,
+    accion: 'CONSUMO',
+    entidadAfectada: 'LOTE',
+    registroReferencia: origen.codigoLote,
+    campoModificado: 'cantidad_disponible',
+    valorAnterior: String(disponibleAntes),
+    valorNuevo: String(origen.cantidadDisponible),
+    motivo: `Consumo en etapa ${etapa}`,
+  })
+
+  if (codigoDerivado) {
+    registrarAuditoria({
+      usuarioUsername: usuarioSub,
+      usuarioRol,
+      accion: 'CREAR',
+      entidadAfectada: 'LOTE',
+      registroReferencia: codigoDerivado,
+      campoModificado: 'cantidad_recibida',
+      valorAnterior: null,
+      valorNuevo: String(s),
+      motivo: `Creación de lote derivado en etapa ${etapa}`,
+    })
+  }
+
+  registrarAuditoria({
+    usuarioUsername: usuarioSub,
+    usuarioRol,
+    accion: 'CREAR',
+    entidadAfectada: 'TRANSFORMACION',
+    registroReferencia: origen.codigoLote,
+    campoModificado: 'operacion_uuid',
+    valorAnterior: null,
+    valorNuevo: operacionUuid,
+    motivo: `Registro de transformación en etapa ${etapa}`,
+  })
 
   const umbral = REGLAS.umbralMermaPorcentaje
   const umbralTexto = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(umbral)
@@ -1212,6 +1299,215 @@ function manejarFichaPublica({ parametros }) {
   })
 }
 
+function manejarCambioEstadoLote({ parametros, cuerpo, usuario }) {
+  const codigo = parametros[0]
+  const estado = cuerpo?.estado
+
+  if (estado !== 'BLOQUEADO' && estado !== 'LIBERADO' && estado !== 'PENDIENTE') {
+    return respuestaError(
+      400,
+      'VALIDACION',
+      'El formato de los datos enviados no es válido. Verifique los tipos de datos, fechas y valores permitidos.',
+    )
+  }
+
+  const motivoRaw = cuerpo?.motivo
+  const errores = []
+  if (typeof motivoRaw !== 'string' || motivoRaw.trim() === '') {
+    errores.push({ campo: 'motivo', mensaje: 'El motivo del cambio de estado es obligatorio' })
+  }
+  // Como @Size en el backend: un motivo nulo solo da el error de obligatorio.
+  if (typeof motivoRaw === 'string' && (motivoRaw.length < 10 || motivoRaw.length > 300)) {
+    errores.push({ campo: 'motivo', mensaje: 'El motivo debe tener entre 10 y 300 caracteres' })
+  }
+  if (errores.length > 0) {
+    return respuestaError(400, 'VALIDACION', 'Hay campos con errores. Revise los datos enviados.', errores)
+  }
+
+  const lote = lotes.find((l) => l.codigoLote === codigo)
+  if (!lote) {
+    return respuestaError(404, 'NO_ENCONTRADO', `No se encontró el lote con código ${codigo}.`)
+  }
+
+  if (lote.estado === estado) {
+    return respuestaError(
+      409,
+      'ESTADO_SIN_CAMBIO',
+      `El lote ${codigo} ya se encuentra en estado ${estado}. No se registró ningún cambio.`,
+    )
+  }
+
+  const { ancestros, descendientes } = calcularLinaje(codigo)
+
+  if (estado === 'LIBERADO') {
+    let ancestroBloqueado = null
+    for (const codAnc of ancestros) {
+      const anc = lotes.find((l) => l.codigoLote === codAnc)
+      if (anc && anc.estado === 'BLOQUEADO') {
+        ancestroBloqueado = anc
+        break
+      }
+    }
+    if (ancestroBloqueado) {
+      return respuestaError(
+        409,
+        'ORIGEN_BLOQUEADO',
+        `No se puede liberar el lote ${codigo} porque su lote de origen ${ancestroBloqueado.codigoLote} está BLOQUEADO.`,
+      )
+    }
+  }
+
+  const estadoAnterior = lote.estado
+  const motivoLimpio = motivoRaw.trim()
+  lote.estado = estado
+  lote.motivoEstado = motivoLimpio
+
+  const usuarioSub = usuario?.sub ?? 'admin1'
+  const usuarioRol = usuario?.rol ?? 'ADMINISTRADOR'
+
+  registrarAuditoria({
+    usuarioUsername: usuarioSub,
+    usuarioRol,
+    accion: 'CAMBIO_ESTADO',
+    entidadAfectada: 'LOTE',
+    registroReferencia: lote.codigoLote,
+    campoModificado: 'estado',
+    valorAnterior: estadoAnterior,
+    valorNuevo: estado,
+    motivo: motivoLimpio,
+  })
+
+  const lotesAfectados = [
+    {
+      codigoLote: lote.codigoLote,
+      estadoAnterior,
+      estadoNuevo: estado,
+    },
+  ]
+
+  if (estado === 'BLOQUEADO' && cuerpo?.propagarADerivados !== false) {
+    for (const codDesc of descendientes) {
+      const ld = lotes.find((l) => l.codigoLote === codDesc)
+      if (ld && ld.estado !== 'BLOQUEADO') {
+        const estadoAntDesc = ld.estado
+        ld.estado = 'BLOQUEADO'
+        ld.motivoEstado = motivoLimpio
+
+        registrarAuditoria({
+          usuarioUsername: usuarioSub,
+          usuarioRol,
+          accion: 'CAMBIO_ESTADO',
+          entidadAfectada: 'LOTE',
+          registroReferencia: ld.codigoLote,
+          campoModificado: 'estado',
+          valorAnterior: estadoAntDesc,
+          valorNuevo: 'BLOQUEADO',
+          motivo: `Bloqueo propagado desde ${codigo}: ${motivoLimpio}`,
+        })
+
+        lotesAfectados.push({
+          codigoLote: ld.codigoLote,
+          estadoAnterior: estadoAntDesc,
+          estadoNuevo: 'BLOQUEADO',
+        })
+      }
+    }
+  }
+
+  return respuesta(200, {
+    lote: aLoteDTO(lote),
+    lotesAfectados,
+  })
+}
+
+function manejarRecallLote({ parametros }) {
+  const codigo = parametros[0]
+  const lote = lotes.find((l) => l.codigoLote === codigo)
+  if (!lote) {
+    return respuestaError(404, 'NO_ENCONTRADO', `No se encontró el lote con código ${codigo}.`)
+  }
+
+  const { descendientes, loteRaizCodigo } = calcularLinaje(codigo)
+  const loteRaiz = lotes.find((l) => l.codigoLote === loteRaizCodigo) ?? lote
+  const productorRaiz = productores.find((p) => p.id === loteRaiz.productorId)
+
+  const origen = {
+    productor: productorRaiz?.nombreProductor ?? '',
+    finca: productorRaiz?.nombreFinca ?? '',
+    municipio: productorRaiz?.municipio ?? loteRaiz.origenMunicipio ?? '',
+    variedadCacao: productorRaiz?.variedadCacao ?? '',
+  }
+
+  const cantidades = {
+    recibidaKg: lote.cantidadRecibida,
+    consumidaKg: lote.cantidadConsumida,
+    disponibleKg: lote.cantidadDisponible,
+  }
+
+  const derivados = []
+  for (const codDesc of descendientes) {
+    const ld = lotes.find((item) => item.codigoLote === codDesc)
+    const tProd = transformaciones.find((item) => item.loteSalidaCodigo === codDesc)
+    if (ld) {
+      derivados.push({
+        codigoLote: ld.codigoLote,
+        producto: ld.producto,
+        etapa: tProd?.etapa ?? '',
+        cantidadKg: ld.cantidadRecibida,
+        disponibleKg: ld.cantidadDisponible,
+        estado: ld.estado,
+      })
+    }
+  }
+
+  const kgAfectadosEnInventario = redondear(
+    lote.cantidadDisponible + derivados.reduce((suma, d) => suma + d.disponibleKg, 0),
+    3,
+  )
+
+  const alcance = new Set([codigo, ...descendientes])
+  const transformacionesCount = transformaciones.filter(
+    (t) => alcance.has(t.loteOrigenCodigo) || (t.loteSalidaCodigo && alcance.has(t.loteSalidaCodigo)),
+  ).length
+
+  const registrosAuditoriaCount = auditoria.filter((a) => alcance.has(a.registroReferencia)).length
+
+  return respuesta(200, {
+    codigoLote: lote.codigoLote,
+    estado: lote.estado,
+    loteRaiz: loteRaizCodigo,
+    origen,
+    cantidades,
+    derivados,
+    kgAfectadosEnInventario,
+    historialConservado: {
+      transformaciones: transformacionesCount,
+      registrosAuditoria: registrosAuditoriaCount,
+    },
+  })
+}
+
+function manejarListaAuditoria({ consulta }) {
+  const referencia = texto(consulta?.referencia)
+  const entidad = texto(consulta?.entidad).toUpperCase()
+
+  let resultado = auditoria.slice()
+  if (referencia) {
+    resultado = resultado.filter((a) => a.registroReferencia === referencia)
+  }
+  if (entidad) {
+    resultado = resultado.filter((a) => a.entidadAfectada.toUpperCase() === entidad)
+  }
+
+  resultado.sort((a, b) => {
+    const difFecha = new Date(b.fechaHora).getTime() - new Date(a.fechaHora).getTime()
+    if (difFecha !== 0) return difFecha
+    return b.id - a.id
+  })
+
+  return respuesta(200, resultado)
+}
+
 // --- Tabla de rutas: matriz completa de la sección 7 ---
 // Las rutas sin manejador existen para que los permisos (401/403) se simulen
 // igual que en el backend aunque la función aún no esté construida.
@@ -1234,8 +1530,15 @@ const RUTAS = [
     patron: /^\/lotes\/([^/]+)\/estado$/,
     roles: SOLO_ADMINISTRADOR,
     mensajeAccesoDenegado: 'Solo el Administrador puede liberar o bloquear lotes.',
+    manejador: manejarCambioEstadoLote,
   },
-  { metodo: 'GET', patron: /^\/lotes\/([^/]+)\/recall$/, roles: SOLO_ADMINISTRADOR },
+  {
+    metodo: 'GET',
+    patron: /^\/lotes\/([^/]+)\/recall$/,
+    roles: SOLO_ADMINISTRADOR,
+    mensajeAccesoDenegado: 'No tiene permisos para acceder a este recurso. Se requiere rol ADMINISTRADOR.',
+    manejador: manejarRecallLote,
+  },
   {
     metodo: 'GET',
     patron: /^\/transformaciones\/([^/]+)\/balance$/,
@@ -1243,7 +1546,13 @@ const RUTAS = [
     manejador: manejarBalance,
   },
   { metodo: 'GET', patron: /^\/alertas$/, roles: SOLO_ADMINISTRADOR, manejador: manejarListaAlertas },
-  { metodo: 'GET', patron: /^\/auditoria$/, roles: SOLO_ADMINISTRADOR },
+  {
+    metodo: 'GET',
+    patron: /^\/auditoria$/,
+    roles: SOLO_ADMINISTRADOR,
+    mensajeAccesoDenegado: 'No tiene permisos para acceder a este recurso. Se requiere rol ADMINISTRADOR.',
+    manejador: manejarListaAuditoria,
+  },
   {
     metodo: 'GET',
     patron: /^\/reportes\/exportar-csv$/,

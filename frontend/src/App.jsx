@@ -6,7 +6,9 @@ import { useAuth } from './auth/useAuth.js'
 import { MarcoAplicacion } from './componentes/MarcoAplicacion.jsx'
 import { PaginaNoEncontrada } from './paginas/PaginaNoEncontrada.jsx'
 import { PaginaAlertas } from './paginas/admin/PaginaAlertas.jsx'
+import { PaginaAuditoria } from './paginas/admin/PaginaAuditoria.jsx'
 import { PaginaBalance } from './paginas/admin/PaginaBalance.jsx'
+import { PaginaRecall } from './paginas/admin/PaginaRecall.jsx'
 import { PanelAdministrador } from './paginas/admin/PanelAdministrador.jsx'
 import { PaginaLogin } from './paginas/login/PaginaLogin.jsx'
 import { PaginaTrazabilidad } from './paginas/lotes/PaginaTrazabilidad.jsx'
@@ -45,6 +47,9 @@ function App() {
               <Route path="/admin" element={<PanelAdministrador />} />
               <Route path="/admin/alertas" element={<PaginaAlertas />} />
               <Route path="/admin/balance" element={<PaginaBalance />} />
+              <Route path="/admin/recall" element={<PaginaRecall />} />
+              <Route path="/admin/recall/:codigo" element={<PaginaRecall />} />
+              <Route path="/admin/auditoria" element={<PaginaAuditoria />} />
             </Route>
           </Route>
 

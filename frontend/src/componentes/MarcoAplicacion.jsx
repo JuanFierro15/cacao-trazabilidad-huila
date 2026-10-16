@@ -14,6 +14,8 @@ const NAVEGACION_POR_ROL = {
     { a: '/admin', texto: 'Inventario' },
     { a: '/admin/alertas', texto: 'Alertas' },
     { a: '/admin/balance', texto: 'Balance económico' },
+    { a: '/admin/recall', texto: 'Recall', end: false },
+    { a: '/admin/auditoria', texto: 'Auditoría' },
     { a: '/operador', texto: 'Operación' },
     { a: '/operador/recepcion', texto: 'Recepción de lotes' },
     { a: '/operador/transformacion', texto: 'Registrar transformación' },
@@ -60,7 +62,7 @@ export function MarcoAplicacion() {
           <ul className="mx-auto flex max-w-6xl flex-wrap gap-4 px-4">
             {enlaces.map((enlace) => (
               <li key={enlace.a}>
-                <NavLink to={enlace.a} end className={clasesEnlace}>
+                <NavLink to={enlace.a} end={enlace.end !== false} className={clasesEnlace}>
                   {enlace.texto}
                 </NavLink>
               </li>

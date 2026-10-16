@@ -8,6 +8,7 @@ import {
 import { rutaInicioPorRol } from '../../auth/roles.js'
 import { useAuth } from '../../auth/useAuth.js'
 import { CodigoQrFicha } from '../../componentes/CodigoQrFicha.jsx'
+import { ControlEstadoLote } from '../../componentes/ControlEstadoLote.jsx'
 import { InsigniaEstado } from '../../componentes/InsigniaEstado.jsx'
 import { ListaAlertas } from '../../componentes/ListaAlertas.jsx'
 import { MensajeError } from '../../componentes/MensajeError.jsx'
@@ -49,12 +50,14 @@ function ContenidoTrazabilidad({ codigo }) {
     datos: trazabilidad,
     cargando: cargandoTrazabilidad,
     error: errorTrazabilidad,
+    recargar: recargarTrazabilidad,
   } = useConsultaApi(() => obtenerTrazabilidad(codigo), [codigo])
 
   const {
     datos: lote,
     cargando: cargandoLote,
     error: errorLote,
+    recargar: recargarLote,
   } = useConsultaApi(() => obtenerLote(codigo), [codigo])
 
   const {
@@ -123,8 +126,15 @@ function ContenidoTrazabilidad({ codigo }) {
           </Link>
         </div>
 
-        {/* Contenedor reservado para controles de estado */}
-        <div id="acciones-cambio-estado" />
+        <ControlEstadoLote
+          codigoLote={trazabilidad.codigoLote}
+          estado={trazabilidad.estado}
+          cantidadDerivados={derivados.length}
+          onCambio={() => {
+            recargarTrazabilidad()
+            recargarLote()
+          }}
+        />
 
         {esBloqueado && (
           <div

@@ -55,3 +55,15 @@ export function descargarCsv(filtros = {}) {
   return api.descargar('/reportes/exportar-csv', filtros)
 }
 
+export function cambiarEstadoLote(codigo, datos) {
+  return api.patch('/lotes/' + encodeURIComponent(codigo) + '/estado', datos)
+}
+
+export function obtenerRecall(codigo) {
+  return api.get('/lotes/' + encodeURIComponent(codigo) + '/recall')
+}
+
+export function obtenerAuditoria(filtros = {}) {
+  return api.get('/auditoria', filtros)
+}
+
