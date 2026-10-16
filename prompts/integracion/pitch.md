@@ -3,7 +3,7 @@
 - Integrante: Juan David Fierro Calderón (pedido); presenta Juan Manuel Villalba Rincón.
 - Herramienta: Claude Code (claude-opus-5-5): investigación de requisitos y costos, redacción de la presentación (tipo Slides de claude.ai) y del guion, y ensayo de la demostración por la API.
 - Rama: `feat/integracion`.
-- Fecha: 2026-10-16, 06:20–06:45.
+- Fecha: 2026-10-16, 06:05–06:20.
 
 ## Pedido
 
@@ -20,5 +20,5 @@ Juan David pidió que, como Juan Manuel no tenía los archivos del pitch, Claude
 
 - Presentación de 5 diapositivas con notas del orador cronometradas, hecha en claude.ai y exportada a `pitch/E09_presentacion.pdf`.
 - `pitch/E09_guion.md`: preparación, guion por tramos, demostración paso a paso, plan B, cifras con su evidencia y preguntas probables de la defensa.
-- La demostración se ensayó por la API sobre la base limpia el 16/10 a las 06:25: 250 kg del Productor C → CAC004 con alerta CUOTA_EXCEDIDA (330 de 300 kg); 250 → 200 kg → CAC004-T1, merma 20 % y alerta MERMA_ALTA; ficha de CAC004-T1 con el origen y el recorrido. Después se restauró `respaldo_demo.dump` ("INTEGRIDAD CONFIRMADA").
+- La demostración se ensayó por la API sobre la base limpia el 16/10 a las 06:17: 250 kg del Productor C → CAC004 con alerta CUOTA_EXCEDIDA (330 de 300 kg); 250 → 200 kg → CAC004-T1, merma 20 % y alerta MERMA_ALTA; ficha de CAC004-T1 con el origen y el recorrido. Después se restauró `respaldo_demo.dump` ("INTEGRIDAD CONFIRMADA").
 - `documentos/E09_piloto.pdf` (1 a 2 páginas) no se generó aquí: lo redacta el equipo.

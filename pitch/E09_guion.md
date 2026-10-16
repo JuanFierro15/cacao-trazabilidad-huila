@@ -48,7 +48,7 @@ Formato del reto: el cronómetro se detiene a los 5:00. Después vienen 8 minuto
 
 ### 1:10–3:10 · Demostración en vivo (aplicación; la diapositiva 3 es el plan B)
 
-Datos exactos, ensayados por la API el 16/10 a las 06:25 sobre la base limpia:
+Datos exactos, ensayados por la API el 16/10 a las 06:17 sobre la base limpia:
 
 | Paso | Quién y dónde | Acción | Qué decir |
 |---|---|---|---|
