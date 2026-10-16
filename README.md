@@ -106,7 +106,7 @@ La aplicación queda en `http://localhost:5173`. Vite redirige `/api` al backend
 
 | Dirección | Qué es |
 |---|---|
-| `http://localhost:5173` | Aplicación (operador y administrador) |
+| `http://localhost:5173` | Página de inicio pública con la consulta por código; "Ingresar" lleva al inicio de sesión del operador y del administrador |
 | `http://localhost:5173/ficha` y `/ficha/<código>` | Ficha pública del producto, sin inicio de sesión |
 | `http://localhost:8080/swagger-ui/index.html` | Documentación interactiva de la API |
 
