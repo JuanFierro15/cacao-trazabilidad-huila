@@ -15,7 +15,7 @@ export function PaginaFichaPublica() {
     <div className="flex min-h-screen flex-col bg-crema text-cacao">
       <EncabezadoPublico />
       <main className="mx-auto w-full max-w-xl flex-1 space-y-6 px-4 py-6">
-        <DetalleFichaPublica key={codigoLote} codigoLote={codigoLote} />
+        <DetalleFichaPublica key={codigoLote} codigoLote={codigoLote} conImpresion={true} />
         <div className="rounded-xl border border-cacao/15 bg-white p-5 shadow-xs space-y-3">
           <p className="text-xs font-semibold text-cacao/80">Consultar otro código de lote</p>
           <FormularioConsultaFicha />

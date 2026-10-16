@@ -176,3 +176,46 @@ ol.traza.visible::before {
   }
 }
 
+@page {
+  size: letter;
+  margin: 14mm;
+}
+
+@media print {
+  body > *:not(.certificado-impresion) {
+    display: none !important;
+  }
+
+  .certificado-impresion {
+    display: block !important;
+    background-color: white !important;
+    color: var(--color-cacao) !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    margin: 0 auto;
+    padding: 0;
+  }
+
+  .certificado-impresion .certificado-marco {
+    border: 2px solid var(--color-mazorca);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    background-color: white;
+    color: var(--color-cacao);
+    box-shadow: none !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    max-width: 42rem;
+    margin: 0 auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+

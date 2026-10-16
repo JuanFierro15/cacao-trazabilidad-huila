@@ -1,11 +1,21 @@
 import { useRef, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 import { urlFichaPublica, usaUrlLocal } from '../utilidades/urlFicha.js'
+import { BotonImprimirCertificado, CertificadoImprimible } from './CertificadoImprimible.jsx'
 import { ModalFichaComprador } from './ModalFichaComprador.jsx'
 
 const FOCO = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mazorca'
 
-export function CodigoQrFicha({ codigoLote }) {
+export function CodigoQrFicha({
+  codigoLote,
+  producto,
+  estado,
+  finca,
+  municipio,
+  variedad,
+  humedad,
+  tipoGrano,
+}) {
   const [mensajeCopia, setMensajeCopia] = useState(null)
   const [modalAbierto, setModalAbierto] = useState(false)
   const textoUrlRef = useRef(null)
@@ -77,6 +87,8 @@ export function CodigoQrFicha({ codigoLote }) {
               Abrir ficha pública
             </button>
 
+            <BotonImprimirCertificado />
+
             <button
               type="button"
               onClick={copiarEnlace}
@@ -101,6 +113,17 @@ export function CodigoQrFicha({ codigoLote }) {
           )}
         </div>
       </div>
+
+      <CertificadoImprimible
+        codigoLote={codigoLote}
+        producto={producto}
+        estado={estado}
+        finca={finca}
+        municipio={municipio}
+        variedad={variedad}
+        humedad={humedad}
+        tipoGrano={tipoGrano}
+      />
 
       <ModalFichaComprador
         abierto={modalAbierto}

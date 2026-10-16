@@ -5,6 +5,7 @@ import {
   obtenerReglas,
   obtenerTransformaciones,
 } from '../../api/servicios.js'
+import { EconomiaCircular } from '../../componentes/EconomiaCircular.jsx'
 import { MensajeError } from '../../componentes/MensajeError.jsx'
 import {
   formatearCop,
@@ -131,7 +132,7 @@ function BloqueBalance({ balance, titulo, esSimulacion }) {
   )
 }
 
-function DetalleTransformacionSeleccionada({ transformacionId }) {
+function DetalleTransformacionSeleccionada({ transformacionId, transformacion }) {
   const {
     datos: balanceRegistrado,
     cargando: cargandoBalance,
@@ -325,6 +326,11 @@ function DetalleTransformacionSeleccionada({ transformacionId }) {
                 </div>
               )}
             </section>
+
+            <EconomiaCircular
+              transformacion={transformacion}
+              balance={balanceRegistrado}
+            />
           </div>
         )
       )}
@@ -519,6 +525,9 @@ export function PaginaBalance() {
         <DetalleTransformacionSeleccionada
           key={transformacionIdParam}
           transformacionId={transformacionIdParam}
+          transformacion={transformaciones?.find(
+            (t) => String(t.id) === String(transformacionIdParam),
+          )}
         />
       )}
     </div>
