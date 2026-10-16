@@ -16,6 +16,9 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
 | B4 — Transformaciones (Unitaria + Integración) | 2026-10-15 23:14 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `CalculadoraTransformacionTest` (7) + `RecepcionCatalogosFiltrosTest` (8) + `TransformacionIntegracionTest` (6) sobre `cacao_test` | 33 tests | 33 | 0 | 0 | 26.426 s | `BUILD SUCCESS` |
 | B5 — Trazabilidad, ficha pública, estado, alertas y auditoría | 2026-10-15 23:31 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `CalculadoraTransformacionTest` (7) + `RecepcionCatalogosFiltrosTest` (8) + `TransformacionIntegracionTest` (6) + `TrazabilidadFichaEstadoAuditoriaTest` (4) sobre `cacao_test` | 37 tests | 37 | 0 | 0 | 32.678 s | `BUILD SUCCESS` |
 | B6 — Incidencia hora 12 y exportación | 2026-10-16 01:12 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `CalculadoraTransformacionTest` (7) + `IncidenciaRecallCsvTest` (5) + `RecepcionCatalogosFiltrosTest` (8) + `TransformacionIntegracionTest` (6) + `TrazabilidadFichaEstadoAuditoriaTest` (4) sobre `cacao_test` | 42 tests | 42 | 0 | 0 | 23.488 s | `BUILD SUCCESS` |
+| B7 — Respaldo, restauración e integridad | 2026-10-16 01:28 | `.\mvnw.cmd test` | Suite de 42 pruebas + ciclo real `respaldar.ps1` / `restaurar.ps1` | 42 tests | 42 | 0 | 0 | 26.880 s | `BUILD SUCCESS` |
+| B8 — Pruebas automatizadas (reglas, permisos y regresión hora 12) | 2026-10-16 01:41 | `.\mvnw.cmd test` | Suite previa (42) + `ReglasPermisosRegresionTest` (8) sobre `cacao_test` | 50 tests | 50 | 0 | 0 | 25.308 s | `BUILD SUCCESS` |
+| B9 — Documentación interactiva de la API (Swagger UI / OpenAPI) | 2026-10-16 05:14 | `.\mvnw.cmd test` | Suite previa (50) + `OpenApiDocumentacionTest` (2) sobre `cacao_test` | 52 tests | 52 | 0 | 0 | 32.817 s | `BUILD SUCCESS` |
 
 ---
 
@@ -323,6 +326,46 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
   7. `caso7_regresionHora12BloqueoCascadaYHistorialConservado`: el bloqueo de `CAC001` propaga en cascada a `CAC001-T1`, su ficha pública queda en `BLOQUEADO` (`disponibleParaVenta = false`), la línea de tiempo conserva 2 eventos y 1 derivado, la auditoría registra `CAMBIO_ESTADO` por lote y transformar el derivado bloqueado responde `409 LOTE_BLOQUEADO`.
   8. `caso8_regresionHora12LiberarDerivadoConOrigenBloqueadoResponde409`: intentar liberar `CAC001-T1` con ancestro bloqueado responde `409 ORIGEN_BLOQUEADO`; al liberar la raíz primero, la posterior liberación del derivado tiene éxito con `200 OK`.
 
+---
 
+## Detalle del Bloque B9 — Documentación interactiva de la API (Swagger UI / OpenAPI)
 
+- **Fecha y hora:** `2026-10-16T05:14:57-05:00`
+- **Comando:** `.\mvnw.cmd test`
+- **Salida real de Surefire:**
 
+```text
+[INFO] Running co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.165 s -- in co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Running co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 14.11 s -- in co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Running co.edu.usco.cacao.servicio.CalculadoraTransformacionTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.044 s -- in co.edu.usco.cacao.servicio.CalculadoraTransformacionTest
+[INFO] Running co.edu.usco.cacao.web.IncidenciaRecallCsvTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.627 s -- in co.edu.usco.cacao.web.IncidenciaRecallCsvTest
+[INFO] Running co.edu.usco.cacao.web.OpenApiDocumentacionTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.026 s -- in co.edu.usco.cacao.web.OpenApiDocumentacionTest
+[INFO] Running co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.836 s -- in co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Running co.edu.usco.cacao.web.ReglasPermisosRegresionTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.331 s -- in co.edu.usco.cacao.web.ReglasPermisosRegresionTest
+[INFO] Running co.edu.usco.cacao.web.TransformacionIntegracionTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.981 s -- in co.edu.usco.cacao.web.TransformacionIntegracionTest
+[INFO] Running co.edu.usco.cacao.web.TrazabilidadFichaEstadoAuditoriaTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.725 s -- in co.edu.usco.cacao.web.TrazabilidadFichaEstadoAuditoriaTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 52, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  32.817 s
+[INFO] Finished at: 2026-10-16T05:14:57-05:00
+[INFO] ------------------------------------------------------------------------
+```
+
+- **Casos verificados en `OpenApiDocumentacionTest` (2 pruebas de integración sobre `cacao_test`):**
+  1. `apiDocsExponeEspecificacionOpenApi3ConSeguridadJwtYRutasContrato`: `GET /v3/api-docs` (sin token) devuelve `200 OK` con especificación OpenAPI 3, esquema de seguridad `bearerAuth` (`HTTP Bearer JWT`) y todas las rutas del contrato técnico (`/api/auth/login`, `/api/public/ficha/{codigo}`, `/api/config/reglas`, `/api/productores`, `/api/lotes`, `/api/lotes/{codigo}`, `/api/lotes/{codigo}/trazabilidad`, `/api/lotes/{codigo}/recall`, `/api/lotes/{codigo}/estado`, `/api/transformaciones`, `/api/transformaciones/{id}/balance`, `/api/alertas`, `/api/auditoria`, `/api/reportes/exportar-csv`).
+  2. `swaggerUiIndexCargaSinAutenticacion`: `GET /swagger-ui/index.html` (sin token) devuelve `200 OK` y carga la interfaz interactiva de Swagger UI.

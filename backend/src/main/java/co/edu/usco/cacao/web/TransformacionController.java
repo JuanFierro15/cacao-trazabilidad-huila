@@ -5,6 +5,8 @@ import co.edu.usco.cacao.web.dto.BalanceTransformacionDTO;
 import co.edu.usco.cacao.web.dto.TransformacionDTO;
 import co.edu.usco.cacao.web.dto.TransformacionRespuestaDTO;
 import co.edu.usco.cacao.web.dto.TransformacionSolicitudDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/transformaciones")
+@Tag(name = "5. Transformaciones y Balance Económico", description = "Registro transaccional de etapas con idempotencia, descuento de inventario, lote derivado y simulador de margen")
 public class TransformacionController {
 
     private final TransformacionServicio transformacionServicio;
@@ -30,6 +33,10 @@ public class TransformacionController {
     }
 
     @PostMapping
+    @Operation(
+        summary = "[OPERADOR / ADMINISTRADOR] Registrar etapa de transformación sobre un lote",
+        description = "Ejecuta la transformación con idempotencia por operacionUuid, bloqueo pesimista sobre el lote origen, cálculo de merma/rendimiento, generación de lote derivado (-Tn), alertas y auditoría."
+    )
     public ResponseEntity<TransformacionRespuestaDTO> crearTransformacion(
         @Valid @RequestBody TransformacionSolicitudDTO solicitud
     ) {
@@ -42,6 +49,10 @@ public class TransformacionController {
     }
 
     @GetMapping
+    @Operation(
+        summary = "[OPERADOR / ADMINISTRADOR] Listar transformaciones registradas",
+        description = "Lista las transformaciones sin exponer costos internos, con filtro opcional por código de lote de origen."
+    )
     public ResponseEntity<List<TransformacionDTO>> listarTransformaciones(
         @RequestParam(name = "loteCodigo", required = false) String loteCodigo
     ) {
@@ -49,6 +60,10 @@ public class TransformacionController {
     }
 
     @GetMapping("/{id}/balance")
+    @Operation(
+        summary = "[Solo ADMINISTRADOR] Consultar o simular el balance económico de una transformación",
+        description = "Calcula costo unitario, margen porcentual, fórmulas explícitas y supuestos. Si se envía precioVentaCop en la URL, ejecuta una simulación sin alterar la base de datos."
+    )
     public ResponseEntity<BalanceTransformacionDTO> obtenerBalance(
         @PathVariable("id") Long id,
         @RequestParam(name = "precioVentaCop", required = false) BigDecimal precioVentaCop
