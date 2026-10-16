@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { ROLES, etiquetaRol } from '../auth/roles.js'
 import { useAuth } from '../auth/useAuth.js'
@@ -243,12 +243,48 @@ export function MarcoAplicacion() {
   const { sesion, rol, cerrarSesion } = useAuth()
   const location = useLocation()
   const [expandida, setExpandida] = useState(false)
+  const [menuMovilAbierto, setMenuMovilAbierto] = useState(false)
+  const botonMenuRef = useRef(null)
+  const panelRef = useRef(null)
   const enlaces = NAVEGACION_POR_ROL[rol] ?? []
   const mensaje = location.state?.mensaje
   const claseTexto = clasesTextoColapsable(expandida)
 
+  const rutaAnteriorRef = useRef(location.pathname)
+
+  // Cierra el menú móvil al navegar a otra ruta.
+  useEffect(() => {
+    if (rutaAnteriorRef.current !== location.pathname) {
+      rutaAnteriorRef.current = location.pathname
+      setMenuMovilAbierto(false)
+    }
+  }, [location.pathname])
+
+  // Mueve el foco al primer enlace al abrir y permite cerrar con Escape.
+  useEffect(() => {
+    if (!menuMovilAbierto) return
+
+    const temporizador = setTimeout(() => {
+      panelRef.current?.querySelector('a')?.focus()
+    }, 0)
+
+    function manejarKeyDown(evento) {
+      if (evento.key === 'Escape') {
+        setMenuMovilAbierto(false)
+        botonMenuRef.current?.focus()
+      }
+    }
+
+    document.addEventListener('keydown', manejarKeyDown)
+    return () => {
+      clearTimeout(temporizador)
+      document.removeEventListener('keydown', manejarKeyDown)
+    }
+  }, [menuMovilAbierto])
+
   function manejarSeleccionEnlace(evento) {
     setExpandida(false)
+    setMenuMovilAbierto(false)
     evento.currentTarget.blur()
   }
 
@@ -257,14 +293,74 @@ export function MarcoAplicacion() {
       <AvisoSimulacion />
 
       <div className="relative flex flex-1 flex-col sm:flex-row sm:pl-20">
+        {/* Capa oscura de fondo para cerrar el menú móvil al tocar fuera */}
+        {menuMovilAbierto && (
+          <div
+            onClick={() => setMenuMovilAbierto(false)}
+            aria-hidden="true"
+            className="fixed inset-0 z-30 bg-cacao/40 sm:hidden"
+          />
+        )}
+
         <header
           onMouseEnter={() => setExpandida(true)}
           onMouseLeave={() => setExpandida(false)}
-          className={`w-full shrink-0 overflow-hidden border-b border-mazorca/30 bg-cacao text-crema shadow-md transition-[width,box-shadow] duration-300 ease-out motion-reduce:transition-none sm:fixed sm:inset-y-0 sm:left-0 sm:z-40 sm:flex sm:h-dvh sm:flex-col sm:justify-between sm:border-r sm:border-b-0 ${
+          className={`sticky top-0 z-40 w-full shrink-0 border-b border-mazorca/30 bg-cacao text-crema shadow-md transition-[width,box-shadow] duration-300 ease-out motion-reduce:transition-none sm:fixed sm:inset-y-0 sm:left-0 sm:z-40 sm:flex sm:h-dvh sm:flex-col sm:justify-between sm:border-r sm:border-b-0 sm:overflow-hidden ${
             expandida ? 'sm:w-72 sm:shadow-2xl' : 'sm:w-20'
           }`}
         >
-          <div className="p-3">
+          {/* Barra superior compacta en móvil (por debajo de sm) */}
+          <div className="flex h-14 items-center justify-between px-3 sm:hidden">
+            <div className="flex items-center gap-2.5">
+              <img
+                src="/assets/logo-emblema-192.webp"
+                alt=""
+                width={32}
+                height={32}
+                className="h-8 w-8 object-contain"
+              />
+              <span className="font-display text-lg font-bold leading-tight text-crema">
+                Cacao con historia
+              </span>
+            </div>
+
+            <button
+              ref={botonMenuRef}
+              type="button"
+              onClick={() => setMenuMovilAbierto((abierto) => !abierto)}
+              aria-expanded={menuMovilAbierto}
+              aria-controls="panel-navegacion"
+              aria-label={menuMovilAbierto ? 'Cerrar menú' : 'Abrir menú'}
+              className={`flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-crema hover:bg-crema/10 ${FOCO}`}
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-6 w-6"
+              >
+                {menuMovilAbierto ? (
+                  <>
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </>
+                ) : (
+                  <>
+                    <line x1="4" y1="6" x2="20" y2="6" />
+                    <line x1="4" y1="12" x2="20" y2="12" />
+                    <line x1="4" y1="18" x2="20" y2="18" />
+                  </>
+                )}
+              </svg>
+            </button>
+          </div>
+
+          {/* Tarjeta del logo visible en la barra lateral de escritorio */}
+          <div className="hidden p-3 sm:block">
             <div
               title="Cacao con historia · Asoprocacao, Huila"
               className={`flex items-center overflow-hidden rounded-xl border border-mazorca/45 bg-crema p-1.5 text-cacao shadow-sm ${
@@ -291,125 +387,134 @@ export function MarcoAplicacion() {
             </div>
           </div>
 
-          <nav
-            aria-label="Navegación principal"
-            className="flex-1 overflow-x-hidden overflow-y-auto px-3 pb-3 sm:py-2"
+          {/* Panel con navegación y usuario: desplegable en móvil, fijo en escritorio */}
+          <div
+            id="panel-navegacion"
+            ref={panelRef}
+            className={`${
+              menuMovilAbierto ? 'flex flex-col' : 'hidden'
+            } absolute left-0 right-0 top-full max-h-[calc(100dvh-3.5rem)] overflow-y-auto border-b border-mazorca/30 bg-cacao shadow-xl transition-opacity duration-200 motion-reduce:transition-none sm:static sm:flex sm:flex-1 sm:max-h-none sm:flex-col sm:justify-between sm:border-b-0 sm:shadow-none sm:overflow-visible`}
           >
-            <ul className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-col sm:gap-1">
-              {enlaces.map((enlace) => {
-                const Icono = enlace.Icono
-                return (
-                  <li
-                    key={enlace.a}
-                    className={
-                      enlace.separadorAntes
-                        ? 'col-span-full border-t border-crema/15 pt-1.5 sm:mt-2 sm:pt-2.5'
-                        : ''
+            <nav
+              aria-label="Navegación principal"
+              className="flex-1 overflow-x-hidden overflow-y-auto px-3 pb-3 sm:py-2"
+            >
+              <ul className="flex flex-col gap-1.5 sm:gap-1">
+                {enlaces.map((enlace) => {
+                  const Icono = enlace.Icono
+                  return (
+                    <li
+                      key={enlace.a}
+                      className={
+                        enlace.separadorAntes
+                          ? 'border-t border-crema/15 pt-1.5 sm:mt-2 sm:pt-2.5'
+                          : ''
+                      }
+                    >
+                      <NavLink
+                        to={enlace.a}
+                        end={enlace.end !== false}
+                        title={enlace.texto}
+                        onClick={manejarSeleccionEnlace}
+                        className={clasesEnlace(expandida)}
+                      >
+                        {({ isActive }) => (
+                          <>
+                            {Icono && (
+                              <Icono
+                                className={`h-5 w-5 shrink-0 transition-colors ${
+                                  isActive
+                                    ? 'text-mazorca-oscuro'
+                                    : 'text-mazorca group-hover:text-arena'
+                                }`}
+                              />
+                            )}
+                            <span className={`leading-snug ${claseTexto}`}>
+                              {enlace.texto}
+                            </span>
+                          </>
+                        )}
+                      </NavLink>
+                    </li>
+                  )
+                })}
+              </ul>
+            </nav>
+
+            <div className="border-t border-crema/15 bg-cacao p-3">
+              <div className="flex flex-col gap-2 sm:items-stretch">
+                {rol === ROLES.ADMINISTRADOR ? (
+                  <NavLink
+                    to="/admin/usuarios"
+                    title="Gestionar mi perfil y operadores"
+                    aria-label="Gestionar mi perfil y operadores"
+                    onClick={manejarSeleccionEnlace}
+                    className={({ isActive }) =>
+                      `group flex min-w-0 items-center overflow-hidden rounded-lg py-1 transition-colors ${
+                        expandida ? 'gap-3 px-1.5' : 'gap-3 px-1.5 sm:justify-center sm:px-0'
+                      } ${
+                        isActive
+                          ? 'bg-arena/20 ring-1 ring-mazorca'
+                          : 'hover:bg-crema/10'
+                      } ${FOCO}`
                     }
                   >
-                    <NavLink
-                      to={enlace.a}
-                      end={enlace.end !== false}
-                      title={enlace.texto}
-                      onClick={manejarSeleccionEnlace}
-                      className={clasesEnlace(expandida)}
-                    >
-                      {({ isActive }) => (
-                        <>
-                          {Icono && (
-                            <Icono
-                              className={`h-5 w-5 shrink-0 transition-colors ${
-                                isActive
-                                  ? 'text-mazorca-oscuro'
-                                  : 'text-mazorca group-hover:text-arena'
-                              }`}
-                            />
-                          )}
-                          <span className={`leading-snug ${claseTexto}`}>
-                            {enlace.texto}
-                          </span>
-                        </>
-                      )}
-                    </NavLink>
-                  </li>
-                )
-              })}
-            </ul>
-          </nav>
-
-          <div className="border-t border-crema/15 bg-cacao p-3">
-            <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-col sm:items-stretch">
-              {rol === ROLES.ADMINISTRADOR ? (
-                <NavLink
-                  to="/admin/usuarios"
-                  title="Gestionar mi perfil y operadores"
-                  aria-label="Gestionar mi perfil y operadores"
-                  onClick={manejarSeleccionEnlace}
-                  className={({ isActive }) =>
-                    `group flex min-w-0 items-center overflow-hidden rounded-lg py-1 transition-colors ${
+                    {({ isActive }) => (
+                      <>
+                        <div
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition-colors ${
+                            isActive
+                              ? 'border-mazorca bg-arena text-cacao'
+                              : 'border-mazorca/40 bg-arena/15 text-arena group-hover:border-mazorca group-hover:bg-arena/25'
+                          }`}
+                        >
+                          <IconoUsuario className="h-5 w-5" />
+                        </div>
+                        <div className={`min-w-0 ${claseTexto}`}>
+                          <p className="truncate text-sm font-semibold text-crema group-hover:underline">
+                            {sesion?.nombreCompleto}
+                          </p>
+                          <p className="text-xs text-arena/90">
+                            {etiquetaRol(rol)} · Gestionar usuarios
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </NavLink>
+                ) : (
+                  <div
+                    title={`${sesion?.nombreCompleto ?? ''} · ${etiquetaRol(rol)}`}
+                    className={`flex min-w-0 items-center overflow-hidden py-1 ${
                       expandida ? 'gap-3 px-1.5' : 'gap-3 px-1.5 sm:justify-center sm:px-0'
-                    } ${
-                      isActive
-                        ? 'bg-arena/20 ring-1 ring-mazorca'
-                        : 'hover:bg-crema/10'
-                    } ${FOCO}`
-                  }
-                >
-                  {({ isActive }) => (
-                    <>
-                      <div
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition-colors ${
-                          isActive
-                            ? 'border-mazorca bg-arena text-cacao'
-                            : 'border-mazorca/40 bg-arena/15 text-arena group-hover:border-mazorca group-hover:bg-arena/25'
-                        }`}
-                      >
-                        <IconoUsuario className="h-5 w-5" />
-                      </div>
-                      <div className={`min-w-0 ${claseTexto}`}>
-                        <p className="truncate text-sm font-semibold text-crema group-hover:underline">
-                          {sesion?.nombreCompleto}
-                        </p>
-                        <p className="text-xs text-arena/90">
-                          {etiquetaRol(rol)} · Gestionar usuarios
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </NavLink>
-              ) : (
-                <div
-                  title={`${sesion?.nombreCompleto ?? ''} · ${etiquetaRol(rol)}`}
-                  className={`flex min-w-0 items-center overflow-hidden py-1 ${
-                    expandida ? 'gap-3 px-1.5' : 'gap-3 px-1.5 sm:justify-center sm:px-0'
-                  }`}
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-mazorca/40 bg-arena/15 text-arena">
-                    <IconoUsuario className="h-5 w-5" />
+                    }`}
+                  >
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-mazorca/40 bg-arena/15 text-arena">
+                      <IconoUsuario className="h-5 w-5" />
+                    </div>
+                    <div className={`min-w-0 ${claseTexto}`}>
+                      <p className="truncate text-sm font-semibold text-crema">
+                        {sesion?.nombreCompleto}
+                      </p>
+                      <p className="text-xs text-arena/90">{etiquetaRol(rol)}</p>
+                    </div>
                   </div>
-                  <div className={`min-w-0 ${claseTexto}`}>
-                    <p className="truncate text-sm font-semibold text-crema">
-                      {sesion?.nombreCompleto}
-                    </p>
-                    <p className="text-xs text-arena/90">{etiquetaRol(rol)}</p>
-                  </div>
-                </div>
-              )}
+                )}
 
-              <button
-                type="button"
-                onClick={() => cerrarSesion()}
-                title="Cerrar sesión"
-                aria-label="Cerrar sesión"
-                className={`flex items-center overflow-hidden rounded-lg border border-crema/60 text-sm font-semibold text-crema transition-colors hover:bg-crema hover:text-cacao ${
-                  expandida
-                    ? 'gap-2.5 px-3 py-2 sm:w-full sm:justify-center'
-                    : 'gap-2.5 px-3 py-2 sm:mx-auto sm:h-10 sm:w-10 sm:justify-center sm:p-0'
-                } ${FOCO}`}
-              >
-                <IconoCerrarSesion className="h-5 w-5 shrink-0" />
-                <span className={claseTexto}>Cerrar sesión</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => cerrarSesion()}
+                  title="Cerrar sesión"
+                  aria-label="Cerrar sesión"
+                  className={`flex items-center justify-center overflow-hidden rounded-lg border border-crema/60 text-sm font-semibold text-crema transition-colors hover:bg-crema hover:text-cacao ${
+                    expandida
+                      ? 'gap-2.5 px-3 py-2 sm:w-full sm:justify-center'
+                      : 'gap-2.5 px-3 py-2 sm:mx-auto sm:h-10 sm:w-10 sm:justify-center sm:p-0'
+                  } ${FOCO}`}
+                >
+                  <IconoCerrarSesion className="h-5 w-5 shrink-0" />
+                  <span className={claseTexto}>Cerrar sesión</span>
+                </button>
+              </div>
             </div>
           </div>
         </header>
