@@ -7,6 +7,7 @@ import co.edu.usco.cacao.web.dto.CambioEstadoSolicitudDTO;
 import co.edu.usco.cacao.web.dto.LoteCreacionRespuestaDTO;
 import co.edu.usco.cacao.web.dto.LoteCreacionSolicitudDTO;
 import co.edu.usco.cacao.web.dto.LoteDTO;
+import co.edu.usco.cacao.web.dto.RecallRespuestaDTO;
 import co.edu.usco.cacao.web.dto.TrazabilidadRespuestaDTO;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -61,6 +62,11 @@ public class LoteController {
     @GetMapping("/{codigo}/trazabilidad")
     public ResponseEntity<TrazabilidadRespuestaDTO> obtenerTrazabilidad(@PathVariable String codigo) {
         return ResponseEntity.ok(trazabilidadServicio.obtenerTrazabilidad(codigo));
+    }
+
+    @GetMapping("/{codigo}/recall")
+    public ResponseEntity<RecallRespuestaDTO> obtenerRecall(@PathVariable String codigo) {
+        return ResponseEntity.ok(trazabilidadServicio.obtenerRecall(codigo));
     }
 
     @PatchMapping("/{codigo}/estado")

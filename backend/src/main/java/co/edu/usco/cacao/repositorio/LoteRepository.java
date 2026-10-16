@@ -63,4 +63,9 @@ public interface LoteRepository extends JpaRepository<Lote, Long> {
 
     @Query("SELECT l FROM Lote l JOIN FETCH l.productor WHERE l.codigoLote IN :codigos ORDER BY l.id ASC")
     List<Lote> findByCodigoLoteInConProductor(@Param("codigos") Collection<String> codigos);
+
+    // Orden fijo por id: dos bloqueos en cascada simultáneos toman los candados en el mismo orden.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT l FROM Lote l JOIN FETCH l.productor WHERE l.codigoLote IN :codigos ORDER BY l.id ASC")
+    List<Lote> findByCodigoLoteInForUpdate(@Param("codigos") Collection<String> codigos);
 }
