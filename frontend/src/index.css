@@ -128,6 +128,26 @@ ol.traza.visible::before {
   }
 }
 
+/* Arranca en 1,06 y no en 1,12: a 360 px una tarjeta de 328 px escalada a 1,12 se sale de la pantalla y deja scroll horizontal. */
+@keyframes sello {
+  0% {
+    opacity: 0;
+    transform: scale(1.06) rotate(-2deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.98) rotate(0deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.sello {
+  animation: sello 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   ol.traza::before,
   ol.traza.visible::before,
@@ -138,6 +158,12 @@ ol.traza.visible::before {
 
   .traza > li::before,
   .traza.visible > li::before {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .sello {
     animation: none;
     opacity: 1;
     transform: none;

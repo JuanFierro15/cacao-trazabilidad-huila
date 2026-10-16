@@ -274,8 +274,8 @@ function ContenidoTrazabilidad({ codigo }) {
           <p className="text-xs text-cacao/70">No se pudieron cargar los nombres oficiales de etapas.</p>
         )}
 
-        <ol className="relative ml-4 space-y-6 border-l-2 border-cacao/20 pl-6">
-          {trazabilidad.linea.map((paso) => {
+        <ol className="traza visible space-y-6">
+          {trazabilidad.linea.map((paso, indice) => {
             const esEsteLote =
               (paso.tipo === 'RECEPCION' && trazabilidad.loteRaiz?.codigoLote === trazabilidad.codigoLote) ||
               (paso.tipo === 'TRANSFORMACION' && paso.loteSalida === trazabilidad.codigoLote)
@@ -286,12 +286,7 @@ function ContenidoTrazabilidad({ codigo }) {
               paso.porcentajeMerma > reglas.umbralMermaPorcentaje
 
             return (
-              <li key={paso.orden} className="relative">
-                <span
-                  className="absolute -left-[33px] top-1 h-3.5 w-3.5 rounded-full border-2 border-white bg-mazorca"
-                  aria-hidden="true"
-                />
-
+              <li key={paso.orden} className="relative" style={{ '--i': indice }}>
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <time className="text-xs font-semibold text-cacao/70">{formatearFecha(paso.fecha)}</time>
