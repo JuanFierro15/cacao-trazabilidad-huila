@@ -21,6 +21,9 @@ spring:
     locations: classpath:db/migration
   jackson:
     time-zone: America/Bogota
+    generator:
+      # Sin esto, 100.000 normalizado se escribe como 1E+2 en el JSON
+      write-bigdecimal-as-plain: true
 
 server:
   port: 8080

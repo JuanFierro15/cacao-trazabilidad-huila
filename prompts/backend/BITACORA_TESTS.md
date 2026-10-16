@@ -15,6 +15,7 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
 | B3 (test) — `cacao_test` y `@PruebaIntegracion` (Corrida 2) | 2026-10-15 22:01 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `RecepcionCatalogosFiltrosTest` (8) sobre `cacao_test` | 20 tests | 20 | 0 | 0 | 19.637 s | `BUILD SUCCESS` |
 | B4 — Transformaciones (Unitaria + Integración) | 2026-10-15 23:14 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `CalculadoraTransformacionTest` (7) + `RecepcionCatalogosFiltrosTest` (8) + `TransformacionIntegracionTest` (6) sobre `cacao_test` | 33 tests | 33 | 0 | 0 | 26.426 s | `BUILD SUCCESS` |
 | B5 — Trazabilidad, ficha pública, estado, alertas y auditoría | 2026-10-15 23:31 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `CalculadoraTransformacionTest` (7) + `RecepcionCatalogosFiltrosTest` (8) + `TransformacionIntegracionTest` (6) + `TrazabilidadFichaEstadoAuditoriaTest` (4) sobre `cacao_test` | 37 tests | 37 | 0 | 0 | 32.678 s | `BUILD SUCCESS` |
+| B6 — Incidencia hora 12 y exportación | 2026-10-16 01:12 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `CalculadoraTransformacionTest` (7) + `IncidenciaRecallCsvTest` (5) + `RecepcionCatalogosFiltrosTest` (8) + `TransformacionIntegracionTest` (6) + `TrazabilidadFichaEstadoAuditoriaTest` (4) sobre `cacao_test` | 42 tests | 42 | 0 | 0 | 23.488 s | `BUILD SUCCESS` |
 
 ---
 
@@ -178,4 +179,48 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
   2. `operadorRecibe403YAdminCambiaEstadoConAuditoria`: verifica que `operador1` recibe `403 ACCESO_DENEGADO` al invocar `PATCH /api/lotes/CAC001/estado`, que `admin1` recibe `400 VALIDACION` si el motivo tiene menos de 10 caracteres, `200 OK` al liberar `CAC001` con motivo válido (`totalAfectados = 1`), `409 ESTADO_SIN_CAMBIO` al repetir el mismo estado, y que `GET /api/auditoria?referencia=CAC001&entidad=LOTE` registra la acción `CAMBIO_ESTADO` con el motivo y el cambio `PENDIENTE -> LIBERADO`.
   3. `listarAlertasConFiltrosActivaYLoteCodigo`: verifica `GET /api/alertas` con filtros `activa=true` y `loteCodigo=CAC001` para `admin1`, y `403 ACCESO_DENEGADO` para `operador1`.
   4. `trazabilidadYFichaDeLoteInexistenteDevuelven404`: verifica que `GET /api/lotes/CAC999/trazabilidad`, `GET /api/public/ficha/CAC999` y `PATCH /api/lotes/CAC999/estado` devuelven `404 NO_ENCONTRADO`.
+
+---
+
+## Detalle del Bloque B6 — Incidencia hora 12 y exportación
+
+- **Fecha y hora:** `2026-10-16T01:12:59-05:00`
+- **Comando:** `.\mvnw.cmd test`
+- **Salida real de Surefire:**
+
+```text
+[INFO] Running co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.172 s -- in co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Running co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.47 s -- in co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Running co.edu.usco.cacao.servicio.CalculadoraTransformacionTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.115 s -- in co.edu.usco.cacao.servicio.CalculadoraTransformacionTest
+[INFO] Running co.edu.usco.cacao.web.IncidenciaRecallCsvTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.637 s -- in co.edu.usco.cacao.web.IncidenciaRecallCsvTest
+[INFO] Running co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.852 s -- in co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Running co.edu.usco.cacao.web.TransformacionIntegracionTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.069 s -- in co.edu.usco.cacao.web.TransformacionIntegracionTest
+[INFO] Running co.edu.usco.cacao.web.TrazabilidadFichaEstadoAuditoriaTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.742 s -- in co.edu.usco.cacao.web.TrazabilidadFichaEstadoAuditoriaTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 42, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  23.488 s
+[INFO] Finished at: 2026-10-16T01:12:59-05:00
+[INFO] ------------------------------------------------------------------------
+```
+
+- **Casos verificados en `IncidenciaRecallCsvTest` (5 pruebas de integración sobre `cacao_test`):**
+  1. `bloquearCac001PropagaADerivadosYConservaHistorial`: tras transformar `CAC001` (100 → 80 kg, derivado `CAC001-T1`), invocar `PATCH /api/lotes/CAC001/estado` con `BLOQUEADO` propaga por defecto a `CAC001-T1` (`lotesAfectados` con 2 elementos); la ficha pública de `CAC001-T1` queda en `BLOQUEADO` y `disponibleParaVenta = false` manteniendo origen visible; la trazabilidad y las transformaciones se conservan intactas; la auditoría registra un `CAMBIO_ESTADO` por cada lote (el del derivado indicando el origen de la propagación); y transformar un derivado bloqueado responde `409 LOTE_BLOQUEADO`.
+  2. `bloquearSinPropagarSoloAfectaAlLotePedido`: con `propagarADerivados = false` solo `CAC001` pasa a `BLOQUEADO` y `CAC001-T1` permanece `PENDIENTE`.
+  3. `liberarDerivadoConOrigenBloqueadoDevuelve409`: intentar liberar un derivado cuando su lote raíz está `BLOQUEADO` responde `409 ORIGEN_BLOQUEADO`; liberar la raíz no se propaga automáticamente a los hijos; y tras liberar la raíz, el derivado sí se puede liberar individualmente.
+  4. `recallDeCac001TrasElBloqueo`: `GET /api/lotes/CAC001/recall` devuelve Productor A, Rivera, cantidades 100/100/0, derivado `CAC001-T1`, `kgAfectadosEnInventario = 80`, `historialConservado` con 1 transformación y 5 registros de auditoría; la consulta desde el derivado resuelve raíz y origen hacia atrás; `operador1` recibe `403 ACCESO_DENEGADO`; y un código inexistente devuelve `404 NO_ENCONTRADO`.
+  5. `exportarCsvConFormatoParaExcel`: `GET /api/reportes/exportar-csv` (con o sin `Accept: application/json`) responde con `text/csv;charset=UTF-8`, `Content-Disposition: attachment; filename="lotes_YYYYMMDD_HHmm.csv"`, BOM UTF-8 (`EF BB BF`), separador `;`, 13 columnas del contrato, valores decimales con coma (`,`), costos calculados de la transformación productora (`1600000,00;20000,00;25000,00;20,00` en `CAC001-T1`), filtrado por municipio (`origen=rivera`) y estado, rechazo con `400 VALIDACION` para estados inválidos, y `403 ACCESO_DENEGADO` para operadores.
+
 
