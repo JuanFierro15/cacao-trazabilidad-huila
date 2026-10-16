@@ -20,6 +20,16 @@ Este archivo resume, con datos verificados, lo construido y lo medido, para que 
 - **Límite de páginas:** la documentación tiene 24 páginas; el equipo lo consultó con un jurado y no hay problema por pasar de 15.
 - **Etiqueta:** `v1.0-entrega` se movió del commit `25e8606` al commit de cierre; el hash que se registra es el de la etiqueta actual.
 
+### 0.0b Bloque F9 (16/10, 13:47): valor agregado en el frontend
+
+La entrega se amplió hasta las 14:00 y la etiqueta `v1.0-entrega` se movió de nuevo, al commit que integra F9. Tres funciones nuevas, solo en el frontend (backend, migraciones y respaldo sin cambios; 52 pruebas igual):
+
+- **Economía circular** en `/admin/balance`: kg de subproducto aprovechable, ingreso extra, costo unitario neto y margen impulsado, junto al balance oficial, con 70 % y 4.500 COP/kg como supuestos de ejemplo editables. Ejemplo: 100 → 80 kg, 20 kg de merma, 14 kg aprovechables, 63.000 COP, costo de 19.212,5 frente a 20.000 COP/kg y margen de 23,15 % frente a 20,00 %.
+- **Termómetro de humedad** en la recepción: referencia NTC 1252 de máximo 7,0 % (óptimo 6,5–7,0 %), solo grano seco. Los umbrales vienen de fuentes secundarias, no de la norma oficial.
+- **Certificado imprimible con QR** desde la trazabilidad y la ficha pública (una página; la ficha pública no incluye humedad).
+
+Qué corregir en los entregables: E01–E03 (alcance y arquitectura: tres funciones nuevas, sin cambio de API), E04/E05 (pruebas: comprobaciones en el navegador de F9; las 52 pruebas automáticas no cambian), E06 (usabilidad: sin cambios), E08 (declarar F9: Claude Code, y agy con gemini-3.8-flash-high tras agotarse la cuota de Opus) y E10 (hash nuevo de la etiqueta).
+
 ### 0.1 Cambios desde el corte de las 08:40 y qué hay que corregir en cada entregable
 
 Entre las 09:37 y las 11:32 se trabajó en la rama `design-test` (14 commits de Juan David y Miguel), integrada a `main` por el PR #50 a las 11:46 (`5ebadda`). Tarea del tablero: #51.
