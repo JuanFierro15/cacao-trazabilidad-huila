@@ -6,6 +6,27 @@ import { FormularioConsultaFicha } from '../publico/PaginaConsultaFicha.jsx'
 
 const FOCO = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mazorca'
 
+function IconoCacao({ className = 'h-4 w-4' }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.85"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M12 4.2c0-1.2.8-2 2.2-2.2" />
+      <path d="M12 4.2C7.8 4.2 5 8.1 5 12.6c0 4.3 3.2 7.8 7 9.2 3.8-1.4 7-4.9 7-9.2 0-4.5-2.8-8.4-7-8.4Z" />
+      <path d="M9.2 5.3c-1.4 2.3-1.9 4.8-1.9 7.3 0 2.6.6 5.1 2.2 7.3" />
+      <path d="M14.8 5.3c1.4 2.3 1.9 4.8 1.9 7.3 0 2.6-.6 5.1-2.2 7.3" />
+      <path d="M12 4.4v17.2" />
+    </svg>
+  )
+}
+
 const ANCLAS_NAVEGACION = [
   { href: '#recorrido', texto: 'Cómo funciona' },
   { href: '#consulta', texto: 'Consultar un lote' },
@@ -97,8 +118,9 @@ export function PaginaInicio() {
 
           <Link
             to="/login"
-            className={`shrink-0 rounded-md bg-cacao px-4 py-2 text-sm font-semibold text-crema transition-colors hover:bg-cacao/90 ${FOCO}`}
+            className={`inline-flex shrink-0 items-center gap-2 rounded-lg border border-mazorca/40 bg-cacao px-4 py-2 text-sm font-semibold text-crema shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-mazorca hover:bg-cacao/95 hover:shadow-md active:translate-y-0 ${FOCO}`}
           >
+            <IconoCacao className="h-4 w-4 text-mazorca" />
             Ingresar
           </Link>
         </div>
@@ -140,12 +162,18 @@ export function PaginaInicio() {
                 <FormularioConsultaFicha />
               </div>
 
-              <div>
+              <div className="pt-1">
                 <Link
                   to="/login"
-                  className={`inline-block rounded px-1 py-1 text-sm font-semibold text-crema underline decoration-mazorca decoration-2 underline-offset-4 transition-colors hover:text-arena ${FOCO}`}
+                  className={`group inline-flex items-center gap-2.5 rounded-xl border border-crema/35 bg-mazorca px-5 py-3 text-sm font-bold text-cacao shadow-[0_1px_0_0_rgba(255,253,249,0.4)_inset,0_8px_20px_-4px_rgba(20,10,4,0.6)] transition-all duration-200 hover:-translate-y-0.5 hover:border-crema/70 hover:bg-arena hover:shadow-[0_1px_0_0_rgba(255,253,249,0.6)_inset,0_12px_24px_-4px_rgba(20,10,4,0.7)] active:translate-y-0 ${FOCO}`}
                 >
-                  Ingresar al sistema
+                  <span
+                    aria-hidden="true"
+                    className="flex h-6 w-6 items-center justify-center rounded-lg bg-cacao/15 text-cacao transition-colors group-hover:bg-cacao group-hover:text-crema"
+                  >
+                    <IconoCacao className="h-4 w-4" />
+                  </span>
+                  <span>Ingresar al sistema</span>
                 </Link>
               </div>
             </div>
@@ -226,9 +254,15 @@ export function PaginaInicio() {
               <div className="pt-2">
                 <Link
                   to="/login"
-                  className={`inline-block rounded-md bg-cacao px-5 py-2.5 text-sm font-semibold text-crema transition-colors hover:bg-cacao/90 ${FOCO}`}
+                  className={`group inline-flex items-center gap-2.5 rounded-xl border border-mazorca/40 bg-cacao px-5 py-3 text-sm font-semibold text-crema shadow-[0_1px_0_0_rgba(255,253,249,0.2)_inset,0_6px_16px_-4px_rgba(58,31,13,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:border-mazorca hover:bg-cacao/95 hover:shadow-lg active:translate-y-0 ${FOCO}`}
                 >
-                  Ingresar al sistema
+                  <span
+                    aria-hidden="true"
+                    className="flex h-6 w-6 items-center justify-center rounded-lg bg-mazorca/20 text-mazorca transition-colors group-hover:bg-mazorca group-hover:text-cacao"
+                  >
+                    <IconoCacao className="h-4 w-4" />
+                  </span>
+                  <span>Ingresar al sistema</span>
                 </Link>
               </div>
             </div>
