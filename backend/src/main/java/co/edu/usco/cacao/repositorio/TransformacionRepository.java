@@ -23,7 +23,9 @@ public interface TransformacionRepository extends JpaRepository<Transformacion, 
           FROM Transformacion t
           JOIN FETCH t.loteOrigen
           LEFT JOIN FETCH t.loteSalida
-         WHERE (:loteCodigo IS NULL OR t.loteOrigen.codigoLote = :loteCodigo)
+         WHERE (:loteCodigo IS NULL
+                OR t.loteOrigen.codigoLote = :loteCodigo
+                OR (t.loteSalida IS NOT NULL AND t.loteSalida.codigoLote = :loteCodigo))
          ORDER BY t.fechaTransformacion ASC, t.id ASC
         """)
     List<Transformacion> listarPorLoteOrigen(@Param("loteCodigo") String loteCodigo);

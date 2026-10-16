@@ -13,6 +13,9 @@ import co.edu.usco.cacao.repositorio.FincaProductorRepository;
 import co.edu.usco.cacao.repositorio.LoteComposicionRepository;
 import co.edu.usco.cacao.repositorio.LoteRepository;
 import co.edu.usco.cacao.web.dto.AlertaDTO;
+import co.edu.usco.cacao.web.dto.CambioEstadoRespuestaDTO;
+import co.edu.usco.cacao.web.dto.CambioEstadoSolicitudDTO;
+import co.edu.usco.cacao.web.dto.LoteAfectadoEstadoDTO;
 import co.edu.usco.cacao.web.dto.LoteCreacionRespuestaDTO;
 import co.edu.usco.cacao.web.dto.LoteCreacionSolicitudDTO;
 import co.edu.usco.cacao.web.dto.LoteDTO;
@@ -164,6 +167,44 @@ public class LoteServicio {
             ));
         return mapearADto(lote);
     }
+
+    @Transactional
+    public CambioEstadoRespuestaDTO cambiarEstado(String codigo, CambioEstadoSolicitudDTO solicitud) {
+        String codigoLimpio = codigo.trim();
+        Lote lote = loteRepository.findByCodigoLoteForUpdate(codigoLimpio)
+            .orElseThrow(() -> ReglaNegocioException.noEncontrado(
+                "No se encontró el lote con código " + codigoLimpio + "."
+            ));
+
+        if (lote.getEstado() == solicitud.estado()) {
+            throw ReglaNegocioException.estadoSinCambio(lote.getCodigoLote(), solicitud.estado().name());
+        }
+
+        String estadoAnterior = lote.getEstado().name();
+        String estadoNuevo = solicitud.estado().name();
+        String motivoLimpio = solicitud.motivo().trim();
+
+        lote.setEstado(solicitud.estado());
+        lote.setMotivoEstado(motivoLimpio);
+        Lote loteGuardado = loteRepository.save(lote);
+
+        auditoriaServicio.registrar(
+            "CAMBIO_ESTADO",
+            "LOTE",
+            loteGuardado.getCodigoLote(),
+            "estado",
+            estadoAnterior,
+            estadoNuevo,
+            motivoLimpio
+        );
+
+        List<LoteAfectadoEstadoDTO> afectados = List.of(
+            new LoteAfectadoEstadoDTO(loteGuardado.getCodigoLote(), estadoAnterior, estadoNuevo)
+        );
+
+        return new CambioEstadoRespuestaDTO(mapearADto(loteGuardado), afectados);
+    }
+
 
     public LoteDTO mapearADto(Lote lote) {
         List<String> lotesPadre = loteComposicionRepository.findCodigosPadresByLoteHijoId(lote.getId());
