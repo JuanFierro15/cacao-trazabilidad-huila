@@ -158,15 +158,17 @@ Salidas completas en `evidencias_para_juan_manuel/checkpoint2_validacion_main.tx
 ## 10. Herramientas y fuentes (E08, lo redacta el equipo)
 
 Registro por bloque, con el prompt y la revisión humana, en `prompts/backend/`, `prompts/frontend/` y `prompts/integracion/` (cada carpeta con su `BITACORA.md`).
-- **Miguel:** agy (Antigravity CLI) en B1–B9, con los prompts y su revisión en `prompts/backend/`. **El modelo de cada bloque no quedó anotado en esos archivos: Miguel debe indicarlo para E08.**
+- **Miguel:** agy (Antigravity CLI) en B1–B9, con los prompts y su revisión en `prompts/backend/`. Modelos usados, según lo informado por Juan David el 16/10: Gemini 4 Argon, Claude Opus 5.5 y Gemini 3.8 Flash, los tres con esfuerzo máximo. Los archivos de `prompts/backend/` no anotan qué modelo se usó en cada bloque; si E08 lo pide por bloque, Miguel debe precisarlo.
 - **Juan David:**
-  - Claude Code (claude-opus-5-5) para diseño, revisión, commits, PR, validaciones, tablero, I2, I3, el pitch y este archivo.
-  - agy para implementar F1 (claude-opus-5-5-high), F2–F6 e I1 (gemini-3.8-flash-high). Los modelos Claude de agy agotaron su cuota el 15/10 a las 20:33.
+  - Claude Code (claude-opus-5-5) para diseño, revisión, commits, PR, validaciones, tablero, I2, I3, el pitch, F7 (contraste) y este archivo.
+  - agy para implementar F1 (claude-opus-5-5-high), F2–F6 e I1 (gemini-3.8-flash-high) y F8A–F8C (gemini-4-argon-high). Los modelos Claude de agy agotaron su cuota el 15/10 a las 20:33 y el 16/10 a las 07:41 seguían sin cuota.
   - Cada delegación se revisó, y las correcciones a mano están anotadas en su archivo de `prompts/`.
+  - Skills de diseño versionadas como registro de uso: `frontend-design` (Anthropic, Apache 2.0) en `.claude/skills/` y `.agents/skills/`, y `web-design-guidelines` (Vercel) en `.claude/skills/`.
+- **Imágenes, logo optimizado y videos de `frontend/public/assets/`:** ilustraciones generadas con IA (lo dice el pie de la página de inicio). **Falta anotar la herramienta y el modelo con que se generaron.**
 - **Presentación del pitch:** tipo Slides de claude.ai, exportada a PDF.
 - **Librerías abiertas** (declarar con su licencia):
   - Backend: Spring Boot, Spring Security, Hibernate, Flyway, jjwt 0.12.6, PostgreSQL JDBC y springdoc-openapi 2.8.6.
-  - Frontend: React, React Router, Vite, Tailwind CSS y qrcode.react.
+  - Frontend: React, React Router, Vite, Tailwind CSS y qrcode.react; fuentes Barlow y Barlow Condensed (`@fontsource`, SIL OFL 1.1).
   - Base de datos: PostgreSQL 16 (imagen `postgres:16-alpine`).
 - **Fuentes del caso:** el reto oficial y el contexto del equipo en `Hackaton_II/Contexto_Hackaton/`, fuera del repositorio.
 
@@ -175,7 +177,8 @@ Registro por bloque, con el prompt y la revisión humana, en `prompts/backend/`,
 | Pendiente | Responsable | Afecta a |
 |---|---|---|
 | Prueba de usabilidad con una persona externa (2 tareas sin guía, tiempos, dificultades, mejora antes y después) | Juan Manuel (#26) | E06 y F7 |
-| F7: accesibilidad y la mejora que salga de la prueba | Juan David (#20) | E06 |
+| F7: el contraste ya está (`3891452`, tabla en `prompts/frontend/F7.md`); falta la mejora que salga de la prueba | Juan David (#20) | E06 |
+| Herramienta y modelo con que se generaron las imágenes y los videos | Juan David | E08 |
 | Casos de prueba manuales | Juan Manuel (#25) | E05 |
 | Instalación limpia en otro equipo siguiendo el README | Juan Manuel (#27) | E07 e I3 |
 | Ensayos del pitch (3, con cronómetro) | Juan Manuel (#28) | E09 |
