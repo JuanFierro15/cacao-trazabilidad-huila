@@ -1,33 +1,31 @@
 package co.edu.usco.cacao.web;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import co.edu.usco.cacao.PruebaIntegracion;
 import co.edu.usco.cacao.dominio.AuditoriaCambio;
 import co.edu.usco.cacao.dominio.FincaProductor;
 import co.edu.usco.cacao.repositorio.AuditoriaCambioRepository;
 import co.edu.usco.cacao.repositorio.FincaProductorRepository;
 import co.edu.usco.cacao.repositorio.LoteRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
+@PruebaIntegracion
 class RecepcionCatalogosFiltrosTest {
 
     @Autowired
@@ -143,11 +141,9 @@ class RecepcionCatalogosFiltrosTest {
     @Test
     @DisplayName("POST /api/lotes con cantidad -5 o campo vacío devuelve 400 VALIDACION por campo y no guarda nada")
     void crearLoteCantidadNegativaOCampoVacioDevuelve400() throws Exception {
-        long conteoInicial = loteRepository.count();
-
         String cuerpoInvalido = """
             {
-              "codigoLote": null,
+              "codigoLote": "CAC777",
               "productorId": null,
               "fechaRecepcion": "2026-10-15",
               "tipoGrano": "SECO",
@@ -166,14 +162,13 @@ class RecepcionCatalogosFiltrosTest {
             .andExpect(jsonPath("$.errores[?(@.campo == 'cantidadRecibida')].mensaje").value("Debe ser mayor que 0"))
             .andExpect(jsonPath("$.errores[?(@.campo == 'productorId')]").exists());
 
-        assertEquals(conteoInicial, loteRepository.count());
+        assertTrue(loteRepository.findByCodigoLote("CAC777").isEmpty());
     }
 
     @Test
     @DisplayName("POST /api/lotes con código repetido CAC001 devuelve 409 LOTE_DUPLICADO")
     void crearLoteCodigoRepetidoDevuelve409() throws Exception {
         FincaProductor prdA = fincaProductorRepository.findByCodigoProductor("PRD-A").orElseThrow();
-        long conteoInicial = loteRepository.count();
 
         String cuerpoRepetido = String.format("""
             {
@@ -194,7 +189,8 @@ class RecepcionCatalogosFiltrosTest {
             .andExpect(jsonPath("$.status").value(409))
             .andExpect(jsonPath("$.codigo").value("LOTE_DUPLICADO"));
 
-        assertEquals(conteoInicial, loteRepository.count());
+        assertEquals(0, new BigDecimal("100").compareTo(
+            loteRepository.findByCodigoLote("CAC001").orElseThrow().getCantidadRecibida()));
     }
 
     @Test

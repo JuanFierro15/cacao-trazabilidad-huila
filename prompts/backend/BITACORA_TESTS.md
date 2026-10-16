@@ -11,6 +11,8 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
 | B2 — Seguridad JWT y errores | 2026-10-15 20:46 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) sobre PostgreSQL 17.4 | 12 tests | 12 | 0 | 0 | 18.280 s | `BUILD SUCCESS` |
 | B3 — Recepción, catálogos y filtros | 2026-10-15 21:07 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `RecepcionCatalogosFiltrosTest` (7) sobre PostgreSQL 17.4 | 19 tests | 19 | 0 | 0 | 25.523 s | `BUILD SUCCESS` |
 | B3 (fix) — `GET /api/lotes` sin parámetros | 2026-10-15 21:39 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `RecepcionCatalogosFiltrosTest` (8) sobre PostgreSQL 17.4 | 20 tests | 20 | 0 | 0 | 24.473 s | `BUILD SUCCESS` |
+| B3 (test) — `cacao_test` y `@PruebaIntegracion` (Corrida 1) | 2026-10-15 22:01 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `RecepcionCatalogosFiltrosTest` (8) sobre `cacao_test` | 20 tests | 20 | 0 | 0 | 20.057 s | `BUILD SUCCESS` |
+| B3 (test) — `cacao_test` y `@PruebaIntegracion` (Corrida 2) | 2026-10-15 22:01 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `RecepcionCatalogosFiltrosTest` (8) sobre `cacao_test` | 20 tests | 20 | 0 | 0 | 19.637 s | `BUILD SUCCESS` |
 
 ---
 
