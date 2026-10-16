@@ -25,7 +25,7 @@
 | E06 | Verificación de experiencia de usuario | `documentos/E06_usabilidad.pdf` | Lo redacta el equipo |
 | E07 | Instalación, respaldo y mantenimiento | [`README.md`](README.md), `documentos/E07_operacion.pdf`, `datos/` | README y scripts hechos; documento a cargo del equipo |
 | E08 | Declaración de herramientas y fuentes | `documentos/E08_IA_y_fuentes.md`; registro por bloque en `prompts/` | Lo redacta el equipo |
-| E09 | Pitch y propuesta de piloto | `pitch/E09_presentacion.pdf`, [`pitch/E09_guion.md`](pitch/E09_guion.md), `documentos/E09_piloto.pdf` | Guion hecho; presentación por exportar; propuesta de piloto a cargo del equipo |
+| E09 | Pitch y propuesta de piloto | [`pitch/E09_presentacion.pdf`](pitch/E09_presentacion.pdf) (5 diapositivas), [`pitch/E09_guion.md`](pitch/E09_guion.md), `documentos/E09_piloto.pdf` | Presentación y guion hechos; propuesta de piloto a cargo del equipo |
 | E10 | Índice y matriz de trazabilidad | este archivo | Hecho |
 
 ## Matriz de trazabilidad
