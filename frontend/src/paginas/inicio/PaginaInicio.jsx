@@ -218,7 +218,7 @@ export function PaginaInicio() {
         <section
           id="recorrido"
           aria-labelledby="titulo-recorrido"
-          className="scroll-mt-20 border-y border-cacao/15 bg-arena py-12 md:py-16"
+          className="scroll-mt-20 bg-linear-to-b/oklab from-arena via-arena via-80% to-crema py-12 pb-16 md:py-16 md:pb-20"
         >
           <div className="mx-auto max-w-6xl px-4">
             <h2
@@ -246,58 +246,64 @@ export function PaginaInicio() {
         <section
           id="asociacion"
           aria-labelledby="titulo-asociacion"
-          className="scroll-mt-20 mx-auto max-w-6xl px-4 py-12 md:py-16"
+          className="relative isolate scroll-mt-20 overflow-hidden bg-crema"
         >
-          <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-12 md:gap-12">
-            <div className="md:col-span-6">
-              <img
-                src="/assets/productor-mazorca-abierta-800.webp"
-                srcSet="/assets/productor-mazorca-abierta-800.webp 800w, /assets/productor-mazorca-abierta-1600.webp 1600w"
-                sizes="(min-width: 768px) 50vw, 100vw"
-                width={800}
-                height={447}
-                loading="lazy"
-                alt="Productor sosteniendo una mazorca de cacao abierta"
-                className="h-auto w-full rounded-2xl border border-cacao/15 object-cover"
-              />
-            </div>
+          <div className="relative h-72 w-full sm:h-96 md:absolute md:inset-y-0 md:left-0 md:h-full md:w-[48%]">
+            <img
+              src="/assets/productor-mazorca-abierta-800.webp"
+              srcSet="/assets/productor-mazorca-abierta-800.webp 800w, /assets/productor-mazorca-abierta-1600.webp 1600w"
+              sizes="(min-width: 768px) 50vw, 100vw"
+              width={800}
+              height={447}
+              loading="lazy"
+              alt="Productor sosteniendo una mazorca de cacao abierta"
+              className="h-full w-full object-cover object-center"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-linear-to-b/oklab from-crema/35 via-transparent to-crema md:bg-linear-to-r/oklab md:from-transparent md:via-transparent md:via-70% md:to-crema"
+            />
+          </div>
 
-            <div className="space-y-6 md:col-span-6">
-              <h2
-                id="titulo-asociacion"
-                className="font-display text-3xl font-bold text-cacao md:text-4xl"
-              >
-                Lo que cambia para la asociación
-              </h2>
+          <div className="relative z-10 mx-auto max-w-6xl px-4 py-12 md:py-20">
+            <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-12 md:gap-12">
+              <div className="space-y-6 md:col-span-6 md:col-start-7">
+                <h2
+                  id="titulo-asociacion"
+                  className="font-display text-3xl font-bold text-cacao md:text-4xl"
+                >
+                  Lo que cambia para la asociación
+                </h2>
 
-              <ul className="divide-y divide-cacao/15">
-                {PUNTOS_ASOCIACION.map((punto) => (
-                  <li key={punto.titulo} className="flex items-start gap-3.5 py-4 first:pt-0 last:pb-0">
+                <ul className="divide-y divide-cacao/15">
+                  {PUNTOS_ASOCIACION.map((punto) => (
+                    <li key={punto.titulo} className="flex items-start gap-3.5 py-4 first:pt-0 last:pb-0">
+                      <span
+                        aria-hidden="true"
+                        className="mt-1.5 h-3 w-3 shrink-0 rounded-full border-2 border-cacao bg-mazorca"
+                      />
+                      <p className="text-base leading-relaxed text-cacao/90">
+                        <strong className="font-semibold text-cacao">{punto.titulo}</strong>{' '}
+                        {punto.detalle}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="pt-2">
+                  <Link
+                    to="/login"
+                    className={`group inline-flex items-center gap-2.5 rounded-xl border border-mazorca/40 bg-cacao px-5 py-3 text-sm font-semibold text-crema shadow-[0_1px_0_0_rgba(255,253,249,0.2)_inset,0_6px_16px_-4px_rgba(58,31,13,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:border-mazorca hover:bg-cacao/95 hover:shadow-lg active:translate-y-0 ${FOCO}`}
+                  >
                     <span
                       aria-hidden="true"
-                      className="mt-1.5 h-3 w-3 shrink-0 rounded-full border-2 border-cacao bg-mazorca"
-                    />
-                    <p className="text-base leading-relaxed text-cacao/90">
-                      <strong className="font-semibold text-cacao">{punto.titulo}</strong>{' '}
-                      {punto.detalle}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="pt-2">
-                <Link
-                  to="/login"
-                  className={`group inline-flex items-center gap-2.5 rounded-xl border border-mazorca/40 bg-cacao px-5 py-3 text-sm font-semibold text-crema shadow-[0_1px_0_0_rgba(255,253,249,0.2)_inset,0_6px_16px_-4px_rgba(58,31,13,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:border-mazorca hover:bg-cacao/95 hover:shadow-lg active:translate-y-0 ${FOCO}`}
-                >
-                  <span
-                    aria-hidden="true"
-                    className="flex h-6 w-6 items-center justify-center rounded-lg bg-mazorca/20 text-mazorca transition-colors group-hover:bg-mazorca group-hover:text-cacao"
-                  >
-                    <IconoCacao className="h-4 w-4" />
-                  </span>
-                  <span>Ingresar al sistema</span>
-                </Link>
+                      className="flex h-6 w-6 items-center justify-center rounded-lg bg-mazorca/20 text-mazorca transition-colors group-hover:bg-mazorca group-hover:text-cacao"
+                    >
+                      <IconoCacao className="h-4 w-4" />
+                    </span>
+                    <span>Ingresar al sistema</span>
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
