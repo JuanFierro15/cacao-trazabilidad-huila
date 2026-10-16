@@ -114,7 +114,7 @@ Cada bloque: objetivo → archivos → verificación → commit. No se pasa al s
 - Commit: `test: agregar pruebas automatizadas de reglas, permisos y regresión de la hora 12`
 - **→ Checkpoint 3: PR a `main`.**
 
-**B9 (opcional, si sobra tiempo).** Swagger UI con springdoc compatible con Boot 3.5 para que el jurado pruebe la API. Commit: `feat: agregar documentación interactiva de la API`
+**B9 (opcional, si sobra tiempo).** — *terminado (commit `98f7201`, en `main` por #44; Swagger UI en `http://localhost:8080/swagger-ui/index.html`)* Swagger UI con springdoc compatible con Boot 3.5 para que el jurado pruebe la API. Commit: `feat: agregar documentación interactiva de la API`
 
 **Migraciones adicionales (a pedido, en cualquier momento).** Si el frontend necesita un cambio de esquema: `V<n>__descripcion.sql`, probarla sobre una base restaurada, avisar en el grupo. Commit: `feat: agregar migración V<n> para <cambio>`
 
