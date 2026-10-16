@@ -13,6 +13,8 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
 | B3 (fix) — `GET /api/lotes` sin parámetros | 2026-10-15 21:39 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `RecepcionCatalogosFiltrosTest` (8) sobre PostgreSQL 17.4 | 20 tests | 20 | 0 | 0 | 24.473 s | `BUILD SUCCESS` |
 | B3 (test) — `cacao_test` y `@PruebaIntegracion` (Corrida 1) | 2026-10-15 22:01 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `RecepcionCatalogosFiltrosTest` (8) sobre `cacao_test` | 20 tests | 20 | 0 | 0 | 20.057 s | `BUILD SUCCESS` |
 | B3 (test) — `cacao_test` y `@PruebaIntegracion` (Corrida 2) | 2026-10-15 22:01 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `RecepcionCatalogosFiltrosTest` (8) sobre `cacao_test` | 20 tests | 20 | 0 | 0 | 19.637 s | `BUILD SUCCESS` |
+| B4 — Transformaciones (Unitaria + Integración) | 2026-10-15 23:14 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `CalculadoraTransformacionTest` (7) + `RecepcionCatalogosFiltrosTest` (8) + `TransformacionIntegracionTest` (6) sobre `cacao_test` | 33 tests | 33 | 0 | 0 | 26.426 s | `BUILD SUCCESS` |
+| B5 — Trazabilidad, ficha pública, estado, alertas y auditoría | 2026-10-15 23:31 | `.\mvnw.cmd test` | `DominioEsquemaContratoTest` (6) + `SeguridadJwtErroresTest` (6) + `CalculadoraTransformacionTest` (7) + `RecepcionCatalogosFiltrosTest` (8) + `TransformacionIntegracionTest` (6) + `TrazabilidadFichaEstadoAuditoriaTest` (4) sobre `cacao_test` | 37 tests | 37 | 0 | 0 | 32.678 s | `BUILD SUCCESS` |
 
 ---
 
@@ -88,4 +90,92 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
   6. `crearLoteSuperandoCuotaGeneraAlertaCuotaExcedida`: `POST /api/lotes` que supera la cuota anual de `PRD-C` (`330 kg > 300 kg`) devuelve `201` con alerta `CUOTA_EXCEDIDA` activa sin bloquear la recepción.
   7. `filtrarLotesYConsultarPorCodigo`: `GET /api/lotes?origen=Rivera&estado=PENDIENTE&tipo=RECEPCION` devuelve `CAC001`, y `GET /api/lotes/CAC999` devuelve `404 NO_ENCONTRADO`.
   8. `listarLotesSinParametrosDevuelveLosTresLotesSemilla`: `GET /api/lotes` sin parámetros devuelve `200 OK` y los 3 lotes semilla (`CAC001`, `CAC002`, `CAC003`), validando que `:origen = null` en PostgreSQL no dispare `ERROR: function lower(bytea) does not exist`.
+
+---
+
+## Detalle del Bloque B4 — Transformaciones
+
+- **Fecha y hora:** `2026-10-15T23:14:22-05:00`
+- **Comando:** `.\mvnw.cmd test`
+- **Salida real de Surefire:**
+
+```text
+[INFO] Running co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.168 s -- in co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Running co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.22 s -- in co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Running co.edu.usco.cacao.servicio.CalculadoraTransformacionTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.037 s -- in co.edu.usco.cacao.servicio.CalculadoraTransformacionTest
+[INFO] Running co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.078 s -- in co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Running co.edu.usco.cacao.web.TransformacionIntegracionTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.260 s -- in co.edu.usco.cacao.web.TransformacionIntegracionTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 33, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  26.426 s
+[INFO] Finished at: 2026-10-15T23:14:22-05:00
+[INFO] ------------------------------------------------------------------------
+```
+
+- **Casos verificados en `CalculadoraTransformacionTest` (7 pruebas unitarias puras sin Spring):**
+  1. `calcularMermaYRendimientoCasoJurado`: `100 kg → 80 kg` calcula merma `20.00` y rendimiento `80.00`.
+  2. `calcularMermaNegativaConInsumos`: `100 kg → 105.5 kg` calcula merma `-5.50` y rendimiento `105.50`.
+  3. `calcularCostoUnitarioYMargenCasoJurado`: `1.600.000 ÷ 80 = 20000.00` y margen sobre `25.000 = 20.00`.
+  4. `divisionEntreCeroDevuelveNull`: salida `0` o precio `0` devuelven `null`.
+  5. `evaluarCondicionesDeAlerta`: verifica umbrales de `MERMA_ALTA`, `REGISTRO_INCOMPLETO` y `SOBRECOSTO`.
+  6. `construirBalanceConFormulasYConSalidaCero`: verifica fórmulas exactas y `calculable = false` cuando `salida = 0`.
+  7. `validarArgumentosInvalidos`: verifica `IllegalArgumentException` ante entradas inválidas.
+- **Casos verificados en `TransformacionIntegracionTest` (6 pruebas de integración sobre `cacao_test`):**
+  1. `transformarCac001GeneraDerivadoAlertaAuditoriasYBalance`: `CAC001` `100 → 80` devuelve `201 Created`, merma `20.00 %`, alerta `MERMA_ALTA`, lote derivado `CAC001-T1` (`80 kg`), auditoría `CONSUMO` y `CREAR`, balance `20.000 COP/kg` y `20,00 %`, simulación `?precioVentaCop=40000` (`esSimulacion = true`) y `403` para operador en `/balance`.
+  2. `reenvioMismoOperacionUuidDevuelve409YNoDescuentaDoble`: reenvío con el mismo `operacionUuid` devuelve `409 OPERACION_DUPLICADA` con `transformacionId` y el inventario no cambia.
+  3. `pedirMasDeLoDisponibleDevuelve422InventarioInsuficiente`: pedir `120 kg` sobre `CAC001` (`100 kg`) devuelve `422 INVENTARIO_INSUFICIENTE` sin cambios.
+  4. `transformacionConSalidaCeroRespondeCalculableFalse`: salida `0 kg` no crea lote derivado y el balance responde `calculable = false`.
+  5. `validarSalidaMayorSinInsumosYLoteBloqueado`: salida > entrada sin insumos devuelve `422 SALIDA_SIN_JUSTIFICACION`, y lote `BLOQUEADO` devuelve `409 LOTE_BLOQUEADO`.
+  6. `generarAlertasRegistroIncompletoYSobrecosto`: merma alta sin justificación y margen negativo generan `MERMA_ALTA`, `REGISTRO_INCOMPLETO` y `SOBRECOSTO`.
+
+---
+
+## Detalle del Bloque B5 — Trazabilidad, ficha pública, estado, alertas y auditoría
+
+- **Fecha y hora:** `2026-10-15T23:31:36-05:00`
+- **Comando:** `.\mvnw.cmd test`
+- **Salida real de Surefire:**
+
+```text
+[INFO] Running co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.165 s -- in co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Running co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 15.86 s -- in co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Running co.edu.usco.cacao.servicio.CalculadoraTransformacionTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.051 s -- in co.edu.usco.cacao.servicio.CalculadoraTransformacionTest
+[INFO] Running co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.107 s -- in co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Running co.edu.usco.cacao.web.TransformacionIntegracionTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.558 s -- in co.edu.usco.cacao.web.TransformacionIntegracionTest
+[INFO] Running co.edu.usco.cacao.web.TrazabilidadFichaEstadoAuditoriaTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.990 s -- in co.edu.usco.cacao.web.TrazabilidadFichaEstadoAuditoriaTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 37, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  32.678 s
+[INFO] Finished at: 2026-10-15T23:31:36-05:00
+[INFO] ------------------------------------------------------------------------
+```
+
+- **Casos verificados en `TrazabilidadFichaEstadoAuditoriaTest` (4 pruebas de integración sobre `cacao_test`):**
+  1. `trazabilidadYFichaPublicaSinCamposProhibidos`: tras transformar `CAC001` (`100 → 80 kg`, `CAC001-T1`) y `CAC001-T1` (`80 → 75 kg`, `CAC001-T1-T1`), verifica que `GET /api/lotes/CAC001/trazabilidad` y `GET /api/lotes/CAC001-T1/trazabilidad` devuelven la genealogía completa (`loteRaiz`, `origen`, `linea` con `RECEPCION` y `TRANSFORMACION`, `derivados`, `alertas`, `tiempoConsultaMs` y sin costos), y que `GET /api/public/ficha/CAC001` (sin JWT) responde `200 OK` sin contener ninguno de los campos prohibidos en el JSON crudo (`costo`, `precio`, `margen`, `cantidad`, `merma`, `responsable`, `productorNombre`, `hectareas`, `cuota`, `motivoEstado`, `alertas`, `"id":`, `transformacionId`, `operacionUuid`).
+  2. `operadorRecibe403YAdminCambiaEstadoConAuditoria`: verifica que `operador1` recibe `403 ACCESO_DENEGADO` al invocar `PATCH /api/lotes/CAC001/estado`, que `admin1` recibe `400 VALIDACION` si el motivo tiene menos de 10 caracteres, `200 OK` al liberar `CAC001` con motivo válido (`totalAfectados = 1`), `409 ESTADO_SIN_CAMBIO` al repetir el mismo estado, y que `GET /api/auditoria?referencia=CAC001&entidad=LOTE` registra la acción `CAMBIO_ESTADO` con el motivo y el cambio `PENDIENTE -> LIBERADO`.
+  3. `listarAlertasConFiltrosActivaYLoteCodigo`: verifica `GET /api/alertas` con filtros `activa=true` y `loteCodigo=CAC001` para `admin1`, y `403 ACCESO_DENEGADO` para `operador1`.
+  4. `trazabilidadYFichaDeLoteInexistenteDevuelven404`: verifica que `GET /api/lotes/CAC999/trazabilidad`, `GET /api/public/ficha/CAC999` y `PATCH /api/lotes/CAC999/estado` devuelven `404 NO_ENCONTRADO`.
 
