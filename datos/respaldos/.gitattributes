@@ -1,0 +1,2 @@
+# Los respaldos son binarios (pg_dump -Fc): git no debe convertir sus finales de línea.
+*.dump binary

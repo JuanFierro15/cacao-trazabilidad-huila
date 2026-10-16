@@ -1,0 +1,25 @@
+﻿=== 1. CONTEOS PRINCIPALES ===
+ total_lotes | lotes_recepcion | lotes_derivados | total_transformaciones | total_composiciones | total_alertas | total_auditoria | total_usuarios 
+-------------+-----------------+-----------------+------------------------+---------------------+---------------+-----------------+----------------
+           3 |               3 |               0 |                      0 |                   0 |             0 |               0 |              2
+(1 row)
+
+=== 2. BALANCE DE MASA EN INVENTARIO (KG) ===
+ suma_recibida_kg | suma_consumida_kg | suma_disponible_kg | discrepancia_kg 
+------------------+-------------------+--------------------+-----------------
+          330.000 |             0.000 |            330.000 |           0.000
+(1 row)
+
+=== 3. INCONSISTENCIAS DE INVENTARIO (DEBE SER 0 FILAS) ===
+ codigo_lote | cantidad_recibida | cantidad_consumida | cantidad_disponible 
+-------------+-------------------+--------------------+---------------------
+(0 rows)
+
+=== 4. LISTA ORDENADA DE CÓDIGOS DE LOTES ===
+ codigo_lote | tipo_lote |  producto  | origen_municipio | recibida_kg | consumida_kg | disponible_kg |  estado   
+-------------+-----------+------------+------------------+-------------+--------------+---------------+-----------
+ CAC001      | RECEPCION | Cacao seco | Rivera           |     100.000 |        0.000 |       100.000 | PENDIENTE
+ CAC002      | RECEPCION | Cacao seco | Campoalegre      |     150.000 |        0.000 |       150.000 | PENDIENTE
+ CAC003      | RECEPCION | Cacao seco | Algeciras        |      80.000 |        0.000 |        80.000 | PENDIENTE
+(3 rows)
+

@@ -137,18 +137,20 @@ else
 fi
 
 # Comparación con el reporte de integridad del respaldo original
+# El reporte puede venir de respaldar.ps1, que lo guarda con BOM: se quita antes de comparar.
+BOM_UTF8="$(printf '\357\273\277')"
 if [ -f "$ARCHIVO_INTEGRIDAD" ]; then
     echo ""
     echo "------------------------------------------------------------"
     echo "  COMPARACIÓN CON REPORTE DE INTEGRIDAD ORIGINAL            "
     echo "------------------------------------------------------------"
-    if diff -u -w -B <(tr -d '\r' < "$ARCHIVO_INTEGRIDAD") <(tr -d '\r' < "$TMP_POST_INTEGRIDAD") >/dev/null 2>&1; then
+    if diff -u -w -B <(tr -d '\r' < "$ARCHIVO_INTEGRIDAD" | sed "1s/^$BOM_UTF8//") <(tr -d '\r' < "$TMP_POST_INTEGRIDAD") >/dev/null 2>&1; then
         echo "[INTEGRIDAD CONFIRMADA] El estado restaurado COINCIDE EXACTAMENTE con el respaldo original."
         echo "Conteos, balances de masa, inconsistencias (0) y códigos de lotes son 100% idénticos."
     else
         echo "[ADVERTENCIA] Se detectaron discrepancias frente al reporte de integridad original:"
         echo "Archivo de referencia: $ARCHIVO_INTEGRIDAD"
-        diff -u -w -B <(tr -d '\r' < "$ARCHIVO_INTEGRIDAD") <(tr -d '\r' < "$TMP_POST_INTEGRIDAD") || true
+        diff -u -w -B <(tr -d '\r' < "$ARCHIVO_INTEGRIDAD" | sed "1s/^$BOM_UTF8//") <(tr -d '\r' < "$TMP_POST_INTEGRIDAD") || true
     fi
 else
     echo ""
