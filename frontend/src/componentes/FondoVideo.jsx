@@ -75,7 +75,7 @@ export function FondoVideo({ src, poster, className = '', mascara = false }) {
   const posicion = /\b(absolute|fixed|sticky|relative)\b/.test(className) ? '' : 'relative'
 
   return (
-    <div className={`${posicion} overflow-hidden ${className}`.trim()}>
+    <div className={`${posicion} max-w-full overflow-hidden ${className}`.trim()}>
       <video
         ref={videoRef}
         src={src}
@@ -88,14 +88,14 @@ export function FondoVideo({ src, poster, className = '', mascara = false }) {
         aria-hidden="true"
         onPlay={() => setPausado(false)}
         onPause={() => setPausado(true)}
-        className="h-full w-full object-cover"
+        className="block h-full w-full max-w-full object-cover object-center"
         style={mascara ? ESTILO_MASCARA : undefined}
       />
       <button
         type="button"
         aria-pressed={pausado}
         onClick={alternarReproduccion}
-        className={`absolute right-3 bottom-3 z-20 inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-crema/60 bg-cacao/85 px-3 py-2 text-xs font-semibold text-crema shadow-sm transition-colors hover:bg-cacao ${FOCO}`}
+        className={`absolute right-4 bottom-4 z-30 inline-flex min-h-10 items-center justify-center rounded-lg border border-crema/60 bg-cacao/90 px-3.5 py-2 text-xs font-semibold whitespace-nowrap text-crema shadow-md transition-colors hover:bg-cacao ${FOCO}`}
       >
         {pausado ? 'Reproducir video' : 'Pausar video'}
       </button>
