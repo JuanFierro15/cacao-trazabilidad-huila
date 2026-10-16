@@ -122,18 +122,18 @@ Cada bloque: objetivo → archivos → verificación → commit. No se pasa al s
 
 Rama creada desde `main` cuando ya están integrados backend y frontend. Se trabaja en el PC de la demostración.
 
-**I1. Rendimiento sobre 100 registros (E05)**
+**I1. Rendimiento sobre 100 registros (E05)** — *terminado (commit `8d3bf6a`, en `main` por #45; p95 de 22,27 ms con 400 lotes)*
 - Objetivo: `datos/rendimiento/cargar_100_registros.sql` (lotes `PERF001`–`PERF100`, cada uno con una cadena de 3 transformaciones y su composición, insertados por SQL y declarados como sintéticos), `limpiar_registros_rendimiento.sql` y `medir_trazabilidad.{ps1,sh}`: 5 llamadas de calentamiento y 30 medidas a `GET /api/lotes/PERF050-T3/trazabilidad` con `curl -w "%{time_total}"`, reportando mínimo, promedio, p95 y máximo. Añadir `EXPLAIN ANALYZE` de la consulta recursiva.
 - Verificación: resultados reales guardados en `datos/rendimiento/resultados/medicion_<fecha>.txt` con CPU, RAM, sistema operativo y método. Meta: < 3000 ms.
 - Commit: `test: agregar carga de 100 registros sintéticos y medición de trazabilidad`
 
-**I2. Respaldo de demostración**
+**I2. Respaldo de demostración** — *terminado (commits `a11efcb` y `ec0f4f9`, en `main` por #45)*
 - Objetivo: con todo integrado y la base limpia (V1 + V2 + usuarios), generar con los scripts de B7 `datos/respaldos/respaldo_demo.dump` y `datos/respaldos/LEEME.md` con pasos de restauración y la salida esperada de la verificación.
 - Verificación: restauración desde cero reproduce los conteos del LEEME.
 - Commit: `chore: agregar respaldo de demostración verificado`
 
-**I3. Cierre**
-- Objetivo: README final con instalación limpia en los dos modos, `ENTREGA.md` con índice y matriz, y subir a `pitch/` los archivos que entrega Juan Manuel.
+**I3. Cierre** — *en curso: README, `ENTREGA.md` y `pitch/` en `main` por #45; faltan la instalación limpia de Juan Manuel y el hash final*
+- Objetivo: README final con instalación limpia en los dos modos, `ENTREGA.md` con índice y matriz, y `pitch/` con la presentación y el guion (los preparó Claude Code a pedido de Juan David; Juan Manuel los ensaya y presenta).
 - Verificación: Juan Manuel clona desde cero en su PC y sigue el README al pie de la letra; lo que falle se corrige en el README.
 - Commit: `docs: completar README e índice de entrega`
 
@@ -182,7 +182,7 @@ No tiene bloques de código ni usa agy para programar. Sus tareas, en orden:
 - **Desde el Checkpoint 2:** ejecutar en el PC de Juan David los casos de prueba manuales (contrato, sección 10) y registrar esperado, obtenido, estado y evidencia **reales**.
 - **Mañana temprano:** conseguir a la persona externa y conducir la prueba de usabilidad (E06): dos tareas sin guía, tiempos, dificultades.
 - **Cierre:** instalación limpia desde cero en su PC siguiendo el README (bloque I3).
-- **Pitch (E09):** prepara la presentación y el guion, los entrega a Juan David, que los sube a `pitch/` en I3. No tiene rama ni hace commits.
+- **Pitch (E09):** presenta el pitch. La presentación (`pitch/E09_presentacion.pdf`) y el guion (`pitch/E09_guion.md`) ya están en `main`; los preparó Claude Code porque él no tenía los archivos. Le toca ensayarlos al menos 3 veces con cronómetro. No tiene rama ni hace commits.
 
 ## 5. Flujo según la herramienta
 
@@ -249,20 +249,39 @@ Commit sugerido: <mensaje>
 
 ## 8. Estado actual y aprendizajes (se actualiza en cada checkpoint)
 
-**Estado al 16/10, 05:05**
-- **Checkpoint 1 cerrado** el 15/10 a las 23:07 sobre `main` `493571e` (PR #1 B1–B3, PR #2 F1–F3, PR #3 corrección de lotes y pruebas en `cacao_test`).
-- **Checkpoint 2 cerrado** a la 01:01 sobre `main` `7c281cc` (PR #40 B4–B5, PR #41 F4 y F3 validado contra la API real). Validado en el PC de Juan David sin simulaciones: `mvnw test` 37/37 contra `cacao_test`; pruebas 3, 4, 5, 7 y 9 del contrato por API (34 comprobaciones, 0 fallidas) más la regresión del Checkpoint 1; inventario, alertas y balance en el navegador.
-- **Checkpoint 3 cerrado** a las 05:01 sobre `main` `e183fca` (PR #42 B6–B8 y la corrección `d6d7046` de los scripts de respaldo; PR #43 F5–F6). Validado en el PC de Juan David: `mvnw clean test` 50/50 contra `cacao_test`; B6 por API sobre CAC001 (57 comprobaciones, 0 fallidas) y la regresión del Checkpoint 2 (34, 0 fallidas); prueba 6 con `respaldar.ps1` y `restaurar.ps1` ("INTEGRIDAD CONFIRMADA", Flyway sin migrar, 2 usuarios) y también con los `.sh` en Git Bash; CSV del panel contra la API real y abierto en Excel con 13 columnas y números; F5 y F6 en el navegador. Tablero: #10, #11, #12, #18 y #19 en Done (el QR de F5 se escaneó con un celular a las 05:15).
-- La evidencia de cada checkpoint (historial de git y salida real de la validación) se guarda fuera del repositorio, en la carpeta hermana `evidencias_para_juan_manuel/`, para la documentación (E02 y E05).
-- **Tablero (E02):** GitHub Projects "KGB — Asoprocacao (Hackathon USCO)", un issue por bloque (#4 a #38). Al integrar cada PR, sus issues pasan a Done y se cierran con un comentario que cita commits, PR y verificación real.
-- **QR de F5:** escaneado con un celular en la misma Wi-Fi el 16/10 a las 05:15; abre la ficha sin sesión. Para repetirlo: `VITE_PUBLIC_BASE_URL=http://<IP-del-PC>:5173` en el `.env` (hoy la IP es `192.168.1.222`) y el puerto 5173 permitido en el firewall de Windows.
-- **Respaldos (B7):** cada respaldo deja junto al `.dump` un `.integridad.txt` y la restauración lo compara sola. En I2 se versionan `respaldo_demo.dump` y `respaldo_demo.integridad.txt` (el `.gitignore` ya los exceptúa).
-- **Entregables:** el 16/10 a la 01:50 se prepararon los insumos de E02, E03 y E05 (historias, tablero exportado, relación con commits y pruebas, diagramas Mermaid generados del código, 12 capturas reales, 28 casos ejecutados y las 37 pruebas JUnit) en `evidencias_para_juan_manuel/entregables/`, fuera del repositorio. Los PDF los redacta el equipo; E08 también. Faltan E01, E06, E07, E09 y E10, y completar lo que dependa de B6, B7, I1 y la hora 12. Registro en `prompts/integracion/insumos-entregables.md` (commit `0f928d9`).
-- Siguiente: I1 (rendimiento sobre 100 registros), I2 (respaldo de demostración) e I3 (cierre) en `feat/integracion`; F7 (accesibilidad y usabilidad); escanear el QR con un celular; completar los insumos de los entregables con B6, B7 y la hora 12. Juan Manuel con los casos manuales y la redacción. **Congelación de funciones a las 11:00.**
-- **Incidencia de la hora 12 (issue #38, cerrado):** se anunció el 16/10 a las 02:00, la recibió Juan Manuel y pidió un entregable de documentación para Classroom, sin cambios en el software. Se subió la carpeta `Evidencia2am` (fuera del repositorio, en `Hackaton_II/`): historial y validación de los checkpoints 1 y 2 e insumos de E02, E03 y E05 con 12 capturas. RF09 no cambió; B6 y F6 se construyeron igual.
-- **Material visual en `frontend/public/assets/`** (logo de Asoprocacao y video de fondo del login): lo está subiendo Juan David para una mejora visual que se hará **después** de terminar todos los bloques de frontend y backend. Hasta que él lo pida, ningún agente lo usa, lo modifica, lo borra ni lo agrega a un commit (queda sin versionar).
-- La base de desarrollo de Juan David tiene, además de la semilla, los lotes de prueba CAC004 a CAC008 y sus derivados (CAC004-T1, CAC006-T1, CAC007-T1, CAC008-T1), con alertas y auditoría; CAC007-T1 quedó BLOQUEADO y CAC008-T1 LIBERADO por pruebas. CAC001 sigue sin transformaciones. Antes de la demostración se restaura el respaldo limpio (I2). La base `cacao_test` ya existe en su Docker.
-- **Cuota de agy:** los modelos Claude de agy agotaron su cuota el 15/10 hacia las 20:33 (se reinicia en unas 135 h). Las delegaciones siguen con `gemini-3.8-flash-high`; su resultado se revisa con más cuidado (F2 y F3 necesitaron correcciones a mano en la revisión).
+**Estado al 16/10, 06:45**
+- **Checkpoints cerrados:**
+  - **CP1:** 15/10 a las 23:07, `main` `493571e` (PR #1–#3).
+  - **CP2:** 01:01, `main` `7c281cc` (PR #40 y #41; 37/37 pruebas y 34 comprobaciones por API).
+  - **CP3:** 05:01, `main` `e183fca` (PR #42 B6–B8 con la corrección `d6d7046`, PR #43 F5–F6; 50/50 pruebas, B6 57/57 por API, regresión 34/34, prueba 6 en PowerShell y bash, CSV abierto en Excel).
+- **Después del CP3:**
+  - **PR #44 (B9, Swagger):** `main` `18d9d40`, 52/52 pruebas.
+  - **PR #45 (integración):** `main` `e22780b`, con I1, I2 y la parte hecha de I3.
+    - I1: p95 de 22,27 ms (PowerShell) y 21,64 ms (bash) con 400 lotes.
+    - I2: `respaldo_demo.dump` verificado, y `restaurar.*` acepta el reporte con o sin BOM (`a11efcb`).
+    - I3: README, `ENTREGA.md`, `pitch/E09_presentacion.pdf` y `pitch/E09_guion.md`.
+- **Ramas:** `feat/backend-api` `98f7201` (todo en `main`); `feat/frontend-ui` `48a8b78` (sus registros de `CLAUDE.md` entran a `main` con el PR de este cierre); `feat/integracion` es la rama de trabajo actual.
+- **Tablero:**
+  - Done: Bloque 0, B1–B9, F1–F6, I1, I2 y la hora 12 (#38).
+  - In Progress: I3 (#23), JM5 pitch (#28), E07 (#34), E09 (#36) y E10 (#37).
+  - Todo: F7 (#20), JM1–JM4 (#24–#27), E01–E03, E05, E06 y E08.
+  - Regla: al integrar cada PR, sus issues pasan a Done con un comentario de evidencia.
+- **Pendiente antes de la congelación de las 11:00:**
+  - F7 (depende de la prueba de usabilidad de Juan Manuel, #26).
+  - Instalación limpia de Juan Manuel siguiendo el README (#27), corrigiendo el README con lo que falle.
+  - Ensayos del pitch: presenta Juan Manuel y opera la aplicación Juan David. La demo usa el Productor C (250 kg) y **nunca CAC001**.
+  - Los PDF de `documentos/` (E01–E03, E05–E08 y `E09_piloto.pdf`), que redacta el equipo (máximo 15 páginas en total).
+- **Después:**
+  - A las 12:00, etiqueta `v1.0-entrega` sobre `main` y su hash en `ENTREGA.md`.
+  - Classroom a la 1:00 p. m.; registro del commit a las 2:00 p. m.
+  - Antes de la evaluación: restaurar `respaldo_demo.dump` y cambiar la clave y el `JWT_SECRET` del `.env` del PC de la demostración.
+- **Base de desarrollo de Juan David:** en el estado limpio de la demo (3 lotes, 0 auditoría, 2 usuarios). Los lotes de prueba anteriores (CAC004–CAC008) están en un respaldo de seguridad fuera del repositorio. La base `cacao_test` existe en su Docker.
+- **QR:** `VITE_PUBLIC_BASE_URL=http://192.168.1.222:5173` en el `.env`. Funcionó con la Wi-Fi de la universidad sin tocar el firewall, porque la regla de Node permite el perfil Público.
+- **Hora 12 (issue #38, cerrado):** a las 02:00 la organización pidió a Juan Manuel un entregable de documentación para Classroom, sin cambios en el software. Se subió la carpeta `Evidencia2am` (en `Hackaton_II/`, fuera del repositorio; sus archivos son exactamente los subidos). RF09 no cambió.
+- **Evidencia fuera del repositorio:** `Hackaton_II/evidencias_para_juan_manuel/` guarda el historial y la validación de los checkpoints 1–3, la validación del backend del CP3 y los insumos de E02, E03 y E05. El estado para redactar la documentación está en `prompts/integracion/estado-para-documentacion.md`.
+- **Pitch:** la presentación original está en claude.ai, es privada y hay que compartirla con Juan Manuel (tiene las notas del orador). Los costos son supuestos con fuente: servidor de 2 vCPU y 4 GB a ≈ 24 USD al mes, TRM ≈ 3.200 COP.
+- **Material visual en `frontend/public/assets/`** (logo y video del login): solo para la mejora visual que Juan David pida al final. Hasta entonces nadie lo usa, lo modifica ni lo versiona.
+- **Cuota de agy:** los modelos Claude de agy agotaron su cuota el 15/10 hacia las 20:33. Las delegaciones siguen con `gemini-3.8-flash-high`, y su resultado se revisa con más cuidado.
 
 **Aprendizajes del frontend (aplican de F4 en adelante)**
 - Nunca reemplazar una página por "Cargando…" o por un error si ya hay datos: el estado de carga se muestra solo con `cargando && !datos`, para que una recarga en segundo plano no oculte la confirmación ni le quite el foco.
@@ -282,3 +301,10 @@ Commit sugerido: <mensaje>
 - No usar `python` en la terminal (abre el instalador de Microsoft Store); para scripts, `node`.
 - Al detener Vite o el backend lanzados en segundo plano, cerrar también el proceso `node` o `java` que escucha en 5173 u 8080; detener la tarea no basta.
 - Las copias temporales con `git worktree` dejan `target/` con rutas muy largas: borrarlas con el prefijo `\\?\` en PowerShell.
+- **PowerShell 5.1 y `curl.exe`:** al pasar un JSON como argumento, PowerShell 5.1 le quita las comillas internas y el backend responde 400. Para las peticiones que no se miden, usar `Invoke-RestMethod`. Tampoco acepta `if` como expresión dentro de un argumento: hay que asignarlo antes a una variable.
+- **Git Bash y `curl`:** el `curl` de Git Bash es un programa de Windows. Con `MSYS_NO_PATHCONV=1` (necesario para las rutas `/datos` del contenedor) no entiende `/tmp/...` ni `/dev/null` en `-o`: pasarle las rutas con `cygpath -w`.
+- **BOM:** `Set-Content -Encoding utf8` de PowerShell 5.1 escribe BOM, y `Get-Content` sin `-Encoding UTF8` lee mal los acentos de un archivo sin BOM. Los reportes de integridad se comparan quitando el BOM y leyendo siempre como UTF-8.
+- **Binarios en git:** los `.dump` llevan `binary` en `datos/respaldos/.gitattributes`. Después del commit se comprueba que el archivo en git sea idéntico al generado (`git show HEAD:<ruta> | sha256sum`).
+- **Excel:** el CSV se verifica abriéndolo por COM con la configuración regional (`Workbooks.Open`, con `Local` en el parámetro 14).
+- **Navegador:** la extensión de Chrome no abre archivos `file://`; un PDF local se revisa con node (encabezado y conteo de páginas). Las descargas de la aplicación se prueban interceptando el enlace en la página, sin guardar archivos.
+- **Registros:** las horas de los archivos de `prompts/` se toman con `date` en el momento, nunca aproximadas.
