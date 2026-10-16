@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
 import { ROLES, etiquetaRol } from '../auth/roles.js'
 import { useAuth } from '../auth/useAuth.js'
@@ -164,7 +165,7 @@ function IconoTransformacion({ className = 'h-5 w-5' }) {
   )
 }
 
-function IconoCerrarSesion({ className = 'h-4 w-4' }) {
+function IconoCerrarSesion({ className = 'h-5 w-5' }) {
   return (
     <svg
       aria-hidden="true"
@@ -179,6 +180,24 @@ function IconoCerrarSesion({ className = 'h-4 w-4' }) {
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
       <polyline points="16 17 21 12 16 7" />
       <line x1="21" y1="12" x2="9" y2="12" />
+    </svg>
+  )
+}
+
+function IconoUsuario({ className = 'h-5 w-5' }) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.85"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <circle cx="12" cy="8" r="4" />
+      <path d="M5 20a7 7 0 0 1 14 0" />
     </svg>
   )
 }
@@ -202,38 +221,66 @@ const NAVEGACION_POR_ROL = {
   ],
 }
 
-function clasesEnlace({ isActive }) {
-  // El enlace activo se marca con subrayado, borde lateral y superficie clara, no solo con color.
-  const base = `group flex items-center gap-3 rounded-lg border-l-4 px-3 py-2.5 text-sm transition-colors ${FOCO}`
-  return isActive
-    ? `${base} border-mazorca bg-arena font-semibold text-cacao underline decoration-mazorca decoration-2 underline-offset-4 shadow-2xs`
-    : `${base} border-transparent text-crema/90 hover:bg-crema/10 hover:text-crema hover:underline`
+function clasesTextoColapsable(expandida) {
+  return `whitespace-nowrap transition-opacity duration-200 motion-reduce:transition-none ${
+    expandida ? 'sm:inline sm:opacity-100' : 'sm:hidden sm:opacity-0'
+  }`
+}
+
+function clasesEnlace(expandida) {
+  return ({ isActive }) => {
+    // El enlace activo se marca con subrayado, borde lateral y superficie clara, no solo con color.
+    const base = `group flex items-center overflow-hidden rounded-lg border-l-4 py-2.5 text-sm transition-colors ${
+      expandida ? 'gap-3 pl-3.5 pr-3' : 'gap-3 pl-3.5 pr-3 sm:justify-center sm:px-0'
+    } ${FOCO}`
+    return isActive
+      ? `${base} border-mazorca bg-arena font-semibold text-cacao underline decoration-mazorca decoration-2 underline-offset-4 shadow-2xs`
+      : `${base} border-transparent text-crema/90 hover:bg-crema/10 hover:text-crema hover:underline`
+  }
 }
 
 export function MarcoAplicacion() {
   const { sesion, rol, cerrarSesion } = useAuth()
   const location = useLocation()
+  const [expandida, setExpandida] = useState(false)
   const enlaces = NAVEGACION_POR_ROL[rol] ?? []
   const mensaje = location.state?.mensaje
+  const claseTexto = clasesTextoColapsable(expandida)
+
+  function manejarSeleccionEnlace(evento) {
+    setExpandida(false)
+    evento.currentTarget.blur()
+  }
 
   return (
     <div className="flex min-h-dvh flex-col bg-crema text-cacao">
       <AvisoSimulacion />
 
-      <div className="flex flex-1 flex-col md:flex-row">
-        <header className="w-full shrink-0 border-b border-mazorca/30 bg-cacao text-crema shadow-md md:sticky md:top-0 md:flex md:h-dvh md:w-68 md:flex-col md:justify-between md:border-r md:border-b-0 lg:w-72">
-          <div className="p-3.5 md:p-4">
-            <div className="flex items-center gap-3 rounded-xl border border-mazorca/45 bg-crema p-3 text-cacao shadow-sm">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-cacao/15 bg-arena/60 p-1">
+      <div className="relative flex flex-1 flex-col sm:flex-row sm:pl-20">
+        <header
+          onMouseEnter={() => setExpandida(true)}
+          onMouseLeave={() => setExpandida(false)}
+          className={`w-full shrink-0 overflow-hidden border-b border-mazorca/30 bg-cacao text-crema shadow-md transition-[width,box-shadow] duration-300 ease-out motion-reduce:transition-none sm:fixed sm:inset-y-0 sm:left-0 sm:z-40 sm:flex sm:h-dvh sm:flex-col sm:justify-between sm:border-r sm:border-b-0 ${
+            expandida ? 'sm:w-72 sm:shadow-2xl' : 'sm:w-20'
+          }`}
+        >
+          <div className="p-3">
+            <div
+              title="Cacao con historia · Asoprocacao, Huila"
+              className={`flex items-center overflow-hidden rounded-xl border border-mazorca/45 bg-crema p-1.5 text-cacao shadow-sm ${
+                expandida ? 'gap-3' : 'gap-3 sm:justify-center'
+              }`}
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-cacao/15 bg-arena/60 p-1">
                 <img
                   src="/assets/logo-emblema-192.webp"
                   alt=""
-                  width={44}
-                  height={44}
-                  className="h-10 w-auto object-contain"
+                  width={36}
+                  height={36}
+                  className="h-8 w-auto object-contain"
                 />
               </div>
-              <div className="min-w-0">
+              <div className={`min-w-0 pr-1 ${claseTexto}`}>
                 <p className="font-display text-lg font-bold leading-tight text-cacao">
                   Cacao con historia
                 </p>
@@ -246,9 +293,9 @@ export function MarcoAplicacion() {
 
           <nav
             aria-label="Navegación principal"
-            className="flex-1 overflow-y-auto px-3 pb-3 md:px-3.5 md:py-2"
+            className="flex-1 overflow-x-hidden overflow-y-auto px-3 pb-3 sm:py-2"
           >
-            <ul className="grid grid-cols-2 gap-1.5 sm:grid-cols-3 md:flex md:flex-col md:gap-1">
+            <ul className="grid grid-cols-2 gap-1.5 sm:flex sm:flex-col sm:gap-1">
               {enlaces.map((enlace) => {
                 const Icono = enlace.Icono
                 return (
@@ -256,11 +303,17 @@ export function MarcoAplicacion() {
                     key={enlace.a}
                     className={
                       enlace.separadorAntes
-                        ? 'col-span-full border-t border-crema/15 pt-1.5 md:mt-2 md:pt-2.5'
+                        ? 'col-span-full border-t border-crema/15 pt-1.5 sm:mt-2 sm:pt-2.5'
                         : ''
                     }
                   >
-                    <NavLink to={enlace.a} end={enlace.end !== false} className={clasesEnlace}>
+                    <NavLink
+                      to={enlace.a}
+                      end={enlace.end !== false}
+                      title={enlace.texto}
+                      onClick={manejarSeleccionEnlace}
+                      className={clasesEnlace(expandida)}
+                    >
                       {({ isActive }) => (
                         <>
                           {Icono && (
@@ -272,7 +325,9 @@ export function MarcoAplicacion() {
                               }`}
                             />
                           )}
-                          <span className="leading-snug">{enlace.texto}</span>
+                          <span className={`leading-snug ${claseTexto}`}>
+                            {enlace.texto}
+                          </span>
                         </>
                       )}
                     </NavLink>
@@ -282,21 +337,38 @@ export function MarcoAplicacion() {
             </ul>
           </nav>
 
-          <div className="border-t border-crema/15 bg-cacao px-3.5 py-3 md:p-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 md:flex-col md:items-stretch">
-              <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-crema">
-                  {sesion?.nombreCompleto}
-                </p>
-                <p className="text-xs text-arena/90">{etiquetaRol(rol)}</p>
+          <div className="border-t border-crema/15 bg-cacao p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-col sm:items-stretch">
+              <div
+                title={`${sesion?.nombreCompleto ?? ''} · ${etiquetaRol(rol)}`}
+                className={`flex min-w-0 items-center overflow-hidden py-1 ${
+                  expandida ? 'gap-3 px-1.5' : 'gap-3 px-1.5 sm:justify-center sm:px-0'
+                }`}
+              >
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-mazorca/40 bg-arena/15 text-arena">
+                  <IconoUsuario className="h-5 w-5" />
+                </div>
+                <div className={`min-w-0 ${claseTexto}`}>
+                  <p className="truncate text-sm font-semibold text-crema">
+                    {sesion?.nombreCompleto}
+                  </p>
+                  <p className="text-xs text-arena/90">{etiquetaRol(rol)}</p>
+                </div>
               </div>
+
               <button
                 type="button"
                 onClick={() => cerrarSesion()}
-                className={`inline-flex items-center justify-center gap-2 rounded-lg border border-crema/60 px-3 py-2 text-sm font-semibold text-crema transition-colors hover:bg-crema hover:text-cacao ${FOCO}`}
+                title="Cerrar sesión"
+                aria-label="Cerrar sesión"
+                className={`flex items-center overflow-hidden rounded-lg border border-crema/60 text-sm font-semibold text-crema transition-colors hover:bg-crema hover:text-cacao ${
+                  expandida
+                    ? 'gap-2.5 px-3 py-2 sm:w-full sm:justify-center'
+                    : 'gap-2.5 px-3 py-2 sm:mx-auto sm:h-10 sm:w-10 sm:justify-center sm:p-0'
+                } ${FOCO}`}
               >
-                <IconoCerrarSesion className="h-4 w-4 shrink-0" />
-                <span>Cerrar sesión</span>
+                <IconoCerrarSesion className="h-5 w-5 shrink-0" />
+                <span className={claseTexto}>Cerrar sesión</span>
               </button>
             </div>
           </div>
@@ -314,3 +386,5 @@ export function MarcoAplicacion() {
     </div>
   )
 }
+
+
