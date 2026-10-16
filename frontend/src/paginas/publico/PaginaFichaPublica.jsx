@@ -148,7 +148,7 @@ function ContenidoFicha({ codigoLote }) {
           </section>
 
           {/* Fecha y hora de consulta */}
-          <p className="border-t border-cacao/10 pt-3 text-xs text-cacao/60">
+          <p className="border-t border-cacao/10 pt-3 text-xs text-cacao/70">
             Consultado el {formatearFechaHora(ficha.consultadoEn)}
           </p>
         </div>

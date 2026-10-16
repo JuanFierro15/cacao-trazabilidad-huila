@@ -469,7 +469,7 @@ function ContenidoTrazabilidad({ codigo }) {
       </section>
 
       {/* Tiempo de respuesta */}
-      <p className="text-xs text-cacao/60">
+      <p className="text-xs text-cacao/70">
         Consulta de trazabilidad resuelta en {trazabilidad.tiempoConsultaMs} ms
       </p>
 

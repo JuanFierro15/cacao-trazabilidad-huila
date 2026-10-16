@@ -15,3 +15,10 @@
 body {
   @apply bg-crema text-cacao;
 }
+
+/* Texto de ejemplo de los campos: 70 % del cacao para no bajar de 4,5:1 sobre blanco. */
+@layer base {
+  ::placeholder {
+    color: color-mix(in oklab, var(--color-cacao) 70%, transparent);
+  }
+}

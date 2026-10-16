@@ -499,7 +499,7 @@ export function PaginaBalance() {
                               Ver balance
                             </button>
                             {estaSeleccionada && (
-                              <span className="text-xs font-semibold text-mazorca">
+                              <span className="text-xs font-semibold text-mazorca-oscuro">
                                 Seleccionada
                               </span>
                             )}
