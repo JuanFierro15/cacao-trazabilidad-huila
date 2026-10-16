@@ -6,6 +6,9 @@ import co.edu.usco.cacao.repositorio.UsuarioRepository;
 import co.edu.usco.cacao.seguridad.JwtServicio;
 import co.edu.usco.cacao.web.dto.LoginRespuestaDTO;
 import co.edu.usco.cacao.web.dto.LoginSolicitudDTO;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.format.DateTimeFormatter;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "1. Autenticación", description = "Inicio de sesión y emisión de tokens JWT (HS256)")
 public class AuthController {
 
     private final UsuarioRepository usuarioRepository;
@@ -34,6 +38,11 @@ public class AuthController {
     }
 
     @PostMapping("/login")
+    @SecurityRequirements
+    @Operation(
+        summary = "[Público] Iniciar sesión y obtener token JWT",
+        description = "Valida credenciales de usuario activo y devuelve el token JWT junto con el rol (OPERADOR o ADMINISTRADOR) y fecha de expiración."
+    )
     public ResponseEntity<LoginRespuestaDTO> login(@Valid @RequestBody LoginSolicitudDTO solicitud) {
         Usuario usuario = usuarioRepository.findByUsername(solicitud.username().trim())
             .filter(Usuario::isActivo)
