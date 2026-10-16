@@ -31,3 +31,19 @@ export function registrarTransformacion(datos) {
 export function obtenerTransformaciones(filtros = {}) {
   return api.get('/transformaciones', filtros)
 }
+
+export function obtenerAlertas(filtros = {}) {
+  return api.get('/alertas', filtros)
+}
+
+export function obtenerBalance(id, precioVentaCop) {
+  return api.get(
+    '/transformaciones/' + encodeURIComponent(id) + '/balance',
+    precioVentaCop === null || precioVentaCop === undefined ? undefined : { precioVentaCop },
+  )
+}
+
+export function descargarCsv(filtros = {}) {
+  return api.descargar('/reportes/exportar-csv', filtros)
+}
+

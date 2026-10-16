@@ -11,7 +11,9 @@ const NAVEGACION_POR_ROL = {
     { a: '/operador/transformacion', texto: 'Registrar transformación' },
   ],
   [ROLES.ADMINISTRADOR]: [
-    { a: '/admin', texto: 'Panel del administrador' },
+    { a: '/admin', texto: 'Inventario' },
+    { a: '/admin/alertas', texto: 'Alertas' },
+    { a: '/admin/balance', texto: 'Balance económico' },
     { a: '/operador', texto: 'Operación' },
     { a: '/operador/recepcion', texto: 'Recepción de lotes' },
     { a: '/operador/transformacion', texto: 'Registrar transformación' },

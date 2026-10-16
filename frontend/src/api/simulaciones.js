@@ -100,6 +100,15 @@ function texto(valor) {
   return typeof valor === 'string' ? valor.trim() : ''
 }
 
+function redondear(valor, decimales) {
+  if (valor === null || valor === undefined || Number.isNaN(valor)) return valor
+  const signo = valor < 0 ? -1 : 1
+  const abs = Math.abs(valor)
+  const factor = Number(abs + 'e' + decimales)
+  const redondeado = Math.round(factor)
+  return signo * Number(redondeado + 'e-' + decimales)
+}
+
 function respuesta(status, cuerpo) {
   return { status, cuerpo }
 }
@@ -726,6 +735,277 @@ function manejarListaTransformaciones({ consulta }) {
   return respuesta(200, resultado)
 }
 
+function manejarListaAlertas({ consulta }) {
+  const activaParam =
+    consulta?.activa !== undefined && consulta?.activa !== null
+      ? String(consulta.activa).trim()
+      : ''
+  const loteCodigoParam = texto(consulta?.loteCodigo)
+
+  let resultado = alertas.slice()
+
+  if (activaParam === 'true') {
+    resultado = resultado.filter((a) => a.activa === true)
+  } else if (activaParam === 'false') {
+    resultado = resultado.filter((a) => a.activa === false)
+  }
+
+  if (loteCodigoParam) {
+    resultado = resultado.filter((a) => a.loteCodigo === loteCodigoParam)
+  }
+
+  resultado.sort((a, b) => {
+    const difFecha = new Date(b.fechaGeneracion).getTime() - new Date(a.fechaGeneracion).getTime()
+    if (difFecha !== 0) return difFecha
+    return b.id - a.id
+  })
+
+  const dtos = resultado.map((a) => ({
+    id: a.id,
+    tipoAlerta: a.tipoAlerta,
+    loteCodigo: a.loteCodigo,
+    transformacionId: a.transformacionId,
+    reglaAplicada: a.reglaAplicada,
+    causa: a.causa,
+    valorMedido: a.valorMedido,
+    umbral: a.umbral,
+    fechaGeneracion: a.fechaGeneracion,
+    activa: a.activa,
+  }))
+
+  return respuesta(200, dtos)
+}
+
+function manejarBalance({ parametros, consulta }) {
+  const idStr = parametros[0]
+  const transformacion = transformaciones.find((t) => String(t.id) === String(idStr))
+
+  const tienePrecioParam =
+    consulta?.precioVentaCop !== undefined &&
+    consulta?.precioVentaCop !== null &&
+    consulta?.precioVentaCop !== ''
+
+  let precioSimulado = null
+  if (tienePrecioParam) {
+    const raw = consulta.precioVentaCop
+    const num = typeof raw === 'number' ? raw : Number(raw)
+    if (typeof raw === 'boolean' || Number.isNaN(num) || !Number.isFinite(num)) {
+      return respuestaError(
+        400,
+        'VALIDACION',
+        'Hay datos inválidos o sin completar. Revise los campos marcados.',
+        [{ campo: 'precioVentaCop', mensaje: 'Debe ser un número' }],
+      )
+    }
+    if (num < 0) {
+      return respuestaError(
+        400,
+        'VALIDACION',
+        'El precio de venta simulado no puede ser negativo.',
+        [{ campo: 'precioVentaCop', mensaje: 'El precio de venta no puede ser negativo' }],
+      )
+    }
+    precioSimulado = num
+  }
+
+  if (!transformacion) {
+    return respuestaError(
+      404,
+      'NO_ENCONTRADO',
+      `No existe una transformación con el identificador ${idStr}.`,
+    )
+  }
+
+  const esSimulacion = tienePrecioParam
+  const precioEfectivo = tienePrecioParam
+    ? precioSimulado
+    : (transformacion.precioVentaEstimadoCop ?? null)
+
+  const kgSalidaTexto = formatearNumero(transformacion.cantidadSalida, 3)
+  const supuestos = [
+    `Salida vendible = cantidad de salida registrada (${kgSalidaTexto} kg).`,
+    'Precio de venta hipotético del ejercicio.',
+    'Valores del caso simulado; no son estándares agronómicos ni de mercado.',
+  ]
+
+  let calculable = true
+  let costoUnitarioCop = null
+  let margenPorcentaje = null
+  let motivoNoCalculable = null
+  let formulaCostoUnitario = ''
+  let formulaMargen = ''
+
+  if (transformacion.cantidadSalida === 0) {
+    calculable = false
+    costoUnitarioCop = null
+    margenPorcentaje = null
+    motivoNoCalculable =
+      'No se puede calcular: la salida vendible es 0 kg (división entre cero).'
+    formulaCostoUnitario = 'Costo unitario = no calculable (salida vendible = 0 kg)'
+    formulaMargen = 'Margen = no calculable (salida vendible = 0 kg)'
+  } else if (
+    transformacion.costoEtapaCop === null ||
+    transformacion.costoEtapaCop === undefined
+  ) {
+    calculable = false
+    costoUnitarioCop = null
+    margenPorcentaje = null
+    motivoNoCalculable = 'No se registraron costos para esta etapa de transformación.'
+    formulaCostoUnitario = 'Costo unitario = no calculable (costo de etapa no registrado)'
+    formulaMargen = 'Margen = no calculable (costo de etapa no registrado)'
+  } else {
+    costoUnitarioCop = redondear(
+      transformacion.costoEtapaCop / transformacion.cantidadSalida,
+      2,
+    )
+    formulaCostoUnitario = `Costo unitario = costo total de la etapa ÷ kg de salida vendible = ${formatearNumero(
+      transformacion.costoEtapaCop,
+      3,
+    )} ÷ ${formatearNumero(transformacion.cantidadSalida, 3)} = ${formatearNumero(
+      costoUnitarioCop,
+      3,
+    )} COP/kg`
+
+    if (precioEfectivo === null) {
+      calculable = true
+      margenPorcentaje = null
+      motivoNoCalculable = null
+      formulaMargen = 'Margen = no calculable (precio de venta no especificado)'
+    } else if (precioEfectivo === 0) {
+      calculable = false
+      margenPorcentaje = null
+      motivoNoCalculable =
+        'No se puede calcular el margen: el precio de venta es 0 COP/kg (división entre cero).'
+      formulaMargen =
+        'Margen = no calculable (precio de venta = 0 COP/kg, división entre cero)'
+    } else {
+      margenPorcentaje = redondear(
+        ((precioEfectivo - costoUnitarioCop) / precioEfectivo) * 100,
+        2,
+      )
+      calculable = true
+      motivoNoCalculable = null
+      const margenStr = new Intl.NumberFormat('es-CO', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(margenPorcentaje)
+      formulaMargen = `Margen = (precio − costo unitario) ÷ precio × 100 = (${formatearNumero(
+        precioEfectivo,
+        3,
+      )} − ${formatearNumero(costoUnitarioCop, 3)}) ÷ ${formatearNumero(
+        precioEfectivo,
+        3,
+      )} × 100 = ${margenStr} %`
+    }
+  }
+
+  return respuesta(200, {
+    transformacionId: transformacion.id,
+    loteSalidaCodigo: transformacion.loteSalidaCodigo ?? null,
+    costoEtapaCop: transformacion.costoEtapaCop ?? null,
+    cantidadSalidaKg: transformacion.cantidadSalida,
+    costoUnitarioCop,
+    precioVentaCop: precioEfectivo,
+    margenPorcentaje,
+    esSimulacion,
+    calculable,
+    motivoNoCalculable,
+    formulas: {
+      costoUnitario: formulaCostoUnitario,
+      margen: formulaMargen,
+    },
+    costosIncluidos: transformacion.detalleCostosIncluidos ?? null,
+    supuestos,
+  })
+}
+
+function escaparCampoCsv(valor) {
+  if (valor === null || valor === undefined) return ''
+  const s = String(valor)
+  if (s.includes(';') || s.includes('"') || s.includes('\n') || s.includes('\r')) {
+    return `"${s.replace(/"/g, '""')}"`
+  }
+  return s
+}
+
+function formatearKgCsv(valor) {
+  if (valor === null || valor === undefined || Number.isNaN(valor)) return ''
+  const r = redondear(valor, 3)
+  return String(r).replace('.', ',')
+}
+
+function formatear2DecimalesCsv(valor) {
+  if (valor === null || valor === undefined || Number.isNaN(valor)) return ''
+  const r = redondear(valor, 2)
+  return r.toFixed(2).replace('.', ',')
+}
+
+function manejarExportarCsv({ consulta }) {
+  const origenFiltro = texto(consulta?.origen).toLocaleLowerCase('es-CO')
+  const estadoFiltro = texto(consulta?.estado)
+
+  const lotesFiltrados = lotes
+    .filter((l) => !origenFiltro || l.origenMunicipio.toLocaleLowerCase('es-CO') === origenFiltro)
+    .filter((l) => !estadoFiltro || l.estado === estadoFiltro)
+    .sort((a, b) => a.codigoLote.localeCompare(b.codigoLote))
+
+  const BOM = '\uFEFF'
+  const cabecera =
+    'codigo_lote;tipo_lote;producto;municipio_origen;finca;cantidad_recibida_kg;cantidad_consumida_kg;cantidad_disponible_kg;estado;costo_etapa_cop;costo_unitario_cop;precio_venta_cop;margen_porcentaje'
+
+  const filas = lotesFiltrados.map((lote) => {
+    const productor = productores.find((p) => p.id === lote.productorId)
+    const finca = productor?.nombreFinca ?? ''
+
+    let costoEtapa = null
+    let costoUnitario = null
+    let precioVenta = null
+    let margen = null
+
+    if (lote.tipoLote === 'DERIVADO') {
+      const t = transformaciones.find((item) => item.loteSalidaCodigo === lote.codigoLote)
+      if (t) {
+        costoEtapa = t.costoEtapaCop ?? null
+        costoUnitario = t.costoUnitarioCop ?? null
+        precioVenta = t.precioVentaEstimadoCop ?? null
+        margen = t.margenPorcentaje ?? null
+      }
+    }
+
+    return [
+      escaparCampoCsv(lote.codigoLote),
+      escaparCampoCsv(lote.tipoLote),
+      escaparCampoCsv(lote.producto),
+      escaparCampoCsv(lote.origenMunicipio),
+      escaparCampoCsv(finca),
+      formatearKgCsv(lote.cantidadRecibida),
+      formatearKgCsv(lote.cantidadConsumida),
+      formatearKgCsv(lote.cantidadDisponible),
+      escaparCampoCsv(lote.estado),
+      formatear2DecimalesCsv(costoEtapa),
+      formatear2DecimalesCsv(costoUnitario),
+      formatear2DecimalesCsv(precioVenta),
+      formatear2DecimalesCsv(margen),
+    ].join(';')
+  })
+
+  const textoCsv = BOM + [cabecera, ...filas].join('\r\n') + '\r\n'
+
+  const iso = isoBogota()
+  const anio = iso.slice(0, 4)
+  const mes = iso.slice(5, 7)
+  const dia = iso.slice(8, 10)
+  const hora = iso.slice(11, 13)
+  const min = iso.slice(14, 16)
+  const nombreArchivo = `lotes_${anio}${mes}${dia}_${hora}${min}.csv`
+
+  return {
+    status: 200,
+    cuerpo: new Blob([textoCsv], { type: 'text/csv;charset=utf-8' }),
+    nombreArchivo,
+  }
+}
+
 // --- Tabla de rutas: matriz completa de la sección 7 ---
 // Las rutas sin manejador existen para que los permisos (401/403) se simulen
 // igual que en el backend aunque la función aún no esté construida.
@@ -750,10 +1030,20 @@ const RUTAS = [
     mensajeAccesoDenegado: 'Solo el Administrador puede liberar o bloquear lotes.',
   },
   { metodo: 'GET', patron: /^\/lotes\/([^/]+)\/recall$/, roles: SOLO_ADMINISTRADOR },
-  { metodo: 'GET', patron: /^\/transformaciones\/([^/]+)\/balance$/, roles: SOLO_ADMINISTRADOR },
-  { metodo: 'GET', patron: /^\/alertas$/, roles: SOLO_ADMINISTRADOR },
+  {
+    metodo: 'GET',
+    patron: /^\/transformaciones\/([^/]+)\/balance$/,
+    roles: SOLO_ADMINISTRADOR,
+    manejador: manejarBalance,
+  },
+  { metodo: 'GET', patron: /^\/alertas$/, roles: SOLO_ADMINISTRADOR, manejador: manejarListaAlertas },
   { metodo: 'GET', patron: /^\/auditoria$/, roles: SOLO_ADMINISTRADOR },
-  { metodo: 'GET', patron: /^\/reportes\/exportar-csv$/, roles: SOLO_ADMINISTRADOR },
+  {
+    metodo: 'GET',
+    patron: /^\/reportes\/exportar-csv$/,
+    roles: SOLO_ADMINISTRADOR,
+    manejador: manejarExportarCsv,
+  },
 ]
 
 function buscarRuta(metodo, ruta) {
