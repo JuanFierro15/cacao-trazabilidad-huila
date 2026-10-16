@@ -149,12 +149,12 @@ Paleta: Café Cacao `#3E2723`, Ámbar Mazorca `#D97706`, Verde Origen `#15803D`,
 - Commit: `feat: agregar formulario de recepción de lotes`
 - **→ Checkpoint 1: PR a `main`.** Desde aquí, login y lotes contra la API real.
 
-**F3. Transformación + diferenciador (RF02, RF08)** — *terminado con simulaciones (commit `9e2d9a6`); falta probarlo contra la API real cuando entre B4*
+**F3. Transformación + diferenciador (RF02, RF08)** — *terminado (commit `9e2d9a6`); verificado contra la API real de B4 el 16/10 (100 → 80, 409 del reenvío y 422)*
 - Objetivo: selector de lote (solo con disponible > 0 y no BLOQUEADO, mostrando el disponible), etapas desde `/api/config/reglas`, **semáforo de merma en vivo** (verde < 10 %, ámbar 10 %–umbral, rojo > umbral; el umbral viene de la API y el texto dice "vista previa"), **chips de incidencia en 1 clic** que agregan texto a la justificación (el chip "Adición de insumos" abre el campo `insumosAgregados`), costos opcionales. Ciclo de `operacionUuid` del contrato 8.5. Tras un registro exitoso, botón **"Reenviar la misma operación"** que reenvía el mismo cuerpo y UUID para demostrar la idempotencia (muestra el 409 de forma amigable).
 - Verificación: con simulaciones antes de B4 y contra la API real después: 100 → 80 muestra merma oficial 20,00 % y la alerta; 120 sobre 100 muestra el 422; el reenvío muestra el 409 y el inventario sigue igual.
 - Commit: `feat: agregar registro de transformación con semáforo de merma y chips de incidencia`
 
-**F4. Panel del administrador (RF04, RF05, RF11, RF12)** — *diseño propuesto en `prompts/frontend/F4.md`, pendiente de aprobación de Juan David antes de delegar*
+**F4. Panel del administrador (RF04, RF05, RF11, RF12)** — *terminado (commit `d4a2a20`); verificado contra la API real de B4 y B5; el CSV, solo con simulaciones hasta que entre B6*
 - Objetivo: inventario (recibido, consumido, disponible) con filtros por origen y estado; alertas con regla y causa; balance de cada transformación con las fórmulas tal como llegan de la API y **simulador de precio** (llama a `balance?precioVentaCop=`, no calcula en el navegador); descarga CSV.
 - Verificación: cambiar el precio a 30.000 cambia el margen calculado por el backend; el CSV descarga.
 - Commit: `feat: agregar panel del administrador con inventario, alertas, balance y CSV`
@@ -253,6 +253,7 @@ Commit sugerido: <mensaje>
 - **Checkpoint 1 cerrado** a las 23:07 sobre `main` `493571e` (PR #1 B1–B3, PR #2 F1–F3, PR #3 corrección de lotes y pruebas en `cacao_test`). Validado en el PC de Juan David sin simulaciones: login de los dos roles, `GET /api/lotes` con y sin filtros, recepción (201, 400 por campo, 409 por código repetido, alerta de cuota) y 403 del operador al cambiar estado; `mvnw test` 20/20 contra `cacao_test`.
 - El historial de git del checkpoint se guardó fuera del repositorio, en la carpeta hermana `evidencias_para_juan_manuel/`, para la documentación (E02).
 - Siguiente: Miguel con B4 y B5; Juan David con F4 (diseño pendiente de aprobación). **Checkpoint 2 a las 02:00.**
+- **Actualización 16/10, 00:50:** B4 (`c124c83`) y B5 (`8f4e479`) en `feat/backend-api` y F4 (`d4a2a20`) en `feat/frontend-ui`, probados juntos en el PC de Juan David (API real y navegador; detalle en `prompts/frontend/F4.md`). PR del Checkpoint 2 abiertos para las dos ramas. El tablero del proyecto (E02) está en GitHub Projects, con un issue por bloque.
 - La base de desarrollo de Juan David tiene, además de la semilla, CAC004, CAC005, una alerta y dos registros de auditoría creados al validar el Checkpoint 1. CAC001 sigue sin transformaciones. Antes de la demostración se restaura el respaldo limpio (I2). La base `cacao_test` ya existe en su Docker.
 - **Cuota de agy:** los modelos Claude de agy agotaron su cuota el 15/10 hacia las 20:33 (se reinicia en unas 135 h). Las delegaciones siguen con `gemini-3.8-flash-high`; su resultado se revisa con más cuidado (F2 y F3 necesitaron correcciones a mano en la revisión).
 
