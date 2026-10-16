@@ -73,6 +73,27 @@ export function leerDecimal(texto) {
   return NaN
 }
 
+export function leerMonto(texto) {
+  if (texto === null || texto === undefined) return null
+  if (typeof texto !== 'string') {
+    if (typeof texto === 'number' && Number.isFinite(texto)) return texto
+    return NaN
+  }
+  let limpio = texto.replace(/[\s$]/g, '')
+  if (limpio === '') return null
+
+  if (limpio.includes(',')) {
+    limpio = limpio.replace(/\./g, '').replace(',', '.')
+  } else if (/^\d{1,3}(\.\d{3})+$/.test(limpio)) {
+    limpio = limpio.replace(/\./g, '')
+  }
+
+  if (/^-?\d+(\.\d+)?$/.test(limpio)) {
+    return Number(limpio)
+  }
+  return NaN
+}
+
 export function fechaHoyBogota() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: ZONA_HORARIA }).format(new Date())
 }

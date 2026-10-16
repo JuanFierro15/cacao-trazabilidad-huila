@@ -8,11 +8,13 @@ const NAVEGACION_POR_ROL = {
   [ROLES.OPERADOR]: [
     { a: '/operador', texto: 'Panel del operador' },
     { a: '/operador/recepcion', texto: 'Recepción de lotes' },
+    { a: '/operador/transformacion', texto: 'Registrar transformación' },
   ],
   [ROLES.ADMINISTRADOR]: [
     { a: '/admin', texto: 'Panel del administrador' },
     { a: '/operador', texto: 'Operación' },
     { a: '/operador/recepcion', texto: 'Recepción de lotes' },
+    { a: '/operador/transformacion', texto: 'Registrar transformación' },
   ],
 }
 

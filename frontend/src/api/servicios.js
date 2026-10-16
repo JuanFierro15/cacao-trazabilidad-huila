@@ -23,3 +23,11 @@ export function obtenerLote(codigo) {
 export function registrarLote(datos) {
   return api.post('/lotes', datos)
 }
+
+export function registrarTransformacion(datos) {
+  return api.post('/transformaciones', datos)
+}
+
+export function obtenerTransformaciones(filtros = {}) {
+  return api.get('/transformaciones', filtros)
+}

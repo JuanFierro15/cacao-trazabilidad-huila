@@ -9,6 +9,7 @@ import { PanelAdministrador } from './paginas/admin/PanelAdministrador.jsx'
 import { PaginaLogin } from './paginas/login/PaginaLogin.jsx'
 import { PaginaDetalleLote } from './paginas/lotes/PaginaDetalleLote.jsx'
 import { PaginaRecepcion } from './paginas/operador/PaginaRecepcion.jsx'
+import { PaginaTransformacion } from './paginas/operador/PaginaTransformacion.jsx'
 import { PanelOperador } from './paginas/operador/PanelOperador.jsx'
 
 function Inicio() {
@@ -28,6 +29,7 @@ function App() {
             <Route element={<MarcoAplicacion />}>
               <Route path="/operador" element={<PanelOperador />} />
               <Route path="/operador/recepcion" element={<PaginaRecepcion />} />
+              <Route path="/operador/transformacion" element={<PaginaTransformacion />} />
               <Route path="/lotes/:codigo/trazabilidad" element={<PaginaDetalleLote />} />
             </Route>
           </Route>
