@@ -20,6 +20,14 @@ export function obtenerLote(codigo) {
   return api.get('/lotes/' + encodeURIComponent(codigo))
 }
 
+export function obtenerTrazabilidad(codigo) {
+  return api.get('/lotes/' + encodeURIComponent(codigo) + '/trazabilidad')
+}
+
+export function obtenerFichaPublica(codigo) {
+  return api.getPublico('/public/ficha/' + encodeURIComponent(codigo))
+}
+
 export function registrarLote(datos) {
   return api.post('/lotes', datos)
 }

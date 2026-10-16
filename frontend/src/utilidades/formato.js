@@ -19,6 +19,15 @@ export function formatearKg(valor) {
   return `${formatearNumero(valor, 3)} kg`
 }
 
+export function formatearHectareas(valor) {
+  if (sinValor(valor)) return SIN_VALOR
+  const numero = new Intl.NumberFormat(LOCALE, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(valor)
+  return `${numero} ha`
+}
+
 export function formatearPorcentaje(valor) {
   if (sinValor(valor)) return SIN_VALOR
   const numero = new Intl.NumberFormat(LOCALE, {

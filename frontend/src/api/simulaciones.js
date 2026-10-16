@@ -1006,20 +1006,226 @@ function manejarExportarCsv({ consulta }) {
   }
 }
 
+function calcularLinaje(codigoLote) {
+  const ancestros = []
+  let actual = codigoLote
+  while (true) {
+    const tPadre = transformaciones.find((t) => t.loteSalidaCodigo === actual)
+    if (!tPadre || !tPadre.loteOrigenCodigo) break
+    ancestros.push(tPadre.loteOrigenCodigo)
+    actual = tPadre.loteOrigenCodigo
+  }
+  const loteRaizCodigo = actual
+
+  const descendientes = []
+  const cola = [codigoLote]
+  while (cola.length > 0) {
+    const actualDesc = cola.shift()
+    const transformacionesHijas = transformaciones.filter(
+      (t) => t.loteOrigenCodigo === actualDesc && t.loteSalidaCodigo,
+    )
+    for (const t of transformacionesHijas) {
+      if (!descendientes.includes(t.loteSalidaCodigo)) {
+        descendientes.push(t.loteSalidaCodigo)
+        cola.push(t.loteSalidaCodigo)
+      }
+    }
+  }
+
+  return { ancestros, descendientes, loteRaizCodigo }
+}
+
+function manejarTrazabilidadLote({ parametros }) {
+  const tInicio = performance.now()
+  const codigo = parametros[0]
+  const lote = lotes.find((l) => l.codigoLote === codigo)
+  if (!lote) {
+    return respuestaError(404, 'NO_ENCONTRADO', `No se encontró el lote con código ${codigo}.`)
+  }
+
+  const { ancestros, descendientes, loteRaizCodigo } = calcularLinaje(codigo)
+  const loteRaiz = lotes.find((l) => l.codigoLote === loteRaizCodigo) ?? lote
+  const productorRaiz = productores.find((p) => p.id === loteRaiz.productorId)
+
+  let transformacionesLinea = []
+  if (lote.tipoLote === 'RECEPCION') {
+    const grupoOrigen = new Set([codigo, ...descendientes])
+    transformacionesLinea = transformaciones.filter((t) => grupoOrigen.has(t.loteOrigenCodigo))
+  } else {
+    const grupoSalida = new Set([...ancestros, codigo])
+    transformacionesLinea = transformaciones.filter(
+      (t) =>
+        (t.loteSalidaCodigo && grupoSalida.has(t.loteSalidaCodigo)) ||
+        (!t.loteSalidaCodigo && t.loteOrigenCodigo === codigo),
+    )
+  }
+
+  transformacionesLinea.sort((a, b) => {
+    const cmp = a.fechaTransformacion.localeCompare(b.fechaTransformacion)
+    if (cmp !== 0) return cmp
+    return a.id - b.id
+  })
+
+  const tipoTexto = loteRaiz.tipoGrano === 'SECO' ? 'cacao seco' : 'cacao en baba'
+  let descripcionRecepcion = `Recepción de ${formatearNumero(loteRaiz.cantidadRecibida, 3)} kg de ${tipoTexto}`
+  if (loteRaiz.porcentajeHumedad !== null && loteRaiz.porcentajeHumedad !== undefined) {
+    descripcionRecepcion += ` (humedad ${formatearNumero(loteRaiz.porcentajeHumedad, 3)} %)`
+  }
+
+  const linea = [
+    {
+      orden: 1,
+      tipo: 'RECEPCION',
+      fecha: loteRaiz.fechaRecepcion,
+      codigoLote: loteRaiz.codigoLote,
+      descripcion: descripcionRecepcion,
+    },
+  ]
+
+  transformacionesLinea.forEach((t, i) => {
+    linea.push({
+      orden: i + 2,
+      tipo: 'TRANSFORMACION',
+      fecha: t.fechaTransformacion,
+      etapa: t.etapa,
+      loteEntrada: t.loteOrigenCodigo,
+      loteSalida: t.loteSalidaCodigo ?? null,
+      cantidadEntradaKg: t.cantidadEntrada,
+      cantidadSalidaKg: t.cantidadSalida,
+      porcentajeMerma: t.porcentajeMerma,
+      responsable: t.responsable,
+      incidencia: t.justificacionIncidencia ?? null,
+    })
+  })
+
+  const derivados = []
+  for (const codDesc of descendientes) {
+    const ld = lotes.find((item) => item.codigoLote === codDesc)
+    const tProd = transformaciones.find((item) => item.loteSalidaCodigo === codDesc)
+    if (ld) {
+      derivados.push({
+        codigoLote: ld.codigoLote,
+        producto: ld.producto,
+        etapa: tProd?.etapa ?? '',
+        cantidadKg: ld.cantidadRecibida,
+        disponibleKg: ld.cantidadDisponible,
+        estado: ld.estado,
+      })
+    }
+  }
+
+  const codigosFamilia = new Set([...ancestros, codigo, ...descendientes])
+  const alertasResultado = alertas
+    .filter((a) => codigosFamilia.has(a.loteCodigo))
+    .map((a) => structuredClone(a))
+
+  const tiempoConsultaMs = Math.round(performance.now() - tInicio)
+
+  return respuesta(200, {
+    codigoLote: lote.codigoLote,
+    producto: lote.producto,
+    estado: lote.estado,
+    loteRaiz: {
+      codigoLote: loteRaiz.codigoLote,
+      fechaRecepcion: loteRaiz.fechaRecepcion,
+      cantidadRecibidaKg: loteRaiz.cantidadRecibida,
+      tipoGrano: loteRaiz.tipoGrano,
+      porcentajeHumedad: loteRaiz.porcentajeHumedad ?? null,
+    },
+    origen: {
+      productor: productorRaiz?.nombreProductor ?? '',
+      finca: productorRaiz?.nombreFinca ?? '',
+      municipio: productorRaiz?.municipio ?? loteRaiz.origenMunicipio ?? '',
+      vereda: productorRaiz?.vereda ?? null,
+      variedadCacao: productorRaiz?.variedadCacao ?? '',
+      hectareasProductivas: productorRaiz?.hectareasProductivas ?? null,
+    },
+    linea,
+    derivados,
+    alertas: alertasResultado,
+    tiempoConsultaMs,
+  })
+}
+
+function manejarFichaPublica({ parametros }) {
+  const codigo = parametros[0]
+  const lote = lotes.find((l) => l.codigoLote === codigo)
+  if (!lote) {
+    return respuestaError(404, 'NO_ENCONTRADO', `No se encontró el lote con código ${codigo}.`)
+  }
+
+  const { ancestros } = calcularLinaje(codigo)
+  const loteRaizCodigo = ancestros.length > 0 ? ancestros[ancestros.length - 1] : lote.codigoLote
+  const loteRaiz = lotes.find((l) => l.codigoLote === loteRaizCodigo) ?? lote
+  const productorRaiz = productores.find((p) => p.id === loteRaiz.productorId)
+
+  const disponibleParaVenta = lote.estado === 'LIBERADO' && lote.cantidadDisponible > 0
+
+  let mensajeEstado = 'Producto en proceso de verificación. Aún no está disponible para la venta.'
+  if (lote.estado === 'LIBERADO') {
+    mensajeEstado = 'Producto verificado y disponible para la venta.'
+  } else if (lote.estado === 'BLOQUEADO') {
+    mensajeEstado = 'Producto retenido por control de calidad. No está disponible para la venta.'
+  }
+
+  const recorrido = [
+    {
+      orden: 1,
+      etapa: 'RECEPCION',
+      nombre: 'Recepción en acopio',
+      fecha: loteRaiz.fechaRecepcion,
+    },
+  ]
+
+  // Linaje en orden cronológico, de la raíz hacia el lote consultado.
+  const cadena = [...ancestros].reverse().concat(codigo)
+  for (let i = 1; i < cadena.length; i++) {
+    const codHijo = cadena[i]
+    const t = transformaciones.find((item) => item.loteSalidaCodigo === codHijo)
+    if (t) {
+      const etapaConfig = REGLAS.etapas.find((e) => e.codigo === t.etapa)
+      const nombreEtapa = etapaConfig ? etapaConfig.nombre : t.etapa
+      recorrido.push({
+        orden: recorrido.length + 1,
+        etapa: t.etapa,
+        nombre: nombreEtapa,
+        fecha: t.fechaTransformacion,
+      })
+    }
+  }
+
+  return respuesta(200, {
+    codigoLote: lote.codigoLote,
+    producto: lote.producto,
+    estado: lote.estado,
+    disponibleParaVenta,
+    mensajeEstado,
+    origen: {
+      finca: productorRaiz?.nombreFinca ?? '',
+      municipio: productorRaiz?.municipio ?? loteRaiz.origenMunicipio ?? '',
+      departamento: 'Huila',
+      variedadCacao: productorRaiz?.variedadCacao ?? '',
+    },
+    fechaRecepcionOrigen: loteRaiz.fechaRecepcion,
+    recorrido,
+    consultadoEn: isoBogota(),
+  })
+}
+
 // --- Tabla de rutas: matriz completa de la sección 7 ---
 // Las rutas sin manejador existen para que los permisos (401/403) se simulen
 // igual que en el backend aunque la función aún no esté construida.
 
 const RUTAS = [
   { metodo: 'POST', patron: /^\/auth\/login$/, roles: null, manejador: manejarLogin },
-  { metodo: 'GET', patron: /^\/public\/ficha\/([^/]+)$/, roles: null },
+  { metodo: 'GET', patron: /^\/public\/ficha\/([^/]+)$/, roles: null, manejador: manejarFichaPublica },
 
   { metodo: 'GET', patron: /^\/config\/reglas$/, roles: AMBOS_ROLES, manejador: manejarReglas },
   { metodo: 'GET', patron: /^\/productores$/, roles: AMBOS_ROLES, manejador: manejarProductores },
   { metodo: 'POST', patron: /^\/lotes$/, roles: AMBOS_ROLES, manejador: manejarCrearLote },
   { metodo: 'GET', patron: /^\/lotes$/, roles: AMBOS_ROLES, manejador: manejarListaLotes },
   { metodo: 'GET', patron: /^\/lotes\/([^/]+)$/, roles: AMBOS_ROLES, manejador: manejarDetalleLote },
-  { metodo: 'GET', patron: /^\/lotes\/([^/]+)\/trazabilidad$/, roles: AMBOS_ROLES },
+  { metodo: 'GET', patron: /^\/lotes\/([^/]+)\/trazabilidad$/, roles: AMBOS_ROLES, manejador: manejarTrazabilidadLote },
   { metodo: 'POST', patron: /^\/transformaciones$/, roles: AMBOS_ROLES, manejador: manejarCrearTransformacion },
   { metodo: 'GET', patron: /^\/transformaciones$/, roles: AMBOS_ROLES, manejador: manejarListaTransformaciones },
 

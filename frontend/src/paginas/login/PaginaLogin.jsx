@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate, useLocation, useNavigate } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { rutaInicioPorRol } from '../../auth/roles.js'
 import { useAuth } from '../../auth/useAuth.js'
 import { AvisoSimulacion } from '../../componentes/AvisoSimulacion.jsx'
@@ -155,6 +155,14 @@ export function PaginaLogin() {
               >
                 Autocompletar demo admin
               </button>
+            </div>
+            <div className="mt-4 text-center">
+              <Link
+                to="/ficha"
+                className={`text-sm font-semibold text-cacao underline hover:text-cacao/80 ${FOCO}`}
+              >
+                ¿Es comprador? Consulte un producto por su código
+              </Link>
             </div>
           </div>
         </div>
