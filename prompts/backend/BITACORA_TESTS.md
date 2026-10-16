@@ -275,5 +275,54 @@ Registro real de compilación, verificación contra PostgreSQL local (MODO LOCAL
      - Muestra el estado posterior: exactamente 3 lotes originales (330.000 kg), 0 inconsistencias, y confirmación de que el lote temporal desapareció por completo.
   5. **Estabilidad del backend:** los 42 tests de integración siguen pasando en verde sobre `cacao_test`, y `DataInitializer` inicializa usuarios sin errores de duplicidad ni fallos de migración en Flyway.
 
+---
+
+## Detalle del Bloque B8 — Pruebas automatizadas (reglas, permisos y regresión hora 12)
+
+- **Fecha y hora:** `2026-10-16T01:41:48-05:00`
+- **Comando:** `.\mvnw.cmd test`
+- **Salida real de Surefire:**
+
+```text
+[INFO] Running co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.170 s -- in co.edu.usco.cacao.dominio.DominioEsquemaContratoTest
+[INFO] Running co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.28 s -- in co.edu.usco.cacao.seguridad.SeguridadJwtErroresTest
+[INFO] Running co.edu.usco.cacao.servicio.CalculadoraTransformacionTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.040 s -- in co.edu.usco.cacao.servicio.CalculadoraTransformacionTest
+[INFO] Running co.edu.usco.cacao.web.IncidenciaRecallCsvTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.628 s -- in co.edu.usco.cacao.web.IncidenciaRecallCsvTest
+[INFO] Running co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.767 s -- in co.edu.usco.cacao.web.RecepcionCatalogosFiltrosTest
+[INFO] Running co.edu.usco.cacao.web.ReglasPermisosRegresionTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.397 s -- in co.edu.usco.cacao.web.ReglasPermisosRegresionTest
+[INFO] Running co.edu.usco.cacao.web.TransformacionIntegracionTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.997 s -- in co.edu.usco.cacao.web.TransformacionIntegracionTest
+[INFO] Running co.edu.usco.cacao.web.TrazabilidadFichaEstadoAuditoriaTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.713 s -- in co.edu.usco.cacao.web.TrazabilidadFichaEstadoAuditoriaTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 50, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  25.308 s
+[INFO] Finished at: 2026-10-16T01:41:48-05:00
+[INFO] ------------------------------------------------------------------------
+```
+
+- **Casos verificados en `ReglasPermisosRegresionTest` (8 pruebas de integración sobre `cacao_test`):**
+  1. `caso1_inventarioInsuficienteResponde422`: entrada (120 kg) > disponible (100 kg en `CAC001`) responde `422 INVENTARIO_INSUFICIENTE` sin alterar el disponible de `CAC001` (100.000 kg intactos).
+  2. `caso2_salidaMayorQueEntradaSinInsumosResponde422`: salida (95 kg) > entrada (80 kg) sin insumos responde `422 SALIDA_SIN_JUSTIFICACION`.
+  3. `caso3_idempotenciaSinDobleConsumoResponde409`: reenvío con mismo `operacionUuid` responde `409 OPERACION_DUPLICADA` con `transformacionId` y mantiene el inventario en 100 kg (no 50 kg).
+  4. `caso4_validacionCantidadNegativaOZeroResponde400`: `cantidadRecibida` <= 0 (`-10` y `0`) en `POST /api/lotes` devuelve `400 VALIDACION` con campo identificado.
+  5. `caso5_operadorRecibe403AlCambiarEstado`: `operador1` recibe `403 ACCESO_DENEGADO` al intentar modificar estado en `PATCH /api/lotes/{codigo}/estado`.
+  6. `caso6_fichaPublicaSinCamposProhibidos`: `GET /api/public/ficha/CAC001` sin JWT responde 200 OK y su JSON crudo no expone ninguno de los 14 campos internos prohibidos (`costo`, `precio`, `margen`, `cantidad`, `merma`, `responsable`, `productorNombre`, `hectareas`, `cuota`, `motivoEstado`, `alertas`, `"id":`, `transformacionId`, `operacionUuid`).
+  7. `caso7_regresionHora12BloqueoCascadaYHistorialConservado`: el bloqueo de `CAC001` propaga en cascada a `CAC001-T1`, su ficha pública queda en `BLOQUEADO` (`disponibleParaVenta = false`), la línea de tiempo conserva 2 eventos y 1 derivado, la auditoría registra `CAMBIO_ESTADO` por lote y transformar el derivado bloqueado responde `409 LOTE_BLOQUEADO`.
+  8. `caso8_regresionHora12LiberarDerivadoConOrigenBloqueadoResponde409`: intentar liberar `CAC001-T1` con ancestro bloqueado responde `409 ORIGEN_BLOQUEADO`; al liberar la raíz primero, la posterior liberación del derivado tiene éxito con `200 OK`.
+
+
 
 
