@@ -93,12 +93,12 @@ Cada bloque: objetivo → archivos → verificación → commit. No se pasa al s
 - Commit: `feat: agregar trazabilidad, ficha pública, cambio de estado y consulta de auditoría`
 - **→ Checkpoint 2: PR a `main`.**
 
-**B6. Incidencia hora 12 y exportación (RF09 ajustado, RF11)**
+**B6. Incidencia hora 12 y exportación (RF09 ajustado, RF11)** — *terminado (commit `13e29d8`, en `main` desde el Checkpoint 3)*
 - Objetivo: bloqueo con `propagarADerivados`, `ORIGEN_BLOQUEADO` al liberar, `GET .../recall`, `GET /api/reportes/exportar-csv` (UTF-8 con BOM, `;`, decimales con coma).
 - Verificación: bloquear CAC001 deja CAC001 y CAC001-T1 en BLOQUEADO; recall muestra Productor A, Rivera, 100/100/0 y 80 kg afectados; transformaciones y auditoría intactas; el CSV abre bien en Excel.
 - Commit: `feat: agregar bloqueo en cascada, reporte de recall y exportación CSV`
 
-**B7. Respaldo, restauración e integridad (RF07, prueba 6 del jurado)**
+**B7. Respaldo, restauración e integridad (RF07, prueba 6 del jurado)** — *terminado (commits `0912a5c` y `d6d7046`, en `main` desde el Checkpoint 3; modo Docker verificado por Juan David)*
 - Objetivo:
   - `datos/scripts/verificar_integridad.sql`: conteo de lotes, transformaciones y auditoría; suma de kg recibidos, consumidos y disponibles; lista ordenada de códigos.
   - `datos/scripts/respaldar.{ps1,sh}` y `restaurar.{ps1,sh}` que **detectan el modo solos**: si el servicio `db` de docker compose está en ejecución, usan el contenedor (la carpeta `datos/` está montada en `/datos`); si no, usan `psql`, `pg_dump` y `pg_restore` nativos con host, puerto, usuario y base leídos del `.env` (clave por `PGPASSWORD`). Siempre escriben con `-f`, nunca con redirección `>` (en PowerShell corrompe binarios). El respaldo queda en `datos/respaldos/` en los dos modos.
@@ -106,7 +106,7 @@ Cada bloque: objetivo → archivos → verificación → commit. No se pasa al s
 - Verificación (modo local): respaldar → crear un lote → restaurar → el lote nuevo desaparece y conteos, sumas y códigos coinciden; el backend reinicia sin error de Flyway; no hay usuarios duplicados. El modo Docker lo verifica Juan David en el Checkpoint 3.
 - Commit: `feat: agregar scripts de respaldo, restauración y verificación de integridad`
 
-**B8. Pruebas automatizadas (mínimo 5, objetivo 8)** — *infraestructura adelantada en `9f2566d`; faltan los casos*
+**B8. Pruebas automatizadas (mínimo 5, objetivo 8)** — *terminado (commit `5ae4c56`, en `main` desde el Checkpoint 3; 50 pruebas en verde)*
 - Ya hecho (desde el Checkpoint 1): perfil `test` en `backend/src/test/resources/application-test.yml` apuntando a `cacao_test`; `FlywayPruebasConfig` hace `clean()` + `migrate()` al iniciar la suite con un seguro que solo permite limpiar `cacao_test`; la anotación `@PruebaIntegracion` (`@SpringBootTest`, `@AutoConfigureMockMvc`, `@ActiveProfiles("test")`, `@Transactional`). Reglas para toda prueba nueva: usar `@PruebaIntegracion`; si una prueba necesita confirmar datos (por ejemplo, dos hilos para la idempotencia), crea su propio lote y comprueba sobre ese lote, nunca conteos globales; nunca apuntar las pruebas a la base `cacao`.
 - Objetivo: además de la unitaria de B4, pruebas de integración con perfil `test` contra la base real `cacao_test` (contrato, sección 4). Flyway la limpia y migra al iniciar la suite (`spring.flyway.clean-disabled=false` solo en `application-test.yml` y una estrategia de migración que haga `clean()` + `migrate()`). Casos: inventario insuficiente, idempotencia (sin doble consumo), 403 del operador al liberar, ficha pública sin campos prohibidos, validación de cantidad negativa, **regresión hora 12** (bloqueo de CAC001 → ficha de CAC001-T1 BLOQUEADO y no disponible, historial conservado).
 - Notas: la auditoría es solo inserción; no limpies datos con `deleteAll()` sobre ella (el trigger lo rechaza): usa `@Transactional` en las pruebas. Las dependencias de Testcontainers del `pom.xml` no se usan y se pueden quitar en este bloque.
@@ -114,7 +114,7 @@ Cada bloque: objetivo → archivos → verificación → commit. No se pasa al s
 - Commit: `test: agregar pruebas automatizadas de reglas, permisos y regresión de la hora 12`
 - **→ Checkpoint 3: PR a `main`.**
 
-**B9 (opcional, si sobra tiempo).** Swagger UI con springdoc compatible con Boot 3.5 para que el jurado pruebe la API. Commit: `feat: agregar documentación interactiva de la API`
+**B9 (opcional, si sobra tiempo).** — *terminado (commit `98f7201`, en `main` por #44; Swagger UI en `http://localhost:8080/swagger-ui/index.html`)* Swagger UI con springdoc compatible con Boot 3.5 para que el jurado pruebe la API. Commit: `feat: agregar documentación interactiva de la API`
 
 **Migraciones adicionales (a pedido, en cualquier momento).** Si el frontend necesita un cambio de esquema: `V<n>__descripcion.sql`, probarla sobre una base restaurada, avisar en el grupo. Commit: `feat: agregar migración V<n> para <cambio>`
 
@@ -160,12 +160,12 @@ Paleta: Café Cacao `#3E2723`, Ámbar Mazorca `#D97706`, Verde Origen `#15803D`,
 - Commit: `feat: agregar panel del administrador con inventario, alertas, balance y CSV`
 - **→ Checkpoint 2: PR a `main`.**
 
-**F5. Trazabilidad, ficha pública y QR (RF03, RF06)** — *terminado (commit `478b078`, subido a `feat/frontend-ui`, entra a `main` en el PR del Checkpoint 3); falta escanear el QR con un celular*
+**F5. Trazabilidad, ficha pública y QR (RF03, RF06)** — *terminado (commit `478b078`, en `main` desde el Checkpoint 3; QR escaneado con un celular el 16/10 a las 05:15)*
 - Objetivo: línea de tiempo interna (`/lotes/:codigo/trazabilidad`); **Pasaporte Digital** público en `/ficha/:codigoLote` sin login, con estado destacado (BLOQUEADO en rojo con advertencia, nunca como disponible), origen y recorrido; QR con `qrcode.react` apuntando a la URL del contrato (sección 4).
 - Verificación: el QR escaneado desde un celular en la misma red abre la ficha; la ficha no muestra ningún dato interno.
 - Commit: `feat: agregar línea de trazabilidad, ficha pública y código QR`
 
-**F6. Estado, recall y auditoría (RF09, RF10, hora 12)**
+**F6. Estado, recall y auditoría (RF09, RF10, hora 12)** — *terminado (commit `915f515`, en `main` desde el Checkpoint 3)*
 - Objetivo: botones Bloquear/Liberar con motivo obligatorio en la vista de trazabilidad. **Visibles también para el operador**: el backend responde 403 y la UI muestra "Solo el Administrador puede liberar o bloquear lotes" (así se demuestra que el control está en el servidor). Vista de recall y visor de auditoría (solo lectura).
 - Verificación: operador → mensaje 403; admin bloquea CAC001 → ficha de CAC001-T1 en BLOQUEADO; la auditoría muestra quién, cuándo, valor anterior y nuevo.
 - Commit: `feat: agregar control de estado, reporte de recall y visor de auditoría`
@@ -249,15 +249,17 @@ Commit sugerido: <mensaje>
 
 ## 8. Estado actual y aprendizajes (se actualiza en cada checkpoint)
 
-**Estado al 16/10, 04:05**
+**Estado al 16/10, 05:05**
 - **Checkpoint 1 cerrado** el 15/10 a las 23:07 sobre `main` `493571e` (PR #1 B1–B3, PR #2 F1–F3, PR #3 corrección de lotes y pruebas en `cacao_test`).
 - **Checkpoint 2 cerrado** a la 01:01 sobre `main` `7c281cc` (PR #40 B4–B5, PR #41 F4 y F3 validado contra la API real). Validado en el PC de Juan David sin simulaciones: `mvnw test` 37/37 contra `cacao_test`; pruebas 3, 4, 5, 7 y 9 del contrato por API (34 comprobaciones, 0 fallidas) más la regresión del Checkpoint 1; inventario, alertas y balance en el navegador.
+- **Checkpoint 3 cerrado** a las 05:01 sobre `main` `e183fca` (PR #42 B6–B8 y la corrección `d6d7046` de los scripts de respaldo; PR #43 F5–F6). Validado en el PC de Juan David: `mvnw clean test` 50/50 contra `cacao_test`; B6 por API sobre CAC001 (57 comprobaciones, 0 fallidas) y la regresión del Checkpoint 2 (34, 0 fallidas); prueba 6 con `respaldar.ps1` y `restaurar.ps1` ("INTEGRIDAD CONFIRMADA", Flyway sin migrar, 2 usuarios) y también con los `.sh` en Git Bash; CSV del panel contra la API real y abierto en Excel con 13 columnas y números; F5 y F6 en el navegador. Tablero: #10, #11, #12, #18 y #19 en Done (el QR de F5 se escaneó con un celular a las 05:15).
 - La evidencia de cada checkpoint (historial de git y salida real de la validación) se guarda fuera del repositorio, en la carpeta hermana `evidencias_para_juan_manuel/`, para la documentación (E02 y E05).
 - **Tablero (E02):** GitHub Projects "KGB — Asoprocacao (Hackathon USCO)", un issue por bloque (#4 a #38). Al integrar cada PR, sus issues pasan a Done y se cierran con un comentario que cita commits, PR y verificación real.
-- **Después del Checkpoint 2:** F5 terminado y subido (`478b078`, trazabilidad interna, ficha pública sin sesión, consulta por código y QR; el QR se decodificó en el navegador con la URL de la red). Para escanearlo desde un celular: `VITE_PUBLIC_BASE_URL=http://<IP-del-PC>:5173` en el `.env` (hoy la IP es `192.168.1.222`) y el puerto 5173 permitido en el firewall de Windows.
-- **B6, B7 y B8:** ya están en `feat/backend-api`, sin PR: B6 `13e29d8` (bloqueo en cascada, recall y CSV), B7 `0912a5c` (respaldo, restauración e integridad) y B8 `5ae4c56` (pruebas automatizadas y regresión de la hora 12). Falta validarlos en el PC de Juan David (modo Docker) y abrir el PR del Checkpoint 3. F6 se construye sobre B6.
+- **QR de F5:** escaneado con un celular en la misma Wi-Fi el 16/10 a las 05:15; abre la ficha sin sesión. Para repetirlo: `VITE_PUBLIC_BASE_URL=http://<IP-del-PC>:5173` en el `.env` (hoy la IP es `192.168.1.222`) y el puerto 5173 permitido en el firewall de Windows.
+- **Respaldos (B7):** cada respaldo deja junto al `.dump` un `.integridad.txt` y la restauración lo compara sola. En I2 se versionan `respaldo_demo.dump` y `respaldo_demo.integridad.txt` (el `.gitignore` ya los exceptúa).
 - **Entregables:** el 16/10 a la 01:50 se prepararon los insumos de E02, E03 y E05 (historias, tablero exportado, relación con commits y pruebas, diagramas Mermaid generados del código, 12 capturas reales, 28 casos ejecutados y las 37 pruebas JUnit) en `evidencias_para_juan_manuel/entregables/`, fuera del repositorio. Los PDF los redacta el equipo; E08 también. Faltan E01, E06, E07, E09 y E10, y completar lo que dependa de B6, B7, I1 y la hora 12. Registro en `prompts/integracion/insumos-entregables.md` (commit `0f928d9`).
-- Siguiente: validar B6–B8 y F6 (Juan David); Juan Manuel con los casos manuales y la redacción. **Incidencia de la hora 12:** anotar la hora real, quién la recibió y qué se pidió en el issue #38. **Checkpoint 3 a las 06:00.**
+- Siguiente: I1 (rendimiento sobre 100 registros), I2 (respaldo de demostración) e I3 (cierre) en `feat/integracion`; F7 (accesibilidad y usabilidad); escanear el QR con un celular; completar los insumos de los entregables con B6, B7 y la hora 12. Juan Manuel con los casos manuales y la redacción. **Congelación de funciones a las 11:00.**
+- **Incidencia de la hora 12 (issue #38, cerrado):** se anunció el 16/10 a las 02:00, la recibió Juan Manuel y pidió un entregable de documentación para Classroom, sin cambios en el software. Se subió la carpeta `Evidencia2am` (fuera del repositorio, en `Hackaton_II/`): historial y validación de los checkpoints 1 y 2 e insumos de E02, E03 y E05 con 12 capturas. RF09 no cambió; B6 y F6 se construyeron igual.
 - **Material visual en `frontend/public/assets/`** (logo de Asoprocacao y video de fondo del login): lo está subiendo Juan David para una mejora visual que se hará **después** de terminar todos los bloques de frontend y backend. Hasta que él lo pida, ningún agente lo usa, lo modifica, lo borra ni lo agrega a un commit (queda sin versionar).
 - La base de desarrollo de Juan David tiene, además de la semilla, los lotes de prueba CAC004 a CAC008 y sus derivados (CAC004-T1, CAC006-T1, CAC007-T1, CAC008-T1), con alertas y auditoría; CAC007-T1 quedó BLOQUEADO y CAC008-T1 LIBERADO por pruebas. CAC001 sigue sin transformaciones. Antes de la demostración se restaura el respaldo limpio (I2). La base `cacao_test` ya existe en su Docker.
 - **Cuota de agy:** los modelos Claude de agy agotaron su cuota el 15/10 hacia las 20:33 (se reinicia en unas 135 h). Las delegaciones siguen con `gemini-3.8-flash-high`; su resultado se revisa con más cuidado (F2 y F3 necesitaron correcciones a mano en la revisión).
