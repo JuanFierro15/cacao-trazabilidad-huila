@@ -5,6 +5,7 @@ import { useAuth } from '../../auth/useAuth.js'
 import { AvisoSimulacion } from '../../componentes/AvisoSimulacion.jsx'
 import { FondoVideo } from '../../componentes/FondoVideo.jsx'
 import { MensajeError } from '../../componentes/MensajeError.jsx'
+import { ModalFichaComprador } from '../../componentes/ModalFichaComprador.jsx'
 
 // Credenciales de demostración publicadas en el README (contrato, sección 7); no son secretos.
 const DEMO_OPERADOR = { username: 'operador1', password: 'cacao123' }
@@ -35,6 +36,7 @@ export function PaginaLogin() {
   const [password, setPassword] = useState('')
   const [enviando, setEnviando] = useState(false)
   const [error, setError] = useState(null)
+  const [modalFichaAbierto, setModalFichaAbierto] = useState(false)
 
   // Mismo destino que tras un ingreso exitoso, para que no importe cuál de los
   // dos redireccionamientos ocurra primero.
@@ -204,17 +206,23 @@ export function PaginaLogin() {
               </button>
             </div>
             <div className="mt-4 text-center">
-              <Link
-                to="/ficha"
-                className={`text-sm font-semibold text-cacao underline hover:text-cacao/80 ${FOCO}`}
+              <button
+                type="button"
+                onClick={() => setModalFichaAbierto(true)}
+                className={`cursor-pointer text-sm font-semibold text-cacao underline hover:text-cacao/80 ${FOCO}`}
               >
                 ¿Es comprador? Consulte un producto por su código
-              </Link>
+              </button>
             </div>
           </div>
           </div>
         </div>
       </main>
+
+      <ModalFichaComprador
+        abierto={modalFichaAbierto}
+        onCerrar={() => setModalFichaAbierto(false)}
+      />
     </div>
   )
 }

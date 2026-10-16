@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
+import { ModalFichaComprador } from '../../componentes/ModalFichaComprador.jsx'
 
 const FOCO = 'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-mazorca'
 
@@ -75,9 +76,9 @@ export function PiePublico() {
 }
 
 export function FormularioConsultaFicha({ valorInicial = '' }) {
-  const navigate = useNavigate()
   const [codigo, setCodigo] = useState(valorInicial)
   const [errorValidacion, setErrorValidacion] = useState(null)
+  const [codigoModal, setCodigoModal] = useState('')
 
   function manejarEnvio(evento) {
     evento.preventDefault()
@@ -87,44 +88,52 @@ export function FormularioConsultaFicha({ valorInicial = '' }) {
       return
     }
     setErrorValidacion(null)
-    navigate(`/ficha/${encodeURIComponent(limpio)}`)
+    setCodigoModal(limpio)
   }
 
   return (
-    <form onSubmit={manejarEnvio} noValidate className="space-y-3">
-      <div>
-        <label htmlFor="campo-codigo-producto" className="block text-sm font-semibold text-cacao">
-          Código del producto
-        </label>
-        <div className="mt-1 flex flex-col gap-2 sm:flex-row">
-          <input
-            id="campo-codigo-producto"
-            name="codigo"
-            type="text"
-            placeholder="Ej. CAC001-T1"
-            value={codigo}
-            onChange={(e) => {
-              setCodigo(e.target.value)
-              if (errorValidacion) setErrorValidacion(null)
-            }}
-            aria-invalid={errorValidacion ? true : undefined}
-            aria-describedby={errorValidacion ? 'error-codigo-producto' : undefined}
-            className={`block w-full rounded-md border border-cacao/30 bg-crema/75 px-3 py-2 text-base text-cacao shadow-inner transition-colors focus:bg-crema/95 ${FOCO} aria-invalid:border-red-700`}
-          />
-          <button
-            type="submit"
-            className={`rounded-md bg-cacao px-5 py-2 font-semibold text-crema shadow-xs transition-colors hover:bg-cacao/90 sm:shrink-0 ${FOCO}`}
-          >
-            Ver ficha
-          </button>
+    <>
+      <form onSubmit={manejarEnvio} noValidate className="space-y-3">
+        <div>
+          <label htmlFor="campo-codigo-producto" className="block text-sm font-semibold text-cacao">
+            Código del producto
+          </label>
+          <div className="mt-1 flex flex-col gap-2 sm:flex-row">
+            <input
+              id="campo-codigo-producto"
+              name="codigo"
+              type="text"
+              placeholder="Ej. CAC001-T1"
+              value={codigo}
+              onChange={(e) => {
+                setCodigo(e.target.value)
+                if (errorValidacion) setErrorValidacion(null)
+              }}
+              aria-invalid={errorValidacion ? true : undefined}
+              aria-describedby={errorValidacion ? 'error-codigo-producto' : undefined}
+              className={`block w-full rounded-md border border-cacao/30 bg-crema/75 px-3 py-2 text-base text-cacao shadow-inner transition-colors focus:bg-crema/95 ${FOCO} aria-invalid:border-red-700`}
+            />
+            <button
+              type="submit"
+              className={`rounded-md bg-cacao px-5 py-2 font-semibold text-crema shadow-xs transition-colors hover:bg-cacao/90 sm:shrink-0 ${FOCO}`}
+            >
+              Ver ficha
+            </button>
+          </div>
+          {errorValidacion && (
+            <p id="error-codigo-producto" role="alert" className="mt-1 text-sm text-red-800">
+              {errorValidacion}
+            </p>
+          )}
         </div>
-        {errorValidacion && (
-          <p id="error-codigo-producto" role="alert" className="mt-1 text-sm text-red-800">
-            {errorValidacion}
-          </p>
-        )}
-      </div>
-    </form>
+      </form>
+
+      <ModalFichaComprador
+        abierto={Boolean(codigoModal)}
+        codigoInicial={codigoModal}
+        onCerrar={() => setCodigoModal('')}
+      />
+    </>
   )
 }
 
