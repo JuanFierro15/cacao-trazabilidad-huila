@@ -22,6 +22,8 @@ npm-debug.log*
 # --- Respaldos: solo se versiona el respaldo de demostración ---
 datos/respaldos/*.dump
 !datos/respaldos/respaldo_demo.dump
+datos/respaldos/*.integridad.txt
+!datos/respaldos/respaldo_demo.integridad.txt
 datos/respaldos/tmp/
 
 # --- Logs, IDE y sistema operativo ---

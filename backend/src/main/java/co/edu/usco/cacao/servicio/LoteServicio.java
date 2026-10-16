@@ -26,8 +26,10 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.stereotype.Service;
@@ -168,6 +170,15 @@ public class LoteServicio {
         return mapearADto(lote);
     }
 
+    /**
+     * Cambia el estado de un lote (sección 6 del contrato).
+     * <ul>
+     *   <li>Bloqueo: por defecto se propaga a todos los derivados (consulta recursiva hacia adelante).
+     *       Los derivados que ya estaban BLOQUEADO no se tocan ni se auditan otra vez.</li>
+     *   <li>Liberación: no se propaga; si algún ancestro está BLOQUEADO responde 409 ORIGEN_BLOQUEADO.</li>
+     *   <li>Cada lote que cambia deja su fila CAMBIO_ESTADO en la misma transacción.</li>
+     * </ul>
+     */
     @Transactional
     public CambioEstadoRespuestaDTO cambiarEstado(String codigo, CambioEstadoSolicitudDTO solicitud) {
         String codigoLimpio = codigo.trim();
@@ -176,33 +187,86 @@ public class LoteServicio {
                 "No se encontró el lote con código " + codigoLimpio + "."
             ));
 
-        if (lote.getEstado() == solicitud.estado()) {
-            throw ReglaNegocioException.estadoSinCambio(lote.getCodigoLote(), solicitud.estado().name());
+        EstadoLote estadoSolicitado = solicitud.estado();
+        if (lote.getEstado() == estadoSolicitado) {
+            throw ReglaNegocioException.estadoSinCambio(lote.getCodigoLote(), estadoSolicitado.name());
         }
 
-        String estadoAnterior = lote.getEstado().name();
-        String estadoNuevo = solicitud.estado().name();
-        String motivoLimpio = solicitud.motivo().trim();
+        if (estadoSolicitado == EstadoLote.LIBERADO) {
+            validarAncestrosNoBloqueados(lote);
+        }
 
-        lote.setEstado(solicitud.estado());
-        lote.setMotivoEstado(motivoLimpio);
-        Lote loteGuardado = loteRepository.save(lote);
+        String motivoLimpio = solicitud.motivo().trim();
+        List<LoteAfectadoEstadoDTO> afectados = new ArrayList<>();
+
+        Lote loteGuardado = aplicarCambioEstado(lote, estadoSolicitado, motivoLimpio, motivoLimpio, afectados);
+
+        boolean propagar = estadoSolicitado == EstadoLote.BLOQUEADO
+            && !Boolean.FALSE.equals(solicitud.propagarADerivados());
+
+        if (propagar) {
+            List<String> codigosDerivados = loteComposicionRepository.buscarCodigosDescendientes(lote.getCodigoLote());
+            if (!codigosDerivados.isEmpty()) {
+                String motivoAuditoriaDerivado = "Bloqueo propagado desde " + lote.getCodigoLote() + ": " + motivoLimpio;
+                Map<String, Lote> derivadosPorCodigo = new HashMap<>();
+                for (Lote d : loteRepository.findByCodigoLoteInForUpdate(codigosDerivados)) {
+                    derivadosPorCodigo.put(d.getCodigoLote(), d);
+                }
+                // Se recorre en el orden de la genealogía (nivel 1, nivel 2, ...) para que la respuesta se lea de arriba abajo.
+                for (String codigoDerivado : codigosDerivados) {
+                    Lote derivado = derivadosPorCodigo.get(codigoDerivado);
+                    if (derivado != null && derivado.getEstado() != EstadoLote.BLOQUEADO) {
+                        aplicarCambioEstado(derivado, EstadoLote.BLOQUEADO, motivoLimpio, motivoAuditoriaDerivado, afectados);
+                    }
+                }
+            }
+        }
+
+        return new CambioEstadoRespuestaDTO(mapearADto(loteGuardado), afectados);
+    }
+
+    private Lote aplicarCambioEstado(
+        Lote lote,
+        EstadoLote estadoNuevo,
+        String motivoEstado,
+        String motivoAuditoria,
+        List<LoteAfectadoEstadoDTO> afectados
+    ) {
+        String estadoAnterior = lote.getEstado().name();
+        lote.setEstado(estadoNuevo);
+        lote.setMotivoEstado(motivoEstado);
+        Lote guardado = loteRepository.save(lote);
 
         auditoriaServicio.registrar(
             "CAMBIO_ESTADO",
             "LOTE",
-            loteGuardado.getCodigoLote(),
+            guardado.getCodigoLote(),
             "estado",
             estadoAnterior,
-            estadoNuevo,
-            motivoLimpio
+            estadoNuevo.name(),
+            motivoAuditoria
         );
 
-        List<LoteAfectadoEstadoDTO> afectados = List.of(
-            new LoteAfectadoEstadoDTO(loteGuardado.getCodigoLote(), estadoAnterior, estadoNuevo)
-        );
+        afectados.add(new LoteAfectadoEstadoDTO(guardado.getCodigoLote(), estadoAnterior, estadoNuevo.name()));
+        return guardado;
+    }
 
-        return new CambioEstadoRespuestaDTO(mapearADto(loteGuardado), afectados);
+    private void validarAncestrosNoBloqueados(Lote lote) {
+        List<String> codigosAncestros = loteComposicionRepository.buscarCodigosAncestros(lote.getCodigoLote());
+        if (codigosAncestros.isEmpty()) {
+            return;
+        }
+        Map<String, EstadoLote> estadoPorCodigo = new HashMap<>();
+        for (Lote ancestro : loteRepository.findByCodigoLoteInConProductor(codigosAncestros)) {
+            estadoPorCodigo.put(ancestro.getCodigoLote(), ancestro.getEstado());
+        }
+        // Los ancestros vienen de la raíz hacia el lote; se informa el bloqueado más cercano.
+        for (int i = codigosAncestros.size() - 1; i >= 0; i--) {
+            String codigoAncestro = codigosAncestros.get(i);
+            if (estadoPorCodigo.get(codigoAncestro) == EstadoLote.BLOQUEADO) {
+                throw ReglaNegocioException.origenBloqueado(lote.getCodigoLote(), codigoAncestro);
+            }
+        }
     }
 
 
@@ -261,7 +325,7 @@ public class LoteServicio {
         return candidato;
     }
 
-    private EstadoLote parsearEstado(String estado) {
+    static EstadoLote parsearEstado(String estado) {
         if (estado == null || estado.isBlank()) {
             return null;
         }

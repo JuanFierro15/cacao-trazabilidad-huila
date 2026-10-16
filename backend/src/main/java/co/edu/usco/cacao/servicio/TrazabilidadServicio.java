@@ -7,6 +7,7 @@ import co.edu.usco.cacao.dominio.TipoLote;
 import co.edu.usco.cacao.dominio.Transformacion;
 import co.edu.usco.cacao.excepcion.ReglaNegocioException;
 import co.edu.usco.cacao.repositorio.AlertaRepository;
+import co.edu.usco.cacao.repositorio.AuditoriaCambioRepository;
 import co.edu.usco.cacao.repositorio.LoteComposicionRepository;
 import co.edu.usco.cacao.repositorio.LoteRepository;
 import co.edu.usco.cacao.repositorio.TransformacionRepository;
@@ -18,6 +19,7 @@ import co.edu.usco.cacao.web.dto.LoteRaizTrazabilidadDTO;
 import co.edu.usco.cacao.web.dto.OrigenPublicoDTO;
 import co.edu.usco.cacao.web.dto.OrigenTrazabilidadDTO;
 import co.edu.usco.cacao.web.dto.PasoRecorridoPublicoDTO;
+import co.edu.usco.cacao.web.dto.RecallRespuestaDTO;
 import co.edu.usco.cacao.web.dto.TrazabilidadRespuestaDTO;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -50,17 +52,20 @@ public class TrazabilidadServicio {
     private final LoteComposicionRepository loteComposicionRepository;
     private final TransformacionRepository transformacionRepository;
     private final AlertaRepository alertaRepository;
+    private final AuditoriaCambioRepository auditoriaCambioRepository;
 
     public TrazabilidadServicio(
         LoteRepository loteRepository,
         LoteComposicionRepository loteComposicionRepository,
         TransformacionRepository transformacionRepository,
-        AlertaRepository alertaRepository
+        AlertaRepository alertaRepository,
+        AuditoriaCambioRepository auditoriaCambioRepository
     ) {
         this.loteRepository = loteRepository;
         this.loteComposicionRepository = loteComposicionRepository;
         this.transformacionRepository = transformacionRepository;
         this.alertaRepository = alertaRepository;
+        this.auditoriaCambioRepository = auditoriaCambioRepository;
     }
 
     @Transactional(readOnly = true)
@@ -228,6 +233,62 @@ public class TrazabilidadServicio {
             loteRaiz.getFechaRecepcion(),
             recorrido,
             consultadoEn
+        );
+    }
+
+    /**
+     * Reporte de recall para la incidencia de la hora 12 (sección 8.6 del contrato).
+     * El alcance es el lote consultado y todos sus derivados; la raíz y el origen se resuelven hacia atrás.
+     */
+    @Transactional(readOnly = true)
+    public RecallRespuestaDTO obtenerRecall(String codigo) {
+        String codigoLimpio = codigo.trim();
+        Lote lote = loteRepository.findByCodigoLoteConProductor(codigoLimpio)
+            .orElseThrow(() -> ReglaNegocioException.noEncontrado(
+                "No se encontró el lote con código " + codigoLimpio + "."
+            ));
+
+        List<String> codigosAncestros = loteComposicionRepository.buscarCodigosAncestros(lote.getCodigoLote());
+        List<String> codigosDescendientes = loteComposicionRepository.buscarCodigosDescendientes(lote.getCodigoLote());
+
+        Lote loteRaiz = codigosAncestros.isEmpty()
+            ? lote
+            : loteRepository.findByCodigoLoteConProductor(codigosAncestros.getFirst()).orElse(lote);
+
+        Set<String> alcance = new LinkedHashSet<>();
+        alcance.add(lote.getCodigoLote());
+        alcance.addAll(codigosDescendientes);
+
+        List<Transformacion> transformacionesAlcance = transformacionRepository.findByCodigosLoteInvolucrados(alcance);
+        List<DerivadoResumenDTO> derivados = construirDerivadosResumen(codigosDescendientes, transformacionesAlcance);
+
+        BigDecimal kgAfectados = lote.getCantidadDisponible();
+        for (DerivadoResumenDTO d : derivados) {
+            if (d.disponibleKg() != null) {
+                kgAfectados = kgAfectados.add(d.disponibleKg());
+            }
+        }
+
+        long registrosAuditoria = auditoriaCambioRepository.countByRegistroReferenciaIn(alcance);
+
+        return new RecallRespuestaDTO(
+            lote.getCodigoLote(),
+            lote.getEstado().name(),
+            loteRaiz.getCodigoLote(),
+            new RecallRespuestaDTO.Origen(
+                loteRaiz.getProductor().getNombreProductor(),
+                loteRaiz.getProductor().getNombreFinca(),
+                loteRaiz.getOrigenMunicipio(),
+                loteRaiz.getProductor().getVariedadCacao()
+            ),
+            new RecallRespuestaDTO.Cantidades(
+                normalizarNumero(lote.getCantidadRecibida()),
+                normalizarNumero(lote.getCantidadConsumida()),
+                normalizarNumero(lote.getCantidadDisponible())
+            ),
+            derivados,
+            normalizarNumero(kgAfectados),
+            new RecallRespuestaDTO.HistorialConservado(transformacionesAlcance.size(), registrosAuditoria)
         );
     }
 
