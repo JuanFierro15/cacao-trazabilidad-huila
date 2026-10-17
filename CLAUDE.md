@@ -510,6 +510,7 @@ Guía completa en [`frontend/DISENO.md`](frontend/DISENO.md).
 - **Teclado:** foco visible con contorno naranja; recorrido con Tab del inicio y del login; el menú móvil devuelve el foco al botón al cerrarse con Escape.
 - **Movimiento reducido:** con `prefers-reduced-motion` no hay animaciones y los videos quedan en pausa con su póster; los videos tienen botón de pausa (WCAG 2.2.2).
 - **Móvil:** 360 px sin scroll horizontal en todas las vistas revisadas; menú hamburguesa por debajo de 640 px.
+- **Escala de los paneles (F10, posterior a la entrega):** mientras está montado `MarcoAplicacion`, `<html>` lleva la clase `escala-panel` y el `rem` crece con el ancho de la ventana (`clamp`: 16 px hasta 1024 px, 18,9 px a 1536 px, 21 px desde 1920 px). Textos, espacios y el ancho máximo del contenido crecen juntos. El inicio, el login, la ficha pública, el celular y la impresión no cambian.
 - **Errores en español:** qué pasó y qué hacer, junto a cada campo (400) o en una caja general (403, 409, 422).
 - **Mejora derivada de la prueba de usabilidad (E06):** el modal para consultar un producto por su código (`ModalFichaComprador`, commit `0b8057a` de `design-test`), que se abre desde el inicio, `/ficha`, el login y la trazabilidad.
 - **Diferencias con la guía:** la barra superior de F8A se cambió por una barra lateral (y un menú hamburguesa en móvil); el sello arranca en escala 1,06 y no en 1,12 para no dejar scroll horizontal a 360 px; no hay transiciones entre vistas porque `BrowserRouter` no las aplica.
@@ -541,6 +542,7 @@ Guía completa en [`frontend/DISENO.md`](frontend/DISENO.md).
 | design-test | Gestión de operadores, barra lateral, inicio, login y modal de la ficha (14 commits) | — | #50 | ✅ |
 | F8D | Menú hamburguesa en móvil | `d2ca434` | #53 | ✅ |
 | F9 | Economía circular en el balance, termómetro de humedad en la recepción y certificado imprimible con QR | commit de F9 | #57 | ✅ |
+| F10 | Texto de los paneles proporcional al ancho de la ventana (posterior a la entrega; no está en `v1.0-entrega`) | `1a1010b` | #58 | ✅ |
 | I1 | Rendimiento sobre 100 registros | `8d3bf6a` | #45 | ✅ |
 | I2 | Respaldo de demostración (+ `a11efcb`) | `ec0f4f9` | #45 | ✅ |
 | I3 | README, `ENTREGA.md`, pitch, documentación, instalación limpia de Juan Manuel (sin problemas) y etiqueta | `5da9a66`, `54cad38` | #45, #54, #56 | ✅ |
@@ -571,6 +573,7 @@ Una rama por rol; todo entra a `main` por PR con merge commit (sin squash); un c
 | Estado final en este archivo | 12:34 | `b4d3c60` | #55 |
 | Cierre: instalación limpia, usabilidad, herramientas y etiqueta | 12:39 | commit de cierre | #56 |
 | F9: economía circular, termómetro de humedad y certificado imprimible | 13:47 | commit de integración de F9 | #57 |
+| F10: texto de los paneles proporcional al ancho (posterior a la entrega; la etiqueta no se movió) | 16/10 17:21 (integración 17/10 07:45) | commit de integración de F10 | #58 |
 | **Etiqueta `v1.0-entrega`** | creada a las 12:20 sobre `25e8606`; movida al commit de cierre | hash en la descripción de la etiqueta | — |
 
 **La etiqueta se movió** a pedido del equipo: se creó a las 12:20 sobre `25e8606` y se trasladó al commit de cierre para que la entrega incluya la instalación limpia, la mejora de usabilidad, las herramientas declaradas y este archivo. El hash que se registra es el de la etiqueta actual.

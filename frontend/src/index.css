@@ -22,6 +22,13 @@ body {
   @apply bg-crema text-cacao;
 }
 
+/* Paneles del operador y del administrador: el rem crece con el ancho de la ventana
+   (16 px hasta 1024 px, 18,9 px a 1536 px y 21 px desde 1920 px). Textos, espacios y el ancho
+   máximo del contenido crecen juntos; los puntos de corte en rem no cambian. */
+html.escala-panel {
+  font-size: clamp(1rem, 0.6429rem + 0.558vw, 1.3125rem);
+}
+
 /* Texto de ejemplo de los campos: 70 % del cacao para no bajar de 4,5:1 sobre blanco. */
 @layer base {
   ::placeholder {
@@ -182,6 +189,10 @@ ol.traza.visible::before {
 }
 
 @media print {
+  html.escala-panel {
+    font-size: 100%;
+  }
+
   body > *:not(.certificado-impresion) {
     display: none !important;
   }
