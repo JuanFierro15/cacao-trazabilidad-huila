@@ -252,6 +252,12 @@ export function MarcoAplicacion() {
 
   const rutaAnteriorRef = useRef(location.pathname)
 
+  // Escala el texto de los paneles con el ancho de la ventana (regla html.escala-panel de index.css).
+  useEffect(() => {
+    document.documentElement.classList.add('escala-panel')
+    return () => document.documentElement.classList.remove('escala-panel')
+  }, [])
+
   // Cierra el menú móvil al navegar a otra ruta.
   useEffect(() => {
     if (rutaAnteriorRef.current !== location.pathname) {
